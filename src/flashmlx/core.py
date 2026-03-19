@@ -60,11 +60,16 @@ def flash_attention(
         q: Query tensor [batch, seq_len, heads, head_dim]
         k: Key tensor [batch, seq_len, heads, head_dim]
         v: Value tensor [batch, seq_len, heads, head_dim]
-        scale: Attention scale factor
+        scale: Attention scale factor (defaults to 1/sqrt(head_dim))
 
     Returns:
         (output, attention_weights)
     """
+    # Calculate default scale if not provided
+    if scale is None:
+        head_dim = q.shape[-1]
+        scale = 1.0 / (head_dim ** 0.5)
+
     # TODO: Implement optimized Flash Attention
     # Currently falls back to MLX's native implementation
     return mx.fast.scaled_dot_product_attention(q, k, v, scale=scale), None

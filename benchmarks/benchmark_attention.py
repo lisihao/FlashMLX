@@ -33,10 +33,14 @@ def benchmark_flash_attention():
         k = mx.random.normal((batch_size, seq_len, num_heads, head_dim))
         v = mx.random.normal((batch_size, seq_len, num_heads, head_dim))
 
-        # Benchmark
+        # Benchmark with forced evaluation
+        def run_attention():
+            output, _ = flash_attention(q, k, v)
+            mx.eval(output)  # Force evaluation
+            return output
+
         avg_time = benchmark(
-            flash_attention,
-            q, k, v,
+            run_attention,
             warmup=3,
             iterations=10
         )
