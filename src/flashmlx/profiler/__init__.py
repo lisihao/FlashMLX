@@ -9,6 +9,9 @@ from .analyzer import ProfileAnalyzer
 from .config import ProfilerConfig, InstrumentationLevel
 from .memory import MemoryTracker
 from .latency import LatencyTracker, GenerationLatencyTracker
+from .locks import LockTracker
+from .io import IOTracker
+from .concurrency import ConcurrencyTracker
 
 __all__ = [
     "Profiler",
@@ -22,4 +25,7 @@ __all__ = [
     "MemoryTracker",
     "LatencyTracker",
     "GenerationLatencyTracker",
+    "LockTracker",
+    "IOTracker",
+    "ConcurrencyTracker",
 ]

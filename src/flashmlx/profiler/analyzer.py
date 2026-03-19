@@ -131,6 +131,37 @@ class ProfileAnalyzer:
                 print(f"  {name}:")
                 print(f"    Mean: {stats['mean_ms']:.2f}ms, P95: {stats['p95_ms']:.2f}ms, P99: {stats['p99_ms']:.2f}ms")
 
+        # Print lock stats if available
+        if "locks" in self.metadata:
+            locks = self.metadata["locks"]
+            print(f"\nLocks:")
+            print(f"  Total acquisitions: {locks['total_acquisitions']}")
+            print(f"  Total contention: {locks['total_contention_ms']:.2f}ms")
+            if locks["locks"]:
+                print(f"  Top contended locks:")
+                sorted_locks = sorted(locks["locks"].items(), key=lambda x: x[1]["contention_rate"], reverse=True)[:3]
+                for lock_name, lock_stats in sorted_locks:
+                    print(f"    {lock_name}: {lock_stats['contention_rate']*100:.1f}% contention, avg wait {lock_stats['avg_wait_ms']:.2f}ms")
+
+        # Print IO stats if available
+        if "io" in self.metadata:
+            io = self.metadata["io"]
+            print(f"\nIO:")
+            print(f"  Total operations: {io['total_operations']}")
+            print(f"  Read: {io['total_bytes_read']/(1024*1024):.2f} MB")
+            print(f"  Written: {io['total_bytes_written']/(1024*1024):.2f} MB")
+            print(f"  Throughput: {io['avg_throughput_mbps']:.2f} MB/s")
+
+        # Print concurrency stats if available
+        if "concurrency" in self.metadata:
+            concurrency = self.metadata["concurrency"]
+            print(f"\nConcurrency:")
+            print(f"  Total threads: {concurrency['total_threads']}")
+            print(f"  Max concurrent: {concurrency['max_concurrent_threads']}")
+            print(f"  GIL contention: {concurrency['gil_contention_estimate']*100:.0f}%")
+            if concurrency['avg_thread_lifetime_ms'] > 0:
+                print(f"  Avg thread lifetime: {concurrency['avg_thread_lifetime_ms']:.1f}ms")
+
         print(f"\n{'Function':<30} {'Time (ms)':<12} {'Calls':<8} {'%':<8}")
         print("-" * 80)
 

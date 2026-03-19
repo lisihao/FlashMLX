@@ -17,6 +17,9 @@ from .instrumentation import (
 )
 from .memory import MemoryTracker
 from .latency import LatencyTracker
+from .locks import LockTracker
+from .io import IOTracker
+from .concurrency import ConcurrencyTracker
 
 
 class Profiler:
@@ -67,6 +70,15 @@ class Profiler:
         # Create latency tracker
         self.latency_tracker = LatencyTracker()
 
+        # Create lock tracker
+        self.lock_tracker = LockTracker()
+
+        # Create IO tracker
+        self.io_tracker = IOTracker()
+
+        # Create concurrency tracker
+        self.concurrency_tracker = ConcurrencyTracker()
+
         # Track instrumented modules
         self._instrumented = {}
         self._start_time = None
@@ -84,6 +96,15 @@ class Profiler:
         if self.memory_tracker:
             self.memory_tracker.start()
 
+        # Start lock tracking
+        self.lock_tracker.start()
+
+        # Start IO tracking
+        self.io_tracker.start()
+
+        # Start concurrency tracking
+        self.concurrency_tracker.start()
+
         # Instrument MLX functions based on level
         self._instrument_mlx()
 
@@ -97,6 +118,15 @@ class Profiler:
         # Stop memory tracking
         if self.memory_tracker:
             self.memory_tracker.stop()
+
+        # Stop lock tracking
+        self.lock_tracker.stop()
+
+        # Stop IO tracking
+        self.io_tracker.stop()
+
+        # Stop concurrency tracking
+        self.concurrency_tracker.stop()
 
         # Restore original functions
         self._restore_mlx()
@@ -194,6 +224,21 @@ class Profiler:
         if latency_stats:
             metadata["latency"] = latency_stats
 
+        # Add lock stats
+        lock_stats = self.lock_tracker.get_stats()
+        if lock_stats["total_acquisitions"] > 0:
+            metadata["locks"] = lock_stats
+
+        # Add IO stats
+        io_stats = self.io_tracker.get_stats()
+        if io_stats["total_operations"] > 0:
+            metadata["io"] = io_stats
+
+        # Add concurrency stats
+        concurrency_stats = self.concurrency_tracker.get_stats()
+        if concurrency_stats["total_threads"] > 0:
+            metadata["concurrency"] = concurrency_stats
+
         # Save
         self.logger.save(metadata)
 
@@ -210,6 +255,18 @@ class Profiler:
         if latency_stats:
             for name, stats in latency_stats.items():
                 print(f"   {name}: {self.latency_tracker.format_stats(stats)}")
+
+        # Print lock stats
+        if lock_stats["total_acquisitions"] > 0:
+            print(f"   Locks: {lock_stats['total_acquisitions']} acquisitions, {lock_stats['total_contention_ms']:.1f}ms contention")
+
+        # Print IO stats
+        if io_stats["total_operations"] > 0:
+            print(f"   IO: {io_stats['total_operations']} operations, {io_stats['total_bytes_read']/(1024*1024):.1f} MB read, {io_stats['total_bytes_written']/(1024*1024):.1f} MB written")
+
+        # Print concurrency stats
+        if concurrency_stats["total_threads"] > 0:
+            print(f"   Threads: {concurrency_stats['total_threads']} total, {concurrency_stats['max_concurrent_threads']} max concurrent, GIL contention {concurrency_stats['gil_contention_estimate']*100:.0f}%")
 
     def log_function_call(self, function_name: str, duration_ms: float, **kwargs):
         """Log a function call (called by instrumentation)"""
