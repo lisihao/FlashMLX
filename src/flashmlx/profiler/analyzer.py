@@ -109,14 +109,30 @@ class ProfileAnalyzer:
 
     def print_summary(self):
         """Print summary of profiling results"""
-        print("=" * 60)
+        print("=" * 80)
         print(f"Profile: {self.metadata.get('experiment_name', 'unknown')}")
-        print("=" * 60)
+        print("=" * 80)
         print(f"\nTotal Time: {self.get_total_time():.2f}s")
         print(f"Events: {len(self.events)}")
 
+        # Print memory stats if available
+        if "memory" in self.metadata:
+            memory = self.metadata["memory"]
+            peak = memory.get("peak", {})
+            delta = memory.get("delta", {})
+            print(f"\nMemory:")
+            print(f"  Peak: Python {peak.get('python_mb', 0):.1f} MB, Metal {peak.get('metal_mb', 0):.1f} MB")
+            print(f"  Delta: Python {delta.get('python_mb', 0):+.1f} MB, Metal {delta.get('metal_mb', 0):+.1f} MB")
+
+        # Print latency stats if available
+        if "latency" in self.metadata:
+            print(f"\nLatency:")
+            for name, stats in self.metadata["latency"].items():
+                print(f"  {name}:")
+                print(f"    Mean: {stats['mean_ms']:.2f}ms, P95: {stats['p95_ms']:.2f}ms, P99: {stats['p99_ms']:.2f}ms")
+
         print(f"\n{'Function':<30} {'Time (ms)':<12} {'Calls':<8} {'%':<8}")
-        print("-" * 60)
+        print("-" * 80)
 
         hotspots = self.get_top_hotspots(10)
         for hotspot in hotspots:
@@ -127,7 +143,7 @@ class ProfileAnalyzer:
                 f"{hotspot['percent']:<8.1f}"
             )
 
-        print("=" * 60)
+        print("=" * 80)
 
     def generate_report(self, output_file: str):
         """Generate markdown report"""

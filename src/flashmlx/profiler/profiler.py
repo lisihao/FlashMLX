@@ -15,6 +15,8 @@ from .instrumentation import (
     instrument_module,
     restore_module,
 )
+from .memory import MemoryTracker
+from .latency import LatencyTracker
 
 
 class Profiler:
@@ -59,6 +61,12 @@ class Profiler:
         # Create logger
         self.logger = ProfileLogger(str(self.output_file))
 
+        # Create memory tracker
+        self.memory_tracker = MemoryTracker() if self.config.capture_memory else None
+
+        # Create latency tracker
+        self.latency_tracker = LatencyTracker()
+
         # Track instrumented modules
         self._instrumented = {}
         self._start_time = None
@@ -72,6 +80,10 @@ class Profiler:
         # Record start time
         self._start_time = time.perf_counter()
 
+        # Start memory tracking
+        if self.memory_tracker:
+            self.memory_tracker.start()
+
         # Instrument MLX functions based on level
         self._instrument_mlx()
 
@@ -81,6 +93,10 @@ class Profiler:
         """Exit context - stop profiling"""
         # Record end time
         self._end_time = time.perf_counter()
+
+        # Stop memory tracking
+        if self.memory_tracker:
+            self.memory_tracker.stop()
 
         # Restore original functions
         self._restore_mlx()
@@ -165,6 +181,19 @@ class Profiler:
             "event_count": self.logger.get_event_count(),
         }
 
+        # Add memory stats if tracked
+        if self.memory_tracker:
+            metadata["memory"] = {
+                "baseline": self.memory_tracker.get_baseline(),
+                "peak": self.memory_tracker.get_peak_usage(),
+                "delta": self.memory_tracker.get_delta(),
+            }
+
+        # Add latency stats if any
+        latency_stats = self.latency_tracker.get_all_stats()
+        if latency_stats:
+            metadata["latency"] = latency_stats
+
         # Save
         self.logger.save(metadata)
 
@@ -172,11 +201,26 @@ class Profiler:
         print(f"   Total time: {total_time_s:.2f}s")
         print(f"   Events: {self.logger.get_event_count()}")
 
+        # Print memory stats
+        if self.memory_tracker:
+            peak = self.memory_tracker.get_peak_usage()
+            print(f"   Peak memory: Python {peak['python_mb']:.1f} MB, Metal {peak['metal_mb']:.1f} MB")
+
+        # Print latency stats
+        if latency_stats:
+            for name, stats in latency_stats.items():
+                print(f"   {name}: {self.latency_tracker.format_stats(stats)}")
+
     def log_function_call(self, function_name: str, duration_ms: float, **kwargs):
         """Log a function call (called by instrumentation)"""
         # Filter out fast functions
         if duration_ms < self.config.min_function_time_ms:
             return
+
+        # Add memory info if tracking
+        if self.memory_tracker:
+            memory_usage = self.memory_tracker.get_current_usage()
+            kwargs['memory_mb'] = memory_usage['metal_mb']
 
         self.logger.log_function_call(
             function_name=function_name,

@@ -52,3 +52,4 @@ mlx-source/build/
 # Temporary
 tmp/
 temp/
+profiling_data/*.json
