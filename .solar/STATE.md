@@ -45,9 +45,15 @@
 - ✅ 导入 MLX 源码 (26 Metal kernels)
 - ✅ 导入 MLX-LM 源码
 - ✅ 创建项目文档
+- ✅ 实现基础 Python 包结构
+- ✅ 实现 Flash Attention 包装
+- ✅ 单元测试通过 (3/3)
+- ✅ 性能 benchmark 正常运行
+- ✅ 修复 scale 参数和延迟执行问题
+- ✅ 构建测试报告
 
 ### In-Progress
-- 🔄 分析 MLX 架构
+- 🔄 分析 MLX Flash Attention 实现 (Next)
 
 ### Blocked
 - (无)
