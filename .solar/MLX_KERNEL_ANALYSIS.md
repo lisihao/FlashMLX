@@ -374,6 +374,7 @@ conv_input = mx.concatenate([conv_state, mixed_qkv], axis=1)
      - `mx.eval` 同步等待
      - profiler 自身开销
      - GPU queue flush / kernel 间隙
+   - 现在已经把 `mx.eval` 从函数级移到 region 级，所以后续 profile 里的函数事件更接近 dispatch 开销，region 才是端到端时长的主参考
 
 #### 对后续优化的含义
 

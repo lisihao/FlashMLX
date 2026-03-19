@@ -68,14 +68,12 @@ def profile(name: Optional[str] = None, capture_args: bool = False):
                     if shapes is not None:
                         input_shapes.append({key: shapes})
 
-            # Time the function
+            # Time the function.
+            # Leave synchronization to the enclosing profiling region so
+            # individual function timings stay closer to dispatch cost.
             start = time.perf_counter()
             try:
                 result = func(*args, **kwargs)
-
-                # Force evaluation if MLX array
-                if isinstance(result, mx.array):
-                    mx.eval(result)
 
                 return result
             finally:

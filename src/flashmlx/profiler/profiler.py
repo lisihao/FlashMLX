@@ -317,6 +317,9 @@ class ProfileRegion:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # Flush any pending MLX work before we stop the clock so the region
+        # captures end-to-end execution instead of only enqueue time.
+        mx.eval()
         duration_ms = (time.perf_counter() - self._start_time) * 1000
         self.profiler.logger.log_event(
             event_type="region",
