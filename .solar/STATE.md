@@ -10,6 +10,8 @@
 - 兼容 MLX-LM 模型接口
 - 保持 Apple Silicon 优化
 - 不破坏 MLX 原有功能
+- **铁律：任何优化前必须先用 Profiler 分析，找到瓶颈**
+- **铁律：Profiler 分析不到位时，优先优化 Profiler 而非系统**
 
 ## Current Plan
 
