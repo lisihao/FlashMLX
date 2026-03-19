@@ -50,10 +50,23 @@ def profile(name: Optional[str] = None, capture_args: bool = False):
             # Capture input shapes if MLX arrays
             input_shapes = None
             if capture_args:
+                def collect_shapes(value):
+                    if isinstance(value, mx.array):
+                        return list(value.shape)
+                    if isinstance(value, (list, tuple)):
+                        return [collect_shapes(item) for item in value]
+                    return None
+
                 input_shapes = []
                 for arg in args:
-                    if isinstance(arg, mx.array):
-                        input_shapes.append(list(arg.shape))
+                    shapes = collect_shapes(arg)
+                    if shapes is not None:
+                        input_shapes.append(shapes)
+
+                for key, value in kwargs.items():
+                    shapes = collect_shapes(value)
+                    if shapes is not None:
+                        input_shapes.append({key: shapes})
 
             # Time the function
             start = time.perf_counter()
@@ -79,7 +92,11 @@ def profile(name: Optional[str] = None, capture_args: bool = False):
     return decorator
 
 
-def instrument_function(func: Callable, name: Optional[str] = None) -> Callable:
+def instrument_function(
+    func: Callable,
+    name: Optional[str] = None,
+    capture_args: bool = False,
+) -> Callable:
     """
     Instrument a function without using decorator
 
@@ -94,10 +111,10 @@ def instrument_function(func: Callable, name: Optional[str] = None) -> Callable:
         original_matmul = mx.matmul
         mx.matmul = instrument_function(original_matmul, "matmul")
     """
-    return profile(name=name)(func)
+    return profile(name=name, capture_args=capture_args)(func)
 
 
-def instrument_module(module, functions: list, prefix: str = ""):
+def instrument_module(module, functions: list, prefix: str = "", capture_args: bool = False):
     """
     Instrument multiple functions in a module (monkey patching)
 
@@ -118,7 +135,8 @@ def instrument_module(module, functions: list, prefix: str = ""):
         original_func = getattr(module, func_name)
         instrumented_func = instrument_function(
             original_func,
-            name=f"{prefix}{func_name}"
+            name=f"{prefix}{func_name}",
+            capture_args=capture_args,
         )
 
         # Replace with instrumented version

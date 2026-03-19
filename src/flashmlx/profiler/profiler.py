@@ -177,7 +177,12 @@ class Profiler:
             functions = full_functions
 
         # Instrument mx module
-        self._instrumented['mx'] = instrument_module(mx, functions, prefix="mx.")
+        self._instrumented['mx'] = instrument_module(
+            mx,
+            functions,
+            prefix="mx.",
+            capture_args=self.config.capture_args,
+        )
 
         # Instrument mx.fast if DETAILED or FULL
         if level in [InstrumentationLevel.DETAILED, InstrumentationLevel.FULL]:
@@ -187,7 +192,10 @@ class Profiler:
                 "rms_norm",
             ]
             self._instrumented['mx.fast'] = instrument_module(
-                mx.fast, fast_functions, prefix="mx.fast."
+                mx.fast,
+                fast_functions,
+                prefix="mx.fast.",
+                capture_args=self.config.capture_args,
             )
 
     def _restore_mlx(self):

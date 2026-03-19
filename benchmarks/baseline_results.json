@@ -1,0 +1,12 @@
+{
+  "model": "/Users/lisihao/models/qwen3.5-2b-opus-distilled",
+  "test_config": {
+    "prompt_lengths": [
+      512,
+      2048,
+      8192
+    ],
+    "generation_length": 128
+  },
+  "results": []
+}
