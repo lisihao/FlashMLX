@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "experiment_name": "test_regions",
+    "timestamp": "2026-03-18T21:59:26.853977",
+    "config": {
+      "name": "test_regions",
+      "level": "basic",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 0.1,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.0008385830151382834,
+    "event_count": 4
+  },
+  "events": [
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.0004259579873178154,
+      "duration_ms": 0.40041698957793415,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "region",
+      "name": "region1",
+      "timestamp": 0.00042887500603683293,
+      "duration_ms": 0.4056250036228448
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.000843374989926815,
+      "duration_ms": 0.4098749777767807,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "region",
+      "name": "region2",
+      "timestamp": 0.0008453750051558018,
+      "duration_ms": 0.4139580123592168
+    }
+  ]
+}

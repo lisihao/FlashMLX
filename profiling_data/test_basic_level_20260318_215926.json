@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "experiment_name": "test_basic_level",
+    "timestamp": "2026-03-18T21:59:26.851857",
+    "config": {
+      "name": "test_basic_level",
+      "level": "basic",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 0.1,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.00024324998958036304,
+    "event_count": 1
+  },
+  "events": [
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.00025529199047014117,
+      "duration_ms": 0.2042090054601431,
+      "input_shapes": null,
+      "memory_mb": null
+    }
+  ]
+}

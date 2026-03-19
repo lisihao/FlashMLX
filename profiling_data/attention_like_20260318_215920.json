@@ -1,0 +1,185 @@
+{
+  "metadata": {
+    "experiment_name": "attention_like",
+    "timestamp": "2026-03-18T21:59:20.385263",
+    "config": {
+      "name": "attention_like",
+      "level": "detailed",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 0.1,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.10179337501176633,
+    "event_count": 20
+  },
+  "events": [
+    {
+      "event_type": "function_call",
+      "name": "mx.transpose",
+      "timestamp": 0.0003540410252753645,
+      "duration_ms": 0.26758399326354265,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05727145800483413,
+      "duration_ms": 56.89583401544951,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.softmax",
+      "timestamp": 0.06129987500025891,
+      "duration_ms": 3.9530409849248827,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.09773829102050513,
+      "duration_ms": 36.41974998754449,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.transpose",
+      "timestamp": 0.09809462502016686,
+      "duration_ms": 0.31104200752452016,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.09841150001739152,
+      "duration_ms": 0.31362500158138573,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.softmax",
+      "timestamp": 0.0986290410219226,
+      "duration_ms": 0.19941700156778097,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.09890695801004767,
+      "duration_ms": 0.2757500042207539,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.transpose",
+      "timestamp": 0.09916812501614913,
+      "duration_ms": 0.23054200573824346,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.09948629100108519,
+      "duration_ms": 0.31466700602322817,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.softmax",
+      "timestamp": 0.0997602500137873,
+      "duration_ms": 0.269292009761557,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.10001070800353773,
+      "duration_ms": 0.24895899696275592,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.transpose",
+      "timestamp": 0.10024583301856183,
+      "duration_ms": 0.21629201364703476,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.10051733301952481,
+      "duration_ms": 0.27004198636859655,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.softmax",
+      "timestamp": 0.10064866600441746,
+      "duration_ms": 0.12850001803599298,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.10088925002492033,
+      "duration_ms": 0.2390420122537762,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.transpose",
+      "timestamp": 0.10115087500889786,
+      "duration_ms": 0.24020799901336432,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.1014128330280073,
+      "duration_ms": 0.2604580076877028,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.softmax",
+      "timestamp": 0.10155920800752938,
+      "duration_ms": 0.1438329927623272,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.10180995802511461,
+      "duration_ms": 0.2496250090189278,
+      "input_shapes": null,
+      "memory_mb": null
+    }
+  ]
+}

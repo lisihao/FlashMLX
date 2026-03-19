@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "experiment_name": "test_decorator",
+    "timestamp": "2026-03-18T21:59:26.852774",
+    "config": {
+      "name": "test_decorator",
+      "level": "basic",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 0.1,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.00015791700570844114,
+    "event_count": 2
+  },
+  "events": [
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.0001620840048417449,
+      "duration_ms": 0.1391249825246632,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "my_function",
+      "timestamp": 0.00016429199604317546,
+      "duration_ms": 0.1423749781679362,
+      "input_shapes": null,
+      "memory_mb": null
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "metadata": {
+    "experiment_name": "simple_matmul",
+    "timestamp": "2026-03-18T21:59:20.282930",
+    "config": {
+      "name": "simple_matmul",
+      "level": "basic",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 0.1,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.056103792012436315,
+    "event_count": 10
+  },
+  "events": [
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.048400457977550104,
+      "duration_ms": 47.664750018157065,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.04953766698599793,
+      "duration_ms": 1.055125001585111,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05057404199033044,
+      "duration_ms": 1.0066670074593276,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05167145800078288,
+      "duration_ms": 1.0274170199409127,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.052451749972533435,
+      "duration_ms": 0.7409579993691295,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.053178666974417865,
+      "duration_ms": 0.7134999905247241,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05387933299061842,
+      "duration_ms": 0.6912089884281158,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05458412499865517,
+      "duration_ms": 0.6882500019855797,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05533954198472202,
+      "duration_ms": 0.7458750042133033,
+      "input_shapes": null,
+      "memory_mb": null
+    },
+    {
+      "event_type": "function_call",
+      "name": "mx.matmul",
+      "timestamp": 0.05613795798853971,
+      "duration_ms": 0.7890419801697135,
+      "input_shapes": null,
+      "memory_mb": null
+    }
+  ]
+}

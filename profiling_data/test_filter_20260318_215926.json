@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "experiment_name": "test_filter",
+    "timestamp": "2026-03-18T21:59:26.878174",
+    "config": {
+      "name": "test_filter",
+      "level": "basic",
+      "capture_memory": false,
+      "capture_kernels": false,
+      "capture_args": false,
+      "capture_stack": false,
+      "output_dir": "./profiling_data",
+      "output_format": "json",
+      "max_overhead_percent": 5.0,
+      "min_function_time_ms": 10.0,
+      "auto_optimize": false,
+      "max_passes": 3,
+      "min_coverage": 0.8
+    },
+    "total_time_s": 0.021399582998128608,
+    "event_count": 0
+  },
+  "events": []
+}
