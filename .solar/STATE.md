@@ -15,10 +15,11 @@
 
 ## Current Plan
 
-### Phase 1: 项目初始化 ✓
+### Phase 1: 项目初始化 + Profiler ✓
 - [x] 创建项目结构
 - [x] 导入 MLX 和 MLX-LM 源码
 - [x] 建立文档体系
+- [x] 实现 Profiler 工具 (性能 + 内存 + 延迟)
 
 ### Phase 2: 分析 MLX 现状 (Next)
 1. 分析 MLX Flash Attention 实现
@@ -39,6 +40,7 @@
 
 - [2026-03-18] 项目定位：基于 MLX 的性能优化版本，不是 fork，而是增强层
 - [2026-03-18] 技术栈：MLX 0.31.2 + MLX-LM (commit 4a21ffd) + 自定义优化
+- [2026-03-18] Profiler 设计：三层架构 (性能+内存+延迟)，Monkey Patching 插桩，JSON 日志格式
 
 ## Progress
 
@@ -53,9 +55,15 @@
 - ✅ 性能 benchmark 正常运行
 - ✅ 修复 scale 参数和延迟执行问题
 - ✅ 构建测试报告
+- ✅ **实现全面 Profiler 工具**
+  - 性能分析：函数级插桩、三级粒度 (BASIC/DETAILED/FULL)
+  - 内存分析：Python heap + Metal GPU 内存跟踪
+  - 延迟分析：min/max/mean/P95/P99 + TTFT + inter-token latency
+  - 测试覆盖：11 tests (6 profiler + 5 memory/latency) 全通过
+  - 文档：完整设计文档 + 示例代码
 
 ### In-Progress
-- 🔄 分析 MLX Flash Attention 实现 (Next)
+- 🔄 Phase 1 完成，准备进入 Phase 2：分析 MLX 现状
 
 ### Blocked
 - (无)
