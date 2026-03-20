@@ -32,6 +32,7 @@ from .models.cache import (
     KVCache,
     QuantizedKVCache,
     RotatingKVCache,
+    materialize_prompt_cache,
     load_prompt_cache,
 )
 from .sample_utils import make_sampler
@@ -369,6 +370,8 @@ def generate_step(
             model,
             max_kv_size=max_kv_size,
         )
+    else:
+        prompt_cache = materialize_prompt_cache(prompt_cache)
 
     prompt_progress_callback = prompt_progress_callback or (lambda *_: None)
 
@@ -521,6 +524,8 @@ def speculative_generate_step(
     else:
         model_cache = prompt_cache[: len(model.layers)]
         draft_cache = prompt_cache[len(model.layers) :]
+        model_cache = materialize_prompt_cache(model_cache)
+        draft_cache = materialize_prompt_cache(draft_cache)
 
     sampler = sampler or (lambda x: mx.argmax(x, axis=-1))
 

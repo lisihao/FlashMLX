@@ -8,7 +8,8 @@ import time
 import mlx.core as mx
 
 from .generate import generate_step
-from .models.cache import make_prompt_cache, save_prompt_cache
+from .models.cache import KVTCPromptCache, make_prompt_cache, save_prompt_cache
+from .models.kvtc_codec import KVTCCodecConfig, fit_shared_calibration
 from .utils import load
 
 DEFAULT_QUANTIZED_KV_START = 5000
@@ -77,6 +78,42 @@ def setup_arg_parser():
         type=int,
         default=DEFAULT_QUANTIZED_KV_START,
     )
+    parser.add_argument(
+        "--cache-codec",
+        choices=["plain", "kvtc"],
+        default="plain",
+        help="How to serialize the prompt cache to disk.",
+    )
+    parser.add_argument(
+        "--kvtc-rank",
+        type=int,
+        default=None,
+        help="Override the PCA rank used by KVTC.",
+    )
+    parser.add_argument(
+        "--kvtc-energy",
+        type=float,
+        default=0.995,
+        help="Explained-variance target when KVTC chooses the rank automatically.",
+    )
+    parser.add_argument(
+        "--kvtc-bits",
+        type=int,
+        default=4,
+        help="Bit-width used for KVTC coefficient quantization.",
+    )
+    parser.add_argument(
+        "--kvtc-group-size",
+        type=int,
+        default=64,
+        help="Group size used for KVTC coefficient quantization.",
+    )
+    parser.add_argument(
+        "--kvtc-sample-limit",
+        type=int,
+        default=4096,
+        help="Maximum number of rows used to fit the KVTC transform.",
+    )
     return parser
 
 
@@ -139,6 +176,30 @@ def main():
     print(f"Peak memory: {mx.get_peak_memory() / 1e9:.3f} GB")
 
     print("Saving...")
+    if args.cache_codec == "kvtc":
+        codec = KVTCCodecConfig(
+            energy=args.kvtc_energy,
+            rank=args.kvtc_rank,
+            bits=args.kvtc_bits,
+            group_size=args.kvtc_group_size,
+            sample_limit=args.kvtc_sample_limit,
+        )
+        key_matrices = []
+        value_matrices = []
+        for layer_cache in cache:
+            if layer_cache.empty():
+                continue
+            keys, values = layer_cache.state
+            key_matrices.append(keys.reshape(-1, keys.shape[-1]))
+            value_matrices.append(values.reshape(-1, values.shape[-1]))
+        calibration = fit_shared_calibration(key_matrices, value_matrices, codec)
+        cache = [
+            KVTCPromptCache.from_cache(
+                c,
+                calibration=calibration,
+            )
+            for c in cache
+        ]
     metadata = {}
     metadata["model"] = args.model
     metadata["tokenizer_config"] = json.dumps(tokenizer_config)

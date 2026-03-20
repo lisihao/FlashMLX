@@ -7,6 +7,8 @@ import sys
 def main():
     subcommands = (
         "benchmark",
+        "kvtc_benchmark",
+        "kvtc_metrics_benchmark",
         "cache_prompt",
         "chat",
         "convert",

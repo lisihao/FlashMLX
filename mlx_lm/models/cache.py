@@ -1,13 +1,24 @@
 # Copyright © 2023-2024 Apple Inc.
 
 import copy
+import json
+import re
 from typing import Any, Dict, List, Optional
 
 import mlx.core as mx
 import mlx.nn as nn
-from mlx.utils import tree_flatten, tree_map, tree_unflatten
+import numpy as np
+from mlx.utils import tree_flatten, tree_map, tree_reduce, tree_unflatten
 
 from .base import create_causal_mask
+from .kvtc_codec import (
+    KVTCCodecConfig,
+    KVTCSharedCalibration,
+    KVTCTransformPlan,
+    decode_tensor,
+    encode_tensor,
+    fit_shared_calibration,
+)
 
 
 def make_prompt_cache(
@@ -50,9 +61,37 @@ def save_prompt_cache(file_name: str, cache: List[Any], metadata: Dict[str, str]
     """
     cache_data = [c.state for c in cache]
     cache_info = [c.meta_state for c in cache]
-    cache_data = dict(tree_flatten(cache_data))
     cache_classes = [type(c).__name__ for c in cache]
-    cache_metadata = [cache_info, metadata, cache_classes]
+
+    shared = {}
+    for c in cache:
+        shared_calibration = getattr(c, "_shared_calibration", None)
+        shared_id = getattr(c, "_shared_calibration_id", None)
+        if shared_calibration is None or shared_id is None:
+            continue
+        shared[shared_id] = shared_calibration.state
+
+    shared_meta = {}
+    for c in cache:
+        shared_calibration = getattr(c, "_shared_calibration", None)
+        shared_id = getattr(c, "_shared_calibration_id", None)
+        if shared_calibration is None or shared_id is None:
+            continue
+        shared_meta[shared_id] = shared_calibration.meta_state
+
+    payload = {"cache_data": cache_data, "shared_calibrations": shared}
+    cache_data = dict(tree_flatten(payload))
+    cache_data = {
+        k: mx.array(v.tolist()) if isinstance(v, np.ndarray) else v
+        for k, v in cache_data.items()
+    }
+    cache_metadata = {
+        "cache_info": cache_info,
+        "metadata": metadata,
+        "cache_classes": cache_classes,
+        "shared_ids": list(shared.keys()),
+        "shared_meta": shared_meta,
+    }
     cache_metadata = dict(tree_flatten(cache_metadata))
     mx.save_safetensors(file_name, cache_data, cache_metadata)
 
@@ -71,16 +110,96 @@ def load_prompt_cache(file_name, return_metadata=False):
             the metadata if requested.
     """
     arrays, cache_metadata = mx.load(file_name, return_metadata=True)
-    arrays = tree_unflatten(list(arrays.items()))
-    cache_metadata = tree_unflatten(list(cache_metadata.items()))
-    info, metadata, classes = cache_metadata
-    cache = [
-        globals()[c].from_state(state, meta_state)
-        for c, state, meta_state in zip(classes, arrays, info)
-    ]
+
+    def _flat_dict(prefix: str, source: Dict[str, Any]):
+        return {
+            key[len(prefix) :]: value
+            for key, value in source.items()
+            if key.startswith(prefix)
+        }
+
+    def _flat_list(prefix: str, source: Dict[str, Any]):
+        items = []
+        for key, value in source.items():
+            if not key.startswith(prefix):
+                continue
+            suffix = key[len(prefix) :]
+            if suffix.isdigit():
+                items.append((int(suffix), value))
+        return [value for _, value in sorted(items, key=lambda item: item[0])]
+
+    def _insert_path(tree, parts, value):
+        cur = tree
+        for part in parts[:-1]:
+            cur = cur.setdefault(part, {})
+        cur[parts[-1]] = value
+
+    def _dict_to_lists(node):
+        if not isinstance(node, dict):
+            return node
+        converted = {k: _dict_to_lists(v) for k, v in node.items()}
+        if converted and all(isinstance(k, str) and k.isdigit() for k in converted):
+            indices = sorted(int(k) for k in converted)
+            if indices == list(range(len(indices))):
+                return [converted[str(i)] for i in indices]
+        return converted
+
+    cache_states_tree = {}
+    for key, value in arrays.items():
+        if not key.startswith("cache_data."):
+            continue
+        _insert_path(cache_states_tree, key[len("cache_data.") :].split("."), value)
+    cache_states = _dict_to_lists(cache_states_tree)
+
+    shared_states_tree = {}
+    for key, value in arrays.items():
+        if not key.startswith("shared_calibrations."):
+            continue
+        _insert_path(shared_states_tree, key[len("shared_calibrations.") :].split("."), value)
+    shared_states = _dict_to_lists(shared_states_tree)
+
+    info = _flat_list("cache_info.", cache_metadata)
+    classes = _flat_list("cache_classes.", cache_metadata)
+    metadata = _flat_dict("metadata.", cache_metadata)
+    shared_ids = _flat_list("shared_ids.", cache_metadata)
+    shared_meta = {}
+    for key, value in cache_metadata.items():
+        match = re.match(r"shared_meta\.([^.]+)\.(keys|values)$", key)
+        if match:
+            shared_id, which = match.groups()
+            shared_meta.setdefault(shared_id, {})[which] = value
+
+    shared_registry = {
+        shared_id: KVTCSharedCalibration.from_state(
+            shared_state, shared_meta[shared_id]
+        )
+        for shared_id, shared_state in shared_states.items()
+    }
+
+    cache = []
+    for c, state, meta_state in zip(classes, cache_states, info):
+        cls = globals()[c]
+        if c == "KVTCPromptCache":
+            cache.append(cls.from_state(state, meta_state, shared_registry=shared_registry))
+        else:
+            cache.append(cls.from_state(state, meta_state))
     if return_metadata:
         return cache, metadata
     return cache
+
+
+def materialize_prompt_cache(cache):
+    """Eagerly decode KVTC-wrapped prompt caches.
+
+    This keeps serialization compact while moving decode cost out of the first
+    generation step for inference workloads.
+    """
+
+    if not isinstance(cache, list):
+        return cache
+    if not any(isinstance(c, KVTCPromptCache) for c in cache):
+        return cache
+    return [c.decompress() if isinstance(c, KVTCPromptCache) else c for c in cache]
 
 
 def can_trim_prompt_cache(cache: List[Any]) -> bool:
@@ -1374,3 +1493,244 @@ class BatchRotatingKVCache(_BaseCache):
         if self.keys is None:
             return 0
         return self.keys.nbytes + self.values.nbytes
+
+
+class KVTCPromptCache(_BaseCache):
+    """Prompt-cache wrapper that stores a transform-coded K/V payload.
+
+    The cache is kept compressed until it is first used. On demand, we
+    reconstruct the underlying cache class and then delegate future cache
+    operations to it.
+    """
+
+    def __init__(self):
+        self._encoded = None
+        self._decoded = None
+        self._meta = {}
+        self._shared_calibration = None
+        self._shared_calibration_id = None
+        self._shared_registry = {}
+
+    @classmethod
+    def from_cache(
+        cls,
+        cache,
+        *,
+        calibration: Optional[KVTCSharedCalibration] = None,
+        energy: float = 0.995,
+        rank: Optional[int] = None,
+        bits: int = 4,
+        group_size: int = 64,
+        sample_limit: int = 4096,
+        seed: int = 0,
+    ):
+        if cache.empty():
+            raise ValueError("Cannot compress an empty cache")
+
+        if not hasattr(cache, "state"):
+            raise TypeError("Cache does not expose a state for compression")
+
+        keys, values = cache.state
+        if keys.ndim != 4 or values.ndim != 4:
+            raise ValueError(
+                "KVTCPromptCache currently expects cache tensors shaped "
+                "(batch, heads, tokens, dim)"
+            )
+
+        if calibration is None:
+            codec = KVTCCodecConfig(
+                energy=energy,
+                rank=rank,
+                bits=bits,
+                group_size=group_size,
+                sample_limit=sample_limit,
+                seed=seed,
+            )
+            calibration = fit_shared_calibration(
+                [keys.reshape(-1, keys.shape[-1])],
+                [values.reshape(-1, values.shape[-1])],
+                codec,
+            )
+
+        encoded_keys = tuple(
+            x for x in encode_tensor(keys.reshape(-1, keys.shape[-1]), calibration.keys)
+        )
+        encoded_values = tuple(
+            x
+            for x in encode_tensor(
+                values.reshape(-1, values.shape[-1]), calibration.values
+            )
+        )
+
+        obj = cls.__new__(cls)
+        obj._encoded = (encoded_keys, encoded_values)
+        obj._decoded = None
+        obj._shared_calibration = calibration
+        obj._shared_calibration_id = calibration.fingerprint()
+        obj._shared_registry = {obj._shared_calibration_id: calibration}
+        obj._meta = {
+            "base_class": type(cache).__name__,
+            "base_meta_state": cache.meta_state,
+            "key_shape": list(keys.shape),
+            "value_shape": list(values.shape),
+            "shared_calibration_id": obj._shared_calibration_id,
+            "version": 1,
+        }
+        return obj
+
+    def _decode(self):
+        if getattr(self, "_decoded", None) is not None:
+            return self._decoded
+        if getattr(self, "_encoded", None) is None:
+            raise ValueError("KVTCPromptCache has no encoded payload")
+
+        encoded_keys, encoded_values = self._encoded
+        calibration = self._shared_calibration
+        if calibration is None:
+            shared_id = self._meta.get("shared_calibration_id")
+            calibration = self._shared_registry.get(shared_id)
+        if calibration is None:
+            raise ValueError("KVTCPromptCache is missing shared calibration data")
+
+        key_shape = self._meta["key_shape"]
+        value_shape = self._meta["value_shape"]
+        # Decode one side at a time to avoid holding full NumPy key/value
+        # reconstructions simultaneously.
+        keys_np = decode_tensor(encoded_keys, calibration.keys).reshape(key_shape)
+        keys = mx.array(keys_np)
+        del keys_np
+
+        values_np = decode_tensor(encoded_values, calibration.values).reshape(
+            value_shape
+        )
+        values = mx.array(values_np)
+        del values_np
+
+        base_class_name = self._meta["base_class"]
+        base_cls = globals().get(base_class_name)
+        if base_cls is None:
+            raise ValueError(f"Unknown base cache class: {base_class_name}")
+
+        base_meta_state = self._meta["base_meta_state"]
+        decoded = base_cls.from_state((keys, values), base_meta_state)
+        self._decoded = decoded
+        # The compressed payload is only needed until the first decode. Drop it
+        # here so a materialized KVTC cache does not keep both representations
+        # alive during generation.
+        self._encoded = None
+        return decoded
+
+    @property
+    def state(self):
+        return self._encoded
+
+    @state.setter
+    def state(self, v):
+        self._encoded = v
+        self._decoded = None
+
+    @property
+    def meta_state(self):
+        return json.dumps(self._meta)
+
+    @meta_state.setter
+    def meta_state(self, v):
+        self._meta = json.loads(v) if isinstance(v, str) else dict(v)
+
+    @classmethod
+    def from_state(cls, state, meta_state, shared_registry=None):
+        obj = cls.__new__(cls)
+        obj.state = state
+        obj.meta_state = meta_state
+        obj._decoded = None
+        obj._shared_calibration = None
+        obj._shared_calibration_id = obj._meta.get("shared_calibration_id")
+        obj._shared_registry = shared_registry or {}
+        if obj._shared_calibration_id in obj._shared_registry:
+            obj._shared_calibration = obj._shared_registry[obj._shared_calibration_id]
+        return obj
+
+    def update_and_fetch(self, keys, values):
+        return self._decode().update_and_fetch(keys, values)
+
+    def decompress(self):
+        """Materialize the underlying cache object."""
+
+        return self._decode()
+
+    def _quantized_meta(self):
+        if self._meta.get("base_class") != "QuantizedKVCache":
+            return None
+
+        base_meta_state = self._meta.get("base_meta_state")
+        if base_meta_state is None:
+            return None
+
+        try:
+            offset, group_size, bits = map(int, base_meta_state)
+        except (TypeError, ValueError):
+            return None
+        return offset, group_size, bits
+
+    @property
+    def offset(self):
+        decoded = getattr(self, "_decoded", None)
+        if decoded is not None:
+            return decoded.offset
+        return self._decode().offset
+
+    @offset.setter
+    def offset(self, value):
+        decoded = getattr(self, "_decoded", None)
+        if decoded is not None:
+            decoded.offset = value
+            return
+        self._decode().offset = value
+
+    def __getattr__(self, name):
+        if name.startswith("_"):
+            raise AttributeError(name)
+        if name in {"bits", "group_size"}:
+            decoded = getattr(self, "_decoded", None)
+            if decoded is not None and hasattr(decoded, name):
+                return getattr(decoded, name)
+
+            quantized_meta = self._quantized_meta()
+            if quantized_meta is not None:
+                return quantized_meta[2 if name == "bits" else 1]
+
+            raise AttributeError(name)
+        decoded = self._decode()
+        return getattr(decoded, name)
+
+    def size(self):
+        decoded = self._decode()
+        return decoded.size() if hasattr(decoded, "size") else 0
+
+    def is_trimmable(self):
+        return self._decode().is_trimmable()
+
+    def trim(self, n):
+        return self._decode().trim(n)
+
+    def make_mask(self, *args, **kwargs):
+        return self._decode().make_mask(*args, **kwargs)
+
+    def empty(self):
+        if getattr(self, "_decoded", None) is not None:
+            return self._decoded.empty()
+        return getattr(self, "_encoded", None) is None
+
+    @property
+    def nbytes(self):
+        if getattr(self, "_decoded", None) is not None:
+            return self._decoded.nbytes
+        if getattr(self, "_encoded", None) is None:
+            return 0
+        encoded_keys, encoded_values = self._encoded
+        return sum(
+            x.nbytes
+            for encoded in (encoded_keys, encoded_values)
+            for x in encoded
+            if hasattr(x, "nbytes")
+        )

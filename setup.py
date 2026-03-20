@@ -57,6 +57,8 @@ setup(
             "mlx_lm.dynamic_quant = mlx_lm.quant.dynamic_quant:main",
             "mlx_lm.gptq = mlx_lm.quant.gptq:main",
             "mlx_lm.benchmark = mlx_lm.benchmark:main",
+            "mlx_lm.kvtc_benchmark = mlx_lm.kvtc_benchmark:main",
+            "mlx_lm.kvtc_metrics_benchmark = mlx_lm.kvtc_metrics_benchmark:main",
             "mlx_lm.cache_prompt = mlx_lm.cache_prompt:main",
             "mlx_lm.chat = mlx_lm.chat:main",
             "mlx_lm.convert = mlx_lm.convert:main",
