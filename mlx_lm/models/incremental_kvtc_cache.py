@@ -99,12 +99,12 @@ class IncrementalKVTCCache:
         # Fit calibration if not provided
         if calibration is None:
             codec = KVTCCodecConfig(
-                energy=energy,
-                rank=rank,
+                rank=rank if rank is not None else 8,  # Use fixed rank like test_kvtc_cache.py
                 bits=bits,
                 group_size=group_size,
                 sample_limit=sample_limit,
                 seed=seed,
+                zero_bit_energy_fraction=0.001,  # Prevent zero-bit fallback
             )
             # Use the actual data for calibration to avoid zero-bit allocation
             keys_flat = keys.reshape(-1, keys.shape[-1])
@@ -208,24 +208,21 @@ class IncrementalKVTCCache:
         decoded_values_list = []
 
         for encoded_keys, encoded_values, num_tokens in self._chunks:
-            # Decode chunk
+            # Decode chunk: returns [batch*heads*tokens, dim]
             keys_flat = decode_tensor(encoded_keys, self._shared_calibration.keys)
             values_flat = decode_tensor(encoded_values, self._shared_calibration.values)
 
-            # Reshape to [batch * heads, tokens, dim]
-            keys_reshaped = keys_flat.reshape(self._batch_size * self._num_heads, num_tokens, self._head_dim)
-            values_reshaped = values_flat.reshape(self._batch_size * self._num_heads, num_tokens, self._head_dim)
+            # Reshape to [batch, heads, tokens, dim]
+            # Note: keys_flat shape is [batch*heads*num_tokens, dim]
+            keys_reshaped = keys_flat.reshape(self._batch_size, self._num_heads, num_tokens, self._head_dim)
+            values_reshaped = values_flat.reshape(self._batch_size, self._num_heads, num_tokens, self._head_dim)
 
             decoded_keys_list.append(keys_reshaped)
             decoded_values_list.append(values_reshaped)
 
-        # Concatenate along token dimension
-        keys_concat = np.concatenate(decoded_keys_list, axis=1)  # [batch*heads, total_tokens, dim]
-        values_concat = np.concatenate(decoded_values_list, axis=1)
-
-        # Reshape to [batch, heads, total_tokens, dim]
-        keys = mx.array(keys_concat.reshape(self._batch_size, self._num_heads, self._encoded_tokens, self._head_dim))
-        values = mx.array(values_concat.reshape(self._batch_size, self._num_heads, self._encoded_tokens, self._head_dim))
+        # Concatenate along token dimension (axis=2)
+        keys = mx.array(np.concatenate(decoded_keys_list, axis=2))  # [batch, heads, total_tokens, dim]
+        values = mx.array(np.concatenate(decoded_values_list, axis=2))
 
         return keys, values
 
