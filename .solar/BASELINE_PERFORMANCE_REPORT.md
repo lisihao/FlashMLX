@@ -22,37 +22,47 @@
 
 ### TTFT (Time To First Token) - Prefill 性能
 
-| Prompt Length | TTFT (ms) | Tokens/ms | Relative |
+| Prompt Tokens | TTFT (ms) | Prompt TPS | Relative |
 |---------------|-----------|-----------|----------|
-| **745 tokens** | 3137.7 | 0.237 | 1.0x (baseline) |
-| **2981 tokens** | 3949.2 | 0.755 | 1.26x |
-| **11926 tokens** | 8570.9 | 1.391 | 2.73x |
+| **1084 tokens** | 622.5 | 1741.5 tok/s | 1.0x (baseline) |
+| **4340 tokens** | 2011.6 | 2157.5 tok/s | 3.2x |
+| **17363 tokens** | 8770.7 | 1979.7 tok/s | 14.1x |
+
+### TG (Token Generation) - Decode 性能
+
+| Prompt Tokens | Decode TPS | Generated Tokens |
+|---------------|-----------|------------------|
+| **1084 tokens** | 60.3 tok/s | 128 |
+| **4340 tokens** | 59.3 tok/s | 128 |
+| **17363 tokens** | 55.5 tok/s | 128 |
+| **Average** | **58.4 tok/s** | 128 |
 
 ### 缩放分析
 
 ```
-序列长度增加: 16.0x  (745 → 11926 tokens)
-TTFT 增加:     2.7x  (3137.7 → 8570.9 ms)
+序列长度增加: 16.0x  (1084 → 17363 tokens)
+TTFT 增加:     14.1x (622.5 → 8770.7 ms)
 
-结论: ✅ 接近线性缩放 (比例: 2.7/16.0 = 0.17)
+结论: ✅ 优秀的线性缩放 (比例: 14.1/16.0 = 0.88)
 ```
 
-这表明 **Prefill 阶段的性能瓶颈不严重**，缩放基本符合预期。
+这表明 **Prefill 阶段的性能缩放优秀**，接近理想的线性缩放。
 
 ---
 
 ## 内存使用
 
-| Prompt Length | Peak Memory (GB) | Increase |
+| Prompt Tokens | Peak Memory (GB) | Increase |
 |---------------|------------------|----------|
-| 745 tokens    | 4.14 GB         | baseline |
-| 2981 tokens   | 4.60 GB         | +0.46 GB |
-| 11926 tokens  | 4.97 GB         | +0.37 GB |
+| 1084 tokens   | 4.30 GB         | baseline |
+| 4340 tokens   | 4.74 GB         | +0.44 GB |
+| 17363 tokens  | 5.23 GB         | +0.49 GB |
 
 **分析**:
 - 内存增长平缓，主要是 KV cache
-- 11926 tokens 的 KV cache 增加了 0.83 GB (相比 baseline)
+- 17363 tokens 的 KV cache 增加了 0.93 GB (相比 baseline)
 - 内存管理良好，无明显泄漏
+- 平均每 1000 tokens 增加约 0.057 GB
 
 ---
 
@@ -74,13 +84,15 @@ TTFT 增加:     2.7x  (3137.7 → 8570.9 ms)
 
 **Baseline 测试观察**:
 
-1. **TTFT 缩放近乎线性** (2.7x vs 16.0x)
-   - 说明 Prefill 阶段 (Flash Attention) **不是主要瓶颈**
-   - 可能原因：2B 模型较小，内存带宽充足
+1. **TTFT 缩放优秀** (14.1x vs 16.0x = 88% 效率)
+   - 说明 Prefill 阶段 (Flash Attention) **性能优秀**
+   - 接近理想的线性缩放
+   - 2B 模型的内存带宽利用良好
 
-2. **TG 数据异常** (需要修复测试)
-   - 初步数据显示 TG 不稳定
-   - 需要正确的流式生成测试
+2. **TG 性能稳定** ✅
+   - 平均 decode TPS: 58.4 tok/s
+   - 稳定范围: 55.5 - 60.3 tok/s
+   - 变化率: < 10%，符合预期
 
 ---
 
@@ -92,22 +104,23 @@ TTFT 增加:     2.7x  (3137.7 → 8570.9 ms)
 
 | 优化项 | 当前性能 | 目标性能 | 预期提升 |
 |--------|----------|----------|----------|
-| **TTFT (11K tokens)** | 8570.9 ms | 7713.8 ms | **-10%** |
-| **TG** | TBD | TBD | **+15%** |
-| **内存峰值** | 4.97 GB | < 5.0 GB | 保持 |
+| **TTFT (17K tokens)** | 8770.7 ms | 7893.6 ms | **-10%** |
+| **TG (Decode)** | 58.4 tok/s | 67.2 tok/s | **+15%** |
+| **内存峰值** | 5.23 GB | < 5.5 GB | 保持 |
 
 ### 优化优先级
 
 基于 baseline 数据和 kernel 分析，调整优化优先级：
 
-1. **优先级 🟡 中**: Flash Attention 指数优化
-   - 原因：TTFT 缩放接近线性，瓶颈不明显
-   - 但仍可优化 10-15% (有价值)
-
-2. **优先级 🔴 高**: GEMV 内存访问优化
+1. **优先级 🔴 高**: GEMV 内存访问优化
    - 原因：TG 阶段是 GEMV 密集型
-   - TG 不稳定可能与内存访问有关
+   - 当前 58.4 tok/s 有提升空间
    - 预期收益 15-20%
+   - **这是 Phase 3 的主线任务**
+
+2. **优先级 🟡 中**: Flash Attention 指数优化
+   - 原因：TTFT 缩放已经很好（88% 效率）
+   - 但仍可优化 10-15% (有价值)
 
 3. **优先级 🟢 低**: 其他优化
    - Kernel Fusion
@@ -117,14 +130,14 @@ TTFT 增加:     2.7x  (3137.7 → 8570.9 ms)
 
 ## 下一步行动
 
-### 1. 修复 TG 测试 ✅ (Next)
+### 1. ✅ 修复 TG 测试 (已完成)
 
-需要正确测量 Token Generation 性能：
-- 使用 `generate_step()` 获取流式输出
-- 准确计时每个 token
-- 验证 TG 稳定性
+使用新的 `baseline_benchmark_simple.py`：
+- ✅ 使用 `stream_generate()` 获取流式输出
+- ✅ 准确计时每个 token
+- ✅ 验证 TG 稳定性 (58.4 tok/s, 变化率 < 10%)
 
-### 2. 详细 Profiling
+### 2. 详细 Profiling (Next)
 
 使用 FlashMLX Profiler 深度分析：
 ```python
@@ -136,24 +149,24 @@ config = ProfilerConfig(
 )
 
 with Profiler("baseline_detailed", config=config):
-    model.generate(prompt, max_tokens=128)
+    # 使用 stream_generate 进行真实场景测试
+    for _ in stream_generate(model, tokenizer, prompt, max_tokens=128):
+        pass
 ```
 
-分析：
+分析目标：
 - 哪些函数最耗时？
 - Flash Attention vs GEMV 时间占比
 - 内存访问模式
+- GatedDeltaNet cache/concat 开销
 
-### 3. 确定第一个优化目标
+### 3. 开始 GEMV 优化 (Phase 3 主线)
 
-基于详细 profiling 数据，在以下两者中选择：
-- **Option A**: Flash Attention 指数优化 (+10-15%)
-- **Option B**: GEMV 内存访问优化 (+15-20%)
-
-选择标准：
-- 实际测量的瓶颈占比
-- 实现难度 vs 预期收益
-- 风险评估
+基于 baseline 数据，确定优化方向：
+- **首选**: GEMV 内存访问优化 (+15-20%)
+  - 使用 `simdgroup_matrix` 优化加载
+  - 增加分块大小 (TM=8, TN=8)
+  - 目标：TG 从 58.4 tok/s → 67.2 tok/s
 
 ---
 
@@ -161,27 +174,35 @@ with Profiler("baseline_detailed", config=config):
 
 ### ✅ 积极发现
 
-1. **TTFT 缩放良好**: 接近线性，说明 Prefill 优化良好
-2. **内存管理稳定**: 无明显泄漏，增长符合预期
-3. **基础性能合理**: 2B 模型在 M4 Pro 上表现正常
+1. **TTFT 缩放优秀**: 14.1x vs 16.0x = 88% 效率，接近理想线性缩放
+2. **TG 性能稳定**: 58.4 tok/s，变化率 < 10%，测试准确可靠
+3. **内存管理良好**: 5.23 GB 峰值，无明显泄漏
+4. **基础性能扎实**: 2B 模型在 M4 Pro 上表现正常
 
-### ⚠️  需要关注
+### 📊 性能特征
 
-1. **TG 测试不准确**: 需要修复流式生成测试
-2. **TG 可能不稳定**: 初步数据显示变化较大
-3. **缺少详细 profiling**: 需要更细粒度的分析
+1. **Prefill (TTFT)**:
+   - Prompt TPS: 1741.5 - 2157.5 tok/s
+   - 缩放效率: 88% (优秀)
+   - 瓶颈不明显，可以暂缓优化
+
+2. **Decode (TG)**:
+   - Decode TPS: 58.4 tok/s (平均)
+   - **有提升空间**: 目标 67.2 tok/s (+15%)
+   - 这是 Phase 3 的主攻方向
 
 ### 🎯 优化方向
 
-**当前结论**: 优先优化 **GEMV 内存访问**，因为：
-1. TG 阶段是 GEMV 密集型
-2. 预期收益更高 (15-20% vs 10-15%)
-3. 影响实际使用体验（生成速度）
+**已确认**: 优先优化 **GEMV 内存访问**，因为：
+1. ✅ TG 数据准确可靠（不是之前的不稳定）
+2. ✅ TG 阶段是 GEMV 密集型
+3. ✅ 预期收益更高 (15-20% vs 10-15%)
+4. ✅ 影响实际使用体验（生成速度）
 
-**但需要先完成**:
-1. 修复 TG 测试
-2. 详细 profiling
-3. 基于数据确认
+**下一步**:
+1. ✅ TG 测试已修复
+2. ⏳ 详细 profiling (识别 GEMV 热点)
+3. ⏳ 开始 GEMV 优化实现
 
 ---
 

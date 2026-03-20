@@ -1,0 +1,60 @@
+{
+  "config": {
+    "model_path": "/Users/lisihao/models/qwen3.5-2b-opus-distilled",
+    "prompt_lengths": [
+      745,
+      2981,
+      11926
+    ],
+    "max_tokens": 128,
+    "runs": 1,
+    "kv_bits": null,
+    "kv_group_size": 64,
+    "quantized_kv_start": 0,
+    "max_kv_size": null,
+    "prefill_step_size": 2048
+  },
+  "results": {
+    "baseline": [
+      {
+        "test_name": "BASELINE | prompt=745 (~1084 tok) | run=1/1",
+        "mode": "baseline",
+        "prompt_tokens": 1084,
+        "generated_tokens": 128,
+        "ttft_ms": 622.5,
+        "prompt_tps": 1741.5,
+        "decode_tps": 60.3,
+        "total_time_s": 2.73,
+        "peak_memory_gb": 4.3,
+        "prompt_length": 745,
+        "run_idx": 1
+      },
+      {
+        "test_name": "BASELINE | prompt=2981 (~4340 tok) | run=1/1",
+        "mode": "baseline",
+        "prompt_tokens": 4340,
+        "generated_tokens": 128,
+        "ttft_ms": 2011.6,
+        "prompt_tps": 2157.5,
+        "decode_tps": 59.3,
+        "total_time_s": 4.15,
+        "peak_memory_gb": 4.74,
+        "prompt_length": 2981,
+        "run_idx": 1
+      },
+      {
+        "test_name": "BASELINE | prompt=11926 (~17363 tok) | run=1/1",
+        "mode": "baseline",
+        "prompt_tokens": 17363,
+        "generated_tokens": 128,
+        "ttft_ms": 8770.7,
+        "prompt_tps": 1979.7,
+        "decode_tps": 55.5,
+        "total_time_s": 11.06,
+        "peak_memory_gb": 5.23,
+        "prompt_length": 11926,
+        "run_idx": 1
+      }
+    ]
+  }
+}
