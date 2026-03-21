@@ -59,6 +59,40 @@
   - **优化策略**：Metal GPU 加速 (P0) → 预期 10-20× 加速
   - **次要优化**：Incremental compression (P1)、DCT transform (P2)、Per-head calibration (P3)、Magnitude pruning (P4)
   - **决策理由**：KV cache 压缩对长上下文场景至关重要，但当前性能瓶颈限制了实用价值
+- [2026-03-20] **性能瓶颈分析决策 - Path 1 vs Path 2** ✅ **GO DECISION: Path 2**
+  - **测量方法**：
+    - A. profile_correct_decode.py：使用正确的 KV cache API + mx.eval() 强制同步 → GPU 执行时间
+    - C. profile_with_cprofile.py：Python cProfile 深入函数级分析 → Python dispatch 时间
+  - **关键数据**（交叉验证）：
+    - Baseline (stream_generate): 16.64 ms/token (60.1 tok/s)
+    - GPU execution (A): 17.47 ms/token (排除冷启动)
+    - Python dispatch (C): 1.82 ms/token
+    - GPU 净执行: 14.82 ms/token (89.1%)
+    - Dispatch overhead: 1.82 ms/token (10.9%)
+  - **Amdahl's Law 分析**：
+    - Path 1 (concat/RMSNorm fusion): P=0.109, S=2.0 → Speedup=1.058x (+5.8%)
+    - Path 2 (GEMV optimization): P=0.891, S=1.3 → Speedup=1.259x (+25.9%)
+  - **最终决策**：**优先 Path 2 (GEMV 内存访问优化)**
+  - **理由**：
+    1. GPU execution 占 89.1%，dispatch 仅占 10.9%
+    2. GEMV 优化 20% → 总性能 +17.8%，30% → +26.7%
+    3. concat/norm fusion 即使完全消除也只能提升 12.3%，实际可能只有 5.8%
+    4. 两种测量方法（GPU time + Python dispatch）结果一致，证据可靠
+  - **证据链存储**：sys_favorites (importance=10)
+- [2026-03-20] **2B vs 35B 模型对比验证** ✅ **结论一致**
+  - **测试模型**：
+    - 2B: qwen3.5-2b-opus-distilled (密集模型)
+    - 35B: qwen3.5-35b-mlx (MoE 模型)
+  - **关键数据**：
+    - 2B: GPU 17.47 ms (90.6%), Dispatch 1.82 ms (9.4%)
+    - 35B: GPU 13.91 ms (86.2%), Dispatch 2.23 ms (13.8%)
+  - **关键发现**：
+    - 35B GPU 时间比 2B 快 20.4% (MoE 稀疏激活)
+    - 两个模型的瓶颈分布一致：GPU 85-90%, Dispatch 10-15%
+  - **结论**：
+    - **Path 2 (GEMV 优化) 对两个模型都适用**
+    - MoE 模型可能受益更大（GPU 时间占比更低，优化空间更大）
+  - **证据链存储**：sys_favorites (importance=10)
 
 ## Progress
 
