@@ -57,7 +57,8 @@ def create_attention_mask(
 
 def create_ssm_mask(h, cache=None):
     if cache and hasattr(cache, "make_mask"):
-        return cache.make_mask(h.shape[1])
+        # SSM layers need actual mask array, not "causal" string
+        return cache.make_mask(h.shape[1], return_array=True)
     return None
 
 
