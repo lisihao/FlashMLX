@@ -230,4 +230,39 @@
 
 ---
 
-*最后更新: 2026-03-19*
+## CompactedKVCache 架构验证 (2026-03-21) ✅
+
+### Mission
+验证 CompactedKVCache 架构兼容性，为混合架构模型适配
+
+### 验证结果
+
+| 模型 | 架构 | CompactedKVCache | 性能 | 输出质量 |
+|------|------|------------------|------|----------|
+| ✅ Llama 3.2 3B | 纯 Transformer (28层) | ✅ 完美 | +46% | ✅ 正常 |
+| ✅ Qwen3-8B | 纯 Transformer (36层) | ✅ 完美 | +23.5% | ✅ 正常 |
+| ❌ Qwen3.5-35B | 混合 SSM+Attn (40层) | ❌ 崩溃 | -15% | ❌ "the the the..." |
+
+### 根本原因
+- **CompactedKVCache 实现正确**，在纯 Transformer 上表现优异
+- **Qwen3** (纯 Transformer): 所有层都是 `self.self_attn = Attention(args)`
+- **Qwen3.5** (混合架构): `self.is_linear = (layer_idx + 1) % interval != 0`
+  - 30 层 `GatedDeltaNet` (SSM)
+  - 10 层 `Attention` (Full Attention)
+- **不兼容原因**: SSM 层期望 `cache[0]`, `cache[1]` subscriptable，但 CompactedKVCache 不支持
+
+### 下一步
+- 🔄 设计混合架构适配方案
+- 🔄 实现 Qwen3.5 兼容的 cache 策略
+- 目标: 让 Qwen3.5 也能使用 CompactedKVCache
+
+### 相关文件
+- `benchmarks/llama_test.py` - Llama 3.2 3B 验证
+- `benchmarks/qwen3_test.py` - Qwen3-8B 验证
+- `benchmarks/output_quality_test.py` - Qwen3.5 问题测试
+- `.solar/llama-test-success-report.md` - 完整验证报告
+- `.solar/output-quality-critical-issue.md` - Qwen3.5 问题分析
+
+---
+
+*最后更新: 2026-03-21*
