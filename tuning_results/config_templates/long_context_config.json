@@ -1,0 +1,19 @@
+{
+  "scenario": "long_context",
+  "description": "Long context, extensive generation",
+  "hybrid_cache_config": {
+    "total_budget_bytes": 67108864,
+    "compression_ratio": 4.0,
+    "beta_calibration": true,
+    "hot_budget_ratio": 0.15,
+    "warm_budget_ratio": 0.25,
+    "cold_budget_ratio": 0.55,
+    "pinned_budget_ratio": 0.05
+  },
+  "expected_performance": {
+    "memory_savings_percent": 18.75,
+    "ttft_overhead_percent": 17.293294270833336,
+    "tbt_overhead_percent": 41.17647058823529,
+    "quality_score": 96.66
+  }
+}

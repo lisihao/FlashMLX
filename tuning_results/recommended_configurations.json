@@ -1,0 +1,614 @@
+{
+  "short_context": {
+    "best_balanced": {
+      "compression_ratio": 2.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 12.5,
+      "ttft_overhead_percent": 99.28385416666667,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 100.0,
+      "overall_score": -3.0920649509803937
+    },
+    "best_memory": {
+      "compression_ratio": 5.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 20.0,
+      "ttft_overhead_percent": 157.87760416666669,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 94.99,
+      "overall_score": -12.812814950980396
+    },
+    "best_performance": {
+      "compression_ratio": 2.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 12.5,
+      "ttft_overhead_percent": 99.28385416666667,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 100.0,
+      "overall_score": -3.0920649509803937
+    },
+    "top_3": [
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      }
+    ],
+    "pareto_frontier": [
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 99.28385416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": -3.0920649509803937
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 118.81510416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": -5.665648284313729
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 118.81510416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": -5.665648284313729
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 118.81510416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": -5.665648284313729
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 118.81510416666667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": -5.665648284313729
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 138.34635416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": -9.072564950980397
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 138.34635416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": -9.072564950980397
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 138.34635416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": -9.072564950980397
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 138.34635416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": -9.072564950980397
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 157.87760416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": -12.812814950980396
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 157.87760416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": -12.812814950980396
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 157.87760416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": -12.812814950980396
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 157.87760416666669,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": -12.812814950980396
+      }
+    ]
+  },
+  "medium_context": {
+    "best_balanced": {
+      "compression_ratio": 3.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 16.66666666666666,
+      "ttft_overhead_percent": 29.703776041666668,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 98.33,
+      "overall_score": 12.156617340686273
+    },
+    "best_memory": {
+      "compression_ratio": 5.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 20.0,
+      "ttft_overhead_percent": 39.46940104166667,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 94.99,
+      "overall_score": 10.868825674019607
+    },
+    "best_performance": {
+      "compression_ratio": 2.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 12.5,
+      "ttft_overhead_percent": 24.820963541666668,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 100.0,
+      "overall_score": 11.800513174019608
+    },
+    "top_3": [
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      }
+    ],
+    "pareto_frontier": [
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 24.820963541666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 11.800513174019608
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 24.820963541666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 11.800513174019608
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 24.820963541666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 11.800513174019608
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 24.820963541666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 11.800513174019608
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 29.703776041666668,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 12.156617340686273
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 34.58658854166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 11.679388174019607
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 34.58658854166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 11.679388174019607
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 34.58658854166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 11.679388174019607
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 34.58658854166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 11.679388174019607
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 39.46940104166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 10.868825674019607
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 39.46940104166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 10.868825674019607
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 39.46940104166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 10.868825674019607
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 39.46940104166667,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 10.868825674019607
+      }
+    ]
+  },
+  "long_context": {
+    "best_balanced": {
+      "compression_ratio": 4.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 18.75,
+      "ttft_overhead_percent": 17.293294270833336,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 96.66,
+      "overall_score": 15.138047028186275
+    },
+    "best_memory": {
+      "compression_ratio": 5.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 20.0,
+      "ttft_overhead_percent": 19.734700520833336,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 94.99,
+      "overall_score": 14.815765778186275
+    },
+    "best_performance": {
+      "compression_ratio": 2.0,
+      "budget_mb": 64,
+      "memory_savings_percent": 12.5,
+      "ttft_overhead_percent": 12.410481770833334,
+      "tbt_overhead_percent": 41.17647058823529,
+      "quality_score": 100.0,
+      "overall_score": 14.282609528186274
+    },
+    "top_3": [
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      }
+    ],
+    "pareto_frontier": [
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 12.410481770833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 14.282609528186274
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 12.410481770833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 14.282609528186274
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 12.410481770833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 14.282609528186274
+      },
+      {
+        "compression_ratio": 2.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 12.5,
+        "ttft_overhead_percent": 12.410481770833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 100.0,
+        "overall_score": 14.282609528186274
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 14.851888020833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 15.126994944852939
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 14.851888020833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 15.126994944852939
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 14.851888020833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 15.126994944852939
+      },
+      {
+        "compression_ratio": 3.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 16.66666666666666,
+        "ttft_overhead_percent": 14.851888020833334,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 98.33,
+        "overall_score": 15.126994944852939
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 4.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 18.75,
+        "ttft_overhead_percent": 17.293294270833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 96.66,
+        "overall_score": 15.138047028186275
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 64,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 19.734700520833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 14.815765778186275
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 128,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 19.734700520833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 14.815765778186275
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 256,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 19.734700520833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 14.815765778186275
+      },
+      {
+        "compression_ratio": 5.0,
+        "budget_mb": 512,
+        "memory_savings_percent": 20.0,
+        "ttft_overhead_percent": 19.734700520833336,
+        "tbt_overhead_percent": 41.17647058823529,
+        "quality_score": 94.99,
+        "overall_score": 14.815765778186275
+      }
+    ]
+  }
+}

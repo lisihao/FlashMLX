@@ -1,0 +1,20 @@
+{
+  "prompt": "Please explain the concept of machine learning in simple terms. ",
+  "results": [
+    {
+      "config": "Baseline",
+      "tokens": 381,
+      "text": "200 words\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Machine Learning (ML).\n    *   Constraint: Simple terms (avoid jargon, use analogies).\n    *   Length: Approximately 200 words.\n\n2.  **Drafting - Key Concepts to Include:**\n    *   Definition: Learning from data without explicit programming.\n    *   Analogy: Teaching a child or recognizing patterns"
+    },
+    {
+      "config": "CompactedKVCache 5x",
+      "tokens": 289,
+      "text": "\n\n\n#\n#\n#\n\n\n\n\n#\n\n\n#\n#\n\n#\n\n\n\n\n\n\n#\n#\n\n\n\n\n\n\nlet's the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the"
+    },
+    {
+      "config": "CompactedKVCache 2x",
+      "tokens": 289,
+      "text": "\n\n\n#\n#\n#\n\n\n\n\n#\n\n\n#\n#\n\n#\n\n\n\n\n\n\n#\n#\n\n\n\n\n\n\nlet's the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the"
+    }
+  ]
+}

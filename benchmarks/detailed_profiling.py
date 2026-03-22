@@ -29,7 +29,7 @@ except ImportError:
     PROFILER_AVAILABLE = False
 
 
-DEFAULT_MODEL_PATH = Path.home() / "models" / "qwen3.5-2b-opus-distilled"
+DEFAULT_MODEL_PATH = Path.home() / "models" / "/Volumes/toshiba/models/qwen3.5-2b-opus-distilled"
 DEFAULT_PROMPT_LENGTH = 2981  # Medium length for balanced analysis
 
 
@@ -97,9 +97,12 @@ def run_detailed_profiling(model, tokenizer, prompt: str, max_tokens: int) -> di
     print("\nRunning detailed profiling with FlashMLX profiler...")
 
     config = ProfilerConfig(
+        name="baseline_detailed",
         level=InstrumentationLevel.FULL,
         capture_memory=True,
-        capture_latency=True,
+        capture_kernels=True,
+        capture_stack=True,
+        min_function_time_ms=0.0,  # Capture all calls (MLX is lazy)
     )
 
     with Profiler("baseline_detailed", config=config) as profiler:

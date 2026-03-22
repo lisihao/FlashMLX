@@ -1,0 +1,27 @@
+{
+  "model": "/Users/lisihao/models/qwen3.5-35b-mlx",
+  "timestamp": "2026-03-21T10:50:35.466805",
+  "num_layers": 40,
+  "results": [
+    {
+      "config": "Baseline (Standard KVCache)",
+      "ttft": 4.944881916046143,
+      "pp_speed": 404.6608258746796,
+      "tg_speed": 14767968.5748503,
+      "total_time": 4.9449217319488525,
+      "prompt_tokens": 2001,
+      "generated_tokens": 589,
+      "scenario": "Medium (2K tokens)"
+    },
+    {
+      "config": "Fast Path 5x",
+      "ttft": 3.3567540645599365,
+      "pp_speed": 596.1115892064398,
+      "tg_speed": 14493189.06930693,
+      "total_time": 3.356778144836426,
+      "prompt_tokens": 2001,
+      "generated_tokens": 350,
+      "scenario": "Medium (2K tokens)"
+    }
+  ]
+}

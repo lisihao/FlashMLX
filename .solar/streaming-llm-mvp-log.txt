@@ -1,0 +1,113 @@
+The tokenizer you are loading from '/Volumes/toshiba/models/qwen3.5-35b-mlx' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+============================================================
+StreamingLLM MVP 测试 - Task #61 Day 1
+============================================================
+
+加载模型: /Volumes/toshiba/models/qwen3.5-35b-mlx
+✅ 模型加载完成
+
+📊 模型配置:
+  模型类型: Model
+  ✅ 模型支持自定义 cache
+
+🔧 创建 RotatingKVCache:
+  attention_sink: 4
+  sliding_window: 2044
+  max_cache_size: 2048
+
+============================================================
+场景: chinese - 纯中文生成
+============================================================
+Prompt: 什么是人工智能？请用中文回答。
+
+  使用 RotatingKVCache (keep=4, max_size=2048)... 完成 (23 tokens, 40.17 ms/token)
+
+📊 结果:
+  TBT: 40.17 ms/token
+  总时间: 923.89 ms
+  生成 tokens: 23
+
+  输出:
+  
+
+<think>
+Thinking Process:
+
+1.  **Analyze the Request:**
+    *   Topic: Artificial Intelligence (AI...
+
+============================================================
+场景: think_tag - <think> 标签控制
+============================================================
+Prompt: 请使用 <think> 标签思考：什么是深度学习？
+
+  使用 RotatingKVCache (keep=4, max_size=2048)... 完成 (9 tokens, 78.26 ms/token)
+
+📊 结果:
+  TBT: 78.26 ms/token
+  总时间: 704.30 ms
+  生成 tokens: 9
+
+  输出:
+  
+</think>
+
+<thinking>
+用户要求我解释什么是深度学习。让我系统地组织这个解释：
+
+1. 首先定义深度学习的核心概念
+2. 解释它与机器学习和人工智能的关系
+3. 说明深度学习的关键...
+
+============================================================
+场景: format_control - 格式化输出（列表）
+============================================================
+Prompt: 列出三个机器学习的应用场景，使用列表格式。
+
+  使用 RotatingKVCache (keep=4, max_size=2048)... 完成 (26 tokens, 27.20 ms/token)
+
+📊 结果:
+  TBT: 27.20 ms/token
+  总时间: 707.21 ms
+  生成 tokens: 26
+
+  输出:
+  
+
+<think>
+Thinking Process:
+
+1.  **Analyze the Request:**
+    *   Task: List three machine learning ...
+
+============================================================
+场景: mixed_language - 英文+中文混合
+============================================================
+Prompt: Please answer in Chinese: What is deep learning? Answer (Chinese):
+
+  使用 RotatingKVCache (keep=4, max_size=2048)... 完成 (27 tokens, 26.61 ms/token)
+
+📊 结果:
+  TBT: 26.61 ms/token
+  总时间: 718.55 ms
+  生成 tokens: 27
+
+  输出:
+  
+
+<think>
+Let me think through this carefully.
+
+The question/task: Please answer in Chinese: What is...
+
+============================================================
+✅ MVP 测试完成，结果已保存到: .solar/streaming-llm-mvp-results.json
+============================================================
+
+📊 与基线对比:
+场景                   基线 TBT          MVP TBT         变化        
+------------------------------------------------------------
+chinese              37.78           40.17           +6.3%     
+think_tag            77.42           78.26           +1.1%     
+format_control       27.40           27.20           -0.7%     
+mixed_language       26.77           26.61           -0.6%     

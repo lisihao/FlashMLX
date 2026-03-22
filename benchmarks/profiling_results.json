@@ -1,0 +1,17 @@
+{
+  "config": {
+    "model_path": "/Users/lisihao/models/qwen3.5-2b-opus-distilled",
+    "prompt_length": 2981,
+    "max_tokens": 128
+  },
+  "analysis": {
+    "basic_metrics": {
+      "prompt_tokens": 4340,
+      "generated_tokens": 128,
+      "ttft_ms": 2041.5,
+      "prompt_tps": 2125.9,
+      "decode_tps": 59.5,
+      "total_time_s": 4.18
+    }
+  }
+}

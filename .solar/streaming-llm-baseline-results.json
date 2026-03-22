@@ -1,0 +1,66 @@
+{
+  "chinese": {
+    "config": {
+      "prompt": "什么是人工智能？请用中文回答。",
+      "max_tokens": 50,
+      "description": "纯中文生成"
+    },
+    "performance": {
+      "avg_tbt_ms": 37.784608695959754,
+      "avg_total_time_ms": 869.0460000070743,
+      "avg_tokens": 23.0
+    },
+    "outputs": [
+      "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Artificial Intelligence (AI) / 人工智能.\n    *   Language: Chinese (中文).\n    *   Goal: Define and explain"
+    ]
+  },
+  "think_tag": {
+    "config": {
+      "prompt": "请使用 <think> 标签思考：什么是深度学习？",
+      "max_tokens": 50,
+      "description": "<think> 标签控制"
+    },
+    "performance": {
+      "avg_tbt_ms": 77.42238433436594,
+      "avg_total_time_ms": 696.8014590092935,
+      "avg_tokens": 9.0
+    },
+    "outputs": [
+      "\n</think>\n\n<thinking>\n用户要求我解释什么是深度学习。让我系统地组织这个解释：\n\n1. 首先定义深度学习的核心概念\n2. 解释它与机器学习和人工智能的关系\n3. 说明深度学习的关键特征（多层"
+    ]
+  },
+  "format_control": {
+    "config": {
+      "prompt": "列出三个机器学习的应用场景，使用列表格式。",
+      "max_tokens": 50,
+      "description": "格式化输出（列表）"
+    },
+    "performance": {
+      "avg_tbt_ms": 27.400866999344615,
+      "avg_total_time_ms": 712.42254198296,
+      "avg_tokens": 26.0
+    },
+    "outputs": [
+      "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: List three machine learning application scenarios.\n    *   Format: List format (bullet points or numbered list).\n    *   Language:"
+    ]
+  },
+  "mixed_language": {
+    "config": {
+      "prompt": "Please answer in Chinese: What is deep learning? Answer (Chinese):",
+      "max_tokens": 50,
+      "description": "英文+中文混合"
+    },
+    "performance": {
+      "avg_tbt_ms": 26.76613736871837,
+      "avg_total_time_ms": 722.685708955396,
+      "avg_tokens": 27.0
+    },
+    "outputs": [
+      "\n\n<think>\nLet me think through this carefully.\n\nThe question/task: Please answer in Chinese: What is deep learning? Answer (Chinese):\n\nMy reasoning: Deep Learning (深度学习) 详解\n\n什么是深度学习？\n\n深度学习是机器学习的一个子"
+    ]
+  },
+  "memory": {
+    "gpu_memory_mb": "N/A (MLX 不提供直接查询)",
+    "note": "需要使用 Activity Monitor 或 Metal System Trace 查看"
+  }
+}

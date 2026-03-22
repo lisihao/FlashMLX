@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""
+测试 Cached Low-Rank 压缩优化
+
+对比：
+1. 原始 Low-Rank（无缓存）
+2. Cached Low-Rank（缓存 SVD）
+"""
+
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "mlx-lm-source"))
+
+import mlx.core as mx
+from mlx_lm import load, generate
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "mlx-lm-source" / "mlx_lm" / "compaction"))
+from ssm_state_compressor import LowRankStateCompressor
+from cached_lowrank_compressor import CachedLowRankCompressor
+
+
+PROMPT = "介绍机器学习的基本概念和应用场景"
+MAX_TOKENS = 100
+
+
+def classify_layer_type(layer, layer_idx):
+    """分类层类型"""
+    if hasattr(layer, 'linear_attn') or hasattr(layer, 'mamba_block'):
+        return "ssm"
+    elif hasattr(layer, 'self_attn'):
+        return "attention"
+    else:
+        return "unknown"
+
+
+class CompressedSSMCache:
+    """SSM State 压缩缓存"""
+
+    def __init__(self, compressor):
+        self.compressor = compressor
+        self.compressed_state = None
+        self.conv_state = None
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self.conv_state
+        elif index == 1:
+            if self.compressed_state is not None:
+                return self.compressor.decompress(self.compressed_state)
+            return None
+        else:
+            raise IndexError(f"Invalid cache index: {index}")
+
+    def __setitem__(self, index, value):
+        if index == 0:
+            self.conv_state = value
+        elif index == 1:
+            if value is not None:
+                self.compressed_state = self.compressor.compress(value)
+            else:
+                self.compressed_state = None
+        else:
+            raise IndexError(f"Invalid cache index: {index}")
+
+    @property
+    def state(self):
+        return [self.conv_state, self[1]]
+
+    @state.setter
+    def state(self, v):
+        if v is not None and len(v) == 2:
+            self[0] = v[0]
+            self[1] = v[1]
+
+
+def test_compressor(model, tokenizer, ssm_layers, compressor_name, compressor):
+    """测试单个压缩器"""
+    print(f"\n{'='*60}")
+    print(f"Testing: {compressor_name}")
+    print(f"{'='*60}\n")
+
+    # 创建压缩缓存
+    from mlx_lm.models.cache import ArraysCache
+    cache = ArraysCache(len(model.layers))
+
+    for i in range(len(model.layers)):
+        if i in ssm_layers:
+            cache[i] = CompressedSSMCache(compressor)
+        else:
+            cache[i] = None
+
+    # 生成
+    print("Generating...")
+    start_time = time.time()
+
+    response = generate(
+        model,
+        tokenizer,
+        prompt=PROMPT,
+        max_tokens=MAX_TOKENS,
+        verbose=False,
+        prompt_cache=cache
+    )
+
+    elapsed = time.time() - start_time
+    num_tokens = len(tokenizer.encode(response))
+
+    print(f"✅ {compressor_name}: {num_tokens} tokens, {elapsed:.2f}s, {num_tokens/elapsed:.2f} tok/s")
+    print(f"\nOutput preview:\n{response[:200]}\n")
+
+    # 获取缓存统计（如果是 CachedLowRankCompressor）
+    if hasattr(compressor, 'get_cache_stats'):
+        stats = compressor.get_cache_stats()
+        print(f"Cache Statistics:")
+        print(f"  Total compressions: {stats['total']}")
+        print(f"  Cache hits: {stats['cache_hit']} ({stats['cache_hit_rate']:.1f}%)")
+        print(f"  Cache misses: {stats['cache_miss']}")
+        print(f"  SVD avoided: {stats['svd_avoided']}")
+        print()
+
+    return {
+        'tokens': num_tokens,
+        'time': elapsed,
+        'tps': num_tokens / elapsed,
+        'output': response,
+        'stats': compressor.get_cache_stats() if hasattr(compressor, 'get_cache_stats') else None
+    }
+
+
+def main():
+    print("="*60)
+    print("Cached Low-Rank Optimization Test")
+    print("="*60)
+    print()
+
+    # 加载模型
+    print("Loading model...")
+    model, tokenizer = load("/Volumes/toshiba/models/qwen3.5-35b-mlx")
+
+    # 识别 SSM 层
+    ssm_layers = [i for i, layer in enumerate(model.layers) if classify_layer_type(layer, i) == "ssm"]
+    print(f"Model loaded: {len(model.layers)} layers, {len(ssm_layers)} SSM layers\n")
+
+    # Test 1: 原始 Low-Rank（无缓存）
+    print("="*60)
+    print("Test 1: Original Low-Rank (No Caching)")
+    print("="*60)
+    result_original = test_compressor(
+        model, tokenizer, ssm_layers,
+        "Low-Rank (rank=32, no cache)",
+        LowRankStateCompressor(rank=32)
+    )
+
+    # Test 2: Cached Low-Rank（缓存优化）
+    print("="*60)
+    print("Test 2: Cached Low-Rank (With Caching)")
+    print("="*60)
+    result_cached = test_compressor(
+        model, tokenizer, ssm_layers,
+        "Cached Low-Rank (rank=32, cache threshold=0.15)",
+        CachedLowRankCompressor(rank=32, cache_threshold=0.15, enable_cache=True)
+    )
+
+    # 对比结果
+    print("\n" + "="*60)
+    print("Comparison Summary")
+    print("="*60)
+    print()
+
+    speedup = result_cached['tps'] / result_original['tps']
+
+    print(f"{'Method':<40} {'Speed':<15} {'Time'}")
+    print("-"*70)
+    print(f"{'Original Low-Rank':<40} {result_original['tps']:<15.2f} {result_original['time']:.2f}s")
+    print(f"{'Cached Low-Rank':<40} {result_cached['tps']:<15.2f} {result_cached['time']:.2f}s")
+    print()
+    print(f"Speedup: {speedup:.2f}x")
+    print()
+
+    if result_cached['stats']:
+        stats = result_cached['stats']
+        print(f"Cache Efficiency:")
+        print(f"  Cache hit rate: {stats['cache_hit_rate']:.1f}%")
+        print(f"  SVD computations avoided: {stats['svd_avoided']} / {stats['total']}")
+        print()
+
+    # 质量检查
+    print("Quality Check:")
+    if result_cached['output'][:100] == result_original['output'][:100]:
+        print("  ✅ Output identical (quality preserved)")
+    else:
+        print("  ⚠️  Output differs (checking...)")
+        # 检查是否是正常输出
+        output_cached = result_cached['output'][:100]
+        if any(char in output_cached for char in ['revan', 'gai', 'assemb']):
+            print("  ❌ Cached output contains garbage")
+        else:
+            print("  ✅ Both outputs are normal (slight variation acceptable)")
+
+    print()
+    print("="*60)
+    print("Conclusion")
+    print("="*60)
+    print()
+
+    if speedup > 2:
+        print(f"✅ Caching provides significant speedup: {speedup:.2f}x")
+        print(f"   Cache hit rate: {stats['cache_hit_rate']:.1f}%")
+        print(f"   Recommended for production use")
+    elif speedup > 1.2:
+        print(f"⚠️  Caching provides moderate speedup: {speedup:.2f}x")
+        print(f"   Cache hit rate: {stats['cache_hit_rate']:.1f}%")
+        print(f"   May need further optimization")
+    else:
+        print(f"❌ Caching provides minimal speedup: {speedup:.2f}x")
+        print(f"   Cache hit rate: {stats['cache_hit_rate']:.1f}%")
+        print(f"   Need alternative optimization strategies")
+
+    print()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,104 @@
+The tokenizer you are loading from '/Volumes/toshiba/models/qwen3.5-35b-mlx' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+============================================================
+StreamingLLM 基线性能测试 - Task #61 Day 1
+============================================================
+
+加载模型: /Volumes/toshiba/models/qwen3.5-35b-mlx
+✅ 模型加载完成
+
+============================================================
+场景: chinese - 纯中文生成
+============================================================
+Prompt: 什么是人工智能？请用中文回答。
+
+  重复 1/1... 完成 (23 tokens, 37.78 ms/token)
+
+📊 结果:
+  平均 TBT: 37.78 ms/token
+  平均总时间: 869.05 ms
+  平均生成 tokens: 23.0
+
+  示例输出:
+  
+
+<think>
+Thinking Process:
+
+1.  **Analyze the Request:**
+    *   Topic: Artificial Intelligence (AI...
+
+============================================================
+场景: think_tag - <think> 标签控制
+============================================================
+Prompt: 请使用 <think> 标签思考：什么是深度学习？
+
+  重复 1/1... 完成 (9 tokens, 77.42 ms/token)
+
+📊 结果:
+  平均 TBT: 77.42 ms/token
+  平均总时间: 696.80 ms
+  平均生成 tokens: 9.0
+
+  示例输出:
+  
+</think>
+
+<thinking>
+用户要求我解释什么是深度学习。让我系统地组织这个解释：
+
+1. 首先定义深度学习的核心概念
+2. 解释它与机器学习和人工智能的关系
+3. 说明深度学习的关键...
+
+============================================================
+场景: format_control - 格式化输出（列表）
+============================================================
+Prompt: 列出三个机器学习的应用场景，使用列表格式。
+
+  重复 1/1... 完成 (26 tokens, 27.40 ms/token)
+
+📊 结果:
+  平均 TBT: 27.40 ms/token
+  平均总时间: 712.42 ms
+  平均生成 tokens: 26.0
+
+  示例输出:
+  
+
+<think>
+Thinking Process:
+
+1.  **Analyze the Request:**
+    *   Task: List three machine learning ...
+
+============================================================
+场景: mixed_language - 英文+中文混合
+============================================================
+Prompt: Please answer in Chinese: What is deep learning? Answer (Chinese):
+
+  重复 1/1... 完成 (27 tokens, 26.77 ms/token)
+
+📊 结果:
+  平均 TBT: 26.77 ms/token
+  平均总时间: 722.69 ms
+  平均生成 tokens: 27.0
+
+  示例输出:
+  
+
+<think>
+Let me think through this carefully.
+
+The question/task: Please answer in Chinese: What is...
+
+============================================================
+✅ 基线测试完成，结果已保存到: .solar/streaming-llm-baseline-results.json
+============================================================
+
+📊 四场景汇总:
+场景                   平均 TBT (ms/token)         平均 tokens      
+------------------------------------------------------------
+chinese              37.78                     23.0           
+think_tag            77.42                     9.0            
+format_control       27.40                     26.0           
+mixed_language       26.77                     27.0           

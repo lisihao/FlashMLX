@@ -173,13 +173,15 @@ class ConcurrencyTracker:
             avg_lifetime = sum(t.lifetime_ms for t in completed_threads) / len(completed_threads)
 
         # GIL contention estimate
-        max_concurrent = max((s.active_threads for s in self._gil_samples), default=1)
+        # Note: active_threads includes the GIL-Sampler thread itself, so subtract 1
+        max_concurrent = max((s.active_threads - 1 for s in self._gil_samples), default=1)
 
         # Estimate contention: if we see >1 active thread consistently, there's contention
         # This is a rough approximation
+        # active_threads > 2 means >1 worker thread (excluding GIL-Sampler)
         gil_contention = 0.0
         if self._gil_samples:
-            samples_with_contention = sum(1 for s in self._gil_samples if s.active_threads > 1)
+            samples_with_contention = sum(1 for s in self._gil_samples if s.active_threads > 2)
             gil_contention = samples_with_contention / len(self._gil_samples)
 
         return {

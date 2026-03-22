@@ -1,0 +1,2558 @@
+[
+  {
+    "scenario": "chinese",
+    "baseline": {
+      "text": "\n\n<think>\nLet me think through this carefully.\n\nThe question/task: 请用中文回答以下问题：\n\n问题：什么是人工智能？\n\n回答：\n\nMy reasoning: 人工智能（Artificial Intelligence，简称 AI）的定义与内涵\n\n1",
+      "tokens": [
+        271,
+        248068,
+        198,
+        9764,
+        728,
+        1683,
+        1472,
+        411,
+        15060,
+        13,
+        271,
+        760,
+        3296,
+        56231,
+        25,
+        220,
+        139054,
+        99986,
+        97913,
+        97155,
+        96304,
+        4960,
+        271,
+        96304,
+        4960,
+        108829,
+        109015,
+        10992,
+        271,
+        97913,
+        4960,
+        271,
+        4888,
+        31626,
+        25,
+        220,
+        109015,
+        9616,
+        9010,
+        16004,
+        20736,
+        3709,
+        103870,
+        14791,
+        7313,
+        119977,
+        95999,
+        102093,
+        271,
+        16
+      ],
+      "length": 50
+    },
+    "option_a": {
+      "text": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: Answer the question \"What is Artificial Intelligence?\" (什么是人工智能？).\n    *   Language: Chinese (中文).\n    *  ",
+      "tokens": [
+        271,
+        248068,
+        198,
+        90700,
+        8340,
+        25,
+        271,
+        16,
+        13,
+        220,
+        2972,
+        2014,
+        53983,
+        279,
+        5952,
+        64700,
+        198,
+        262,
+        348,
+        256,
+        5261,
+        25,
+        21134,
+        279,
+        3296,
+        328,
+        3710,
+        369,
+        56239,
+        20736,
+        7285,
+        318,
+        108829,
+        109015,
+        10992,
+        553,
+        198,
+        262,
+        348,
+        256,
+        11106,
+        25,
+        8193,
+        318,
+        99986,
+        553,
+        198,
+        262,
+        348,
+        256
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.94,
+        "token_diff_count": 47,
+        "kl_divergence": 19.625,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 24,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 5,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 1,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 20,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 34,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 10,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 4,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 25,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 21,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 0,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 14,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 26,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 18,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 32,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 13,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 8,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 17,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 29,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 36,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 22,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 6,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 38,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 12,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 33,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 37,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 16,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 28,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 9,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 2,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        }
+      ]
+    },
+    "option_c": {
+      "text": "\n\n<think>\nLet me think through this carefully.\n\nThe question/task: 请用中文回答以下问题：\n\n问题：什么是人工智能？\n\n回答：\n\nMy reasoning: 人工智能（Artificial Intelligence，简称 AI）是一个涵盖范围很广",
+      "tokens": [
+        271,
+        248068,
+        198,
+        9764,
+        728,
+        1683,
+        1472,
+        411,
+        15060,
+        13,
+        271,
+        760,
+        3296,
+        56231,
+        25,
+        220,
+        139054,
+        99986,
+        97913,
+        97155,
+        96304,
+        4960,
+        271,
+        96304,
+        4960,
+        108829,
+        109015,
+        10992,
+        271,
+        97913,
+        4960,
+        271,
+        4888,
+        31626,
+        25,
+        220,
+        109015,
+        9616,
+        9010,
+        16004,
+        20736,
+        3709,
+        103870,
+        14791,
+        7313,
+        98267,
+        104594,
+        97497,
+        96065,
+        96415
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.1,
+        "token_diff_count": 5,
+        "kl_divergence": 1.0546875,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 24,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 5,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 1,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 20,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 34,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 10,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 4,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 25,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 21,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 0,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 14,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 26,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 18,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 32,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 13,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 8,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 17,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 29,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 36,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 22,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 6,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 38,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 12,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 33,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 37,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 16,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 28,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 9,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 2,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "think_tag",
+    "baseline": {
+      "text": "\n\n机器学习（Machine Learning, ML）和深度学习（Deep Learning, DL）是人工智能领域中两个密切相关但有所区别的概念。以下是它们的主要区别：\n\n1. 定义与范围：\n   - 机器学习是人工智能的一个子集，",
+      "tokens": [
+        271,
+        119016,
+        9616,
+        20943,
+        20271,
+        11,
+        19014,
+        7313,
+        95793,
+        124089,
+        9616,
+        32354,
+        20271,
+        11,
+        31882,
+        7313,
+        95761,
+        109015,
+        128609,
+        97889,
+        124253,
+        96342,
+        98459,
+        100059,
+        110498,
+        1710,
+        105090,
+        98662,
+        99996,
+        100059,
+        4960,
+        271,
+        16,
+        13,
+        220,
+        99546,
+        95999,
+        97497,
+        4960,
+        198,
+        256,
+        471,
+        220,
+        119016,
+        95761,
+        109015,
+        103739,
+        95874,
+        96275,
+        3709
+      ],
+      "length": 50
+    },
+    "option_a": {
+      "text": "\n\n# 机器学习和深度学习的区别\n\n## 1. 定义与关系\n\n**机器学习 (Machine Learning, ML)** 是一个更广泛的概念，指让计算机系统从数据中学习规律并做出预测或决策的能力。\n\n**深度学习 (",
+      "tokens": [
+        271,
+        2,
+        220,
+        99963,
+        109646,
+        99581,
+        108896,
+        100059,
+        271,
+        550,
+        220,
+        16,
+        13,
+        220,
+        99546,
+        95999,
+        97074,
+        271,
+        332,
+        119016,
+        318,
+        20943,
+        20271,
+        11,
+        19014,
+        31230,
+        220,
+        98267,
+        96017,
+        98685,
+        110498,
+        3709,
+        96217,
+        96264,
+        146399,
+        96200,
+        96902,
+        142324,
+        103847,
+        96172,
+        101662,
+        103784,
+        96348,
+        101725,
+        103857,
+        1710,
+        271,
+        332,
+        124089,
+        318
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.98,
+        "token_diff_count": 49,
+        "kl_divergence": 15.8125,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 24,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 5,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 1,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 20,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 34,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 10,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 4,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 25,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 21,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 0,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 14,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 26,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 18,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 32,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 13,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 8,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 17,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 29,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 36,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 22,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 6,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 38,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 12,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 33,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 37,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 16,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 28,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 9,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 2,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        }
+      ]
+    },
+    "option_c": {
+      "text": "\n\n机器学习（ML）和深度学习（DL）是人工智能领域的两个重要分支，它们既有联系又有区别。\n\n**定义与关系：**\n- 机器学习是人工智能的一个子集，指让计算机从数据中学习规律，而无需显",
+      "tokens": [
+        271,
+        119016,
+        9616,
+        2581,
+        7313,
+        95793,
+        124089,
+        9616,
+        16037,
+        7313,
+        95761,
+        109015,
+        104190,
+        97889,
+        96588,
+        104902,
+        3709,
+        98662,
+        110727,
+        97071,
+        108985,
+        100059,
+        1710,
+        271,
+        332,
+        99546,
+        95999,
+        97074,
+        245342,
+        198,
+        12,
+        220,
+        119016,
+        95761,
+        109015,
+        103739,
+        95874,
+        96275,
+        3709,
+        96217,
+        96264,
+        99499,
+        96200,
+        96902,
+        142324,
+        103847,
+        3709,
+        96051,
+        108956,
+        96547
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.94,
+        "token_diff_count": 47,
+        "kl_divergence": 14.1875,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 24,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 5,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 1,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 20,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 34,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 10,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 4,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 25,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 21,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 0,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 14,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 26,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 18,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 32,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 13,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 8,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 17,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 29,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 36,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 22,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 6,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 38,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 12,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 33,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 37,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 16,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 28,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 9,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 2,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "format_control",
+    "baseline": {
+      "text": " 监督学习 (Supervised Learning)\n    定义：使用带有标签的数据集进行训练，模型学习输入与输出之间的映射关系。\n    常见任务：分类（如垃圾邮件检测）、回归（如房价预测）。\n",
+      "tokens": [
+        220,
+        97568,
+        96472,
+        318,
+        9751,
+        75318,
+        20271,
+        8,
+        198,
+        262,
+        220,
+        99546,
+        4960,
+        96402,
+        109163,
+        101659,
+        104027,
+        96275,
+        96335,
+        99476,
+        3709,
+        103725,
+        96472,
+        99486,
+        95999,
+        100627,
+        99494,
+        115683,
+        97074,
+        1710,
+        198,
+        262,
+        220,
+        99166,
+        97995,
+        4960,
+        98653,
+        9616,
+        96031,
+        99178,
+        100853,
+        97813,
+        62186,
+        108969,
+        9616,
+        96031,
+        109129,
+        103784,
+        71748,
+        198
+      ],
+      "length": 50
+    },
+    "option_a": {
+      "text": " 监督学习：\n    监督学习是一种机器学习方法，其中模型使用带有标签的数据进行训练。这意味着每个训练示例都包含输入和正确的输出。监督学习的主要目标是学习输入和输出之间的映射，以便模型可以预测新输入",
+      "tokens": [
+        220,
+        97568,
+        96472,
+        4960,
+        198,
+        262,
+        220,
+        97568,
+        96472,
+        98435,
+        119016,
+        96845,
+        3709,
+        98405,
+        103725,
+        96402,
+        109163,
+        101659,
+        104027,
+        96335,
+        99476,
+        1710,
+        113286,
+        99448,
+        99476,
+        110393,
+        95983,
+        99516,
+        99486,
+        95793,
+        101866,
+        100627,
+        1710,
+        97568,
+        96472,
+        99996,
+        116096,
+        96472,
+        99486,
+        95793,
+        100627,
+        99494,
+        115683,
+        3709,
+        104111,
+        103725,
+        96050,
+        103784,
+        95882,
+        99486
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.92,
+        "token_diff_count": 46,
+        "kl_divergence": 10.6875,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 24,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 5,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 1,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 20,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 34,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 10,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 4,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 25,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 21,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 0,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 14,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 26,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 18,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 32,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 13,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 8,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 17,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 29,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 36,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 22,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 6,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 38,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 12,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 33,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 37,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 16,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 28,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 9,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 2,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        }
+      ]
+    },
+    "option_c": {
+      "text": " 监督学习：使用带有标签的数据集进行训练，模型学习输入与输出之间的映射关系。\n2.  无监督学习：使用未标记的数据集进行训练，模型学习数据的内在结构或模式。\n3. ",
+      "tokens": [
+        220,
+        97568,
+        96472,
+        4960,
+        96402,
+        109163,
+        101659,
+        104027,
+        96275,
+        96335,
+        99476,
+        3709,
+        103725,
+        96472,
+        99486,
+        95999,
+        100627,
+        99494,
+        115683,
+        97074,
+        1710,
+        198,
+        17,
+        13,
+        220,
+        220,
+        95979,
+        97568,
+        96472,
+        4960,
+        96402,
+        96449,
+        110127,
+        104027,
+        96275,
+        96335,
+        99476,
+        3709,
+        103725,
+        96472,
+        110018,
+        110157,
+        97152,
+        96348,
+        97794,
+        1710,
+        198,
+        18,
+        13,
+        220
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.94,
+        "token_diff_count": 47,
+        "kl_divergence": 12.5,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 24,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 5,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 1,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 20,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 34,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 10,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 4,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 25,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 21,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 0,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 14,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 26,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 18,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 32,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 13,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 8,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 17,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 29,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 36,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 22,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 6,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 38,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 12,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 33,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 37,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 16,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 28,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 9,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 2,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "mixed_language",
+    "baseline": {
+      "text": " Deep Learning is a subset of machine learning based on artificial neural networks with multiple layers. It enables machines to learn complex patterns from large datasets, powering applications like image recognition, natural language processing, and autonomous driving.\n\nAnswer (Chinese): 深度学习是",
+      "tokens": [
+        17642,
+        20271,
+        369,
+        264,
+        25162,
+        314,
+        5484,
+        6618,
+        3018,
+        383,
+        19820,
+        28758,
+        13750,
+        440,
+        5081,
+        13224,
+        13,
+        1049,
+        19468,
+        12282,
+        310,
+        3827,
+        6150,
+        12261,
+        494,
+        3349,
+        28465,
+        11,
+        86808,
+        8098,
+        1040,
+        2099,
+        17310,
+        11,
+        5629,
+        3992,
+        8427,
+        11,
+        321,
+        36928,
+        9550,
+        13,
+        271,
+        15666,
+        318,
+        43429,
+        1590,
+        220,
+        124089,
+        95761
+      ],
+      "length": 50
+    },
+    "option_a": {
+      "text": " Deep Learning is a subset of machine learning that uses artificial neural networks with many layers (hence \"deep\") to model complex patterns in data. It has revolutionized fields like computer vision, natural language processing, and speech recognition.\n\nAnswer (Chinese",
+      "tokens": [
+        17642,
+        20271,
+        369,
+        264,
+        25162,
+        314,
+        5484,
+        6618,
+        421,
+        5533,
+        19820,
+        28758,
+        13750,
+        440,
+        1599,
+        13224,
+        318,
+        71,
+        738,
+        328,
+        31788,
+        871,
+        310,
+        1558,
+        6150,
+        12261,
+        303,
+        795,
+        13,
+        1049,
+        682,
+        13395,
+        1452,
+        4881,
+        1040,
+        6165,
+        10806,
+        11,
+        5629,
+        3992,
+        8427,
+        11,
+        321,
+        8540,
+        17310,
+        13,
+        271,
+        15666,
+        318,
+        43429
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.72,
+        "token_diff_count": 36,
+        "kl_divergence": 9.0625,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 24,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 5,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 1,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 20,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 34,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 10,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 4,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 25,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 21,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 0,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 14,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 26,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 18,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 32,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 13,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 8,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 17,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 29,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 36,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 22,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 6,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 38,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 12,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 33,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 37,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 16,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 28,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 9,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        },
+        {
+          "layer": 2,
+          "method": "option_a",
+          "critical_channels": 6,
+          "bulk_channels": 122,
+          "rank": 32,
+          "compression_ratio": 0.28515625
+        }
+      ]
+    },
+    "option_c": {
+      "text": " Deep Learning is a subset of machine learning that uses multi-layered neural networks to automatically learn hierarchical representations of data. It enables systems to recognize complex patterns in large datasets without explicit programming.\n\nAnswer (Chinese): 深度学习是机器学习的一个子集，",
+      "tokens": [
+        17642,
+        20271,
+        369,
+        264,
+        25162,
+        314,
+        5484,
+        6618,
+        421,
+        5533,
+        7072,
+        45759,
+        290,
+        28758,
+        13750,
+        310,
+        9184,
+        3827,
+        67528,
+        42169,
+        314,
+        795,
+        13,
+        1049,
+        19468,
+        5757,
+        310,
+        14838,
+        6150,
+        12261,
+        303,
+        3349,
+        28465,
+        1973,
+        11135,
+        15019,
+        13,
+        271,
+        15666,
+        318,
+        43429,
+        1590,
+        220,
+        124089,
+        95761,
+        119016,
+        103739,
+        95874,
+        96275,
+        3709
+      ],
+      "length": 50,
+      "comparison": {
+        "token_diff_rate": 0.84,
+        "token_diff_count": 42,
+        "kl_divergence": 10.375,
+        "baseline_length": 50,
+        "compressed_length": 50
+      },
+      "metadata": [
+        {
+          "layer": 30,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 24,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 5,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 1,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 20,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 34,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 10,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 4,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 25,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 21,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 0,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 14,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 26,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 18,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 32,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 13,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 8,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 17,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 29,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 36,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 22,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 6,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 38,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 12,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 33,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 37,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 16,
+          "method": "option_c",
+          "rank": 32,
+          "layer_position": "middle",
+          "compression_ratio": 0.25
+        },
+        {
+          "layer": 28,
+          "method": "option_c",
+          "rank": 48,
+          "layer_position": "late",
+          "compression_ratio": 0.375
+        },
+        {
+          "layer": 9,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        },
+        {
+          "layer": 2,
+          "method": "option_c",
+          "rank": 16,
+          "layer_position": "early",
+          "compression_ratio": 0.125
+        }
+      ]
+    }
+  }
+]

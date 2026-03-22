@@ -27,7 +27,7 @@ import mlx.core as mx
 from mlx_lm import load, stream_generate
 
 
-DEFAULT_MODEL_PATH = Path.home() / "models" / "qwen3.5-2b-opus-distilled"
+DEFAULT_MODEL_PATH = Path.home() / "models" / "/Volumes/toshiba/models/qwen3.5-2b-opus-distilled"
 DEFAULT_PROMPT_LENGTHS = [745, 2981, 11926]
 
 reset_peak_memory = getattr(mx, "reset_peak_memory", mx.metal.reset_peak_memory)

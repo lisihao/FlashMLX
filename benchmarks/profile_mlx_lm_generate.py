@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from flashmlx.profiler import ProfileAnalyzer, Profiler, ProfilerConfig, InstrumentationLevel
 
 
-DEFAULT_MODEL_PATH = Path.home() / "models" / "qwen3.5-2b-opus-distilled"
+DEFAULT_MODEL_PATH = Path.home() / "models" / "/Volumes/toshiba/models/qwen3.5-2b-opus-distilled"
 
 reset_peak_memory = getattr(mx, "reset_peak_memory", mx.metal.reset_peak_memory)
 

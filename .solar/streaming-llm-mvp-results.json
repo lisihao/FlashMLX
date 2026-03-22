@@ -1,0 +1,54 @@
+{
+  "chinese": {
+    "config": {
+      "prompt": "什么是人工智能？请用中文回答。",
+      "max_tokens": 50,
+      "description": "纯中文生成"
+    },
+    "performance": {
+      "tbt_ms": 40.168922131314226,
+      "total_time_ms": 923.8852090202272,
+      "tokens": 23
+    },
+    "output": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Artificial Intelligence (AI) / 人工智能.\n    *   Language: Chinese (中文).\n    *   Goal: Define and explain"
+  },
+  "think_tag": {
+    "config": {
+      "prompt": "请使用 <think> 标签思考：什么是深度学习？",
+      "max_tokens": 50,
+      "description": "<think> 标签控制"
+    },
+    "performance": {
+      "tbt_ms": 78.25571299892746,
+      "total_time_ms": 704.3014169903472,
+      "tokens": 9
+    },
+    "output": "\n</think>\n\n<thinking>\n用户要求我解释什么是深度学习。让我系统地组织这个解释：\n\n1. 首先定义深度学习的核心概念\n2. 解释它与机器学习和人工智能的关系\n3. 说明深度学习的关键特征（多层"
+  },
+  "format_control": {
+    "config": {
+      "prompt": "列出三个机器学习的应用场景，使用列表格式。",
+      "max_tokens": 50,
+      "description": "格式化输出（列表）"
+    },
+    "performance": {
+      "tbt_ms": 27.200467962897026,
+      "total_time_ms": 707.2121670353226,
+      "tokens": 26
+    },
+    "output": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: List three machine learning application scenarios.\n    *   Format: List format (bullet points or numbered list).\n    *   Language:"
+  },
+  "mixed_language": {
+    "config": {
+      "prompt": "Please answer in Chinese: What is deep learning? Answer (Chinese):",
+      "max_tokens": 50,
+      "description": "英文+中文混合"
+    },
+    "performance": {
+      "tbt_ms": 26.61305555375293,
+      "total_time_ms": 718.5524999513291,
+      "tokens": 27
+    },
+    "output": "\n\n<think>\nLet me think through this carefully.\n\nThe question/task: Please answer in Chinese: What is deep learning? Answer (Chinese):\n\nMy reasoning: Deep Learning (深度学习) 详解\n\n什么是深度学习？\n\n深度学习是机器学习的一个子"
+  }
+}

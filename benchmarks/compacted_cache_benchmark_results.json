@@ -1,0 +1,67 @@
+{
+  "model": "/Users/lisihao/models/qwen3.5-35b-mlx",
+  "timestamp": "2026-03-21T10:10:00.431599",
+  "num_layers": 40,
+  "results": [
+    {
+      "config_name": "Baseline (Standard KVCache)",
+      "prompt_length": 571,
+      "generated_tokens": 503,
+      "pp_tokens_per_sec": 184.2891403689157,
+      "tg_tokens_per_sec": 12633143.185628742,
+      "ttft": 3.0983920097351074,
+      "ttot_avg": 7.741479759672248e-08,
+      "total_time": 3.0984318256378174,
+      "mem_used_mb": 12.828125,
+      "mem_peak_mb": 7941.1875,
+      "compression_stats": {},
+      "scenario": "Short (512 tokens)",
+      "scenario_prompt_length": 512
+    },
+    {
+      "config_name": "Baseline (Standard KVCache)",
+      "prompt_length": 2281,
+      "generated_tokens": 433,
+      "pp_tokens_per_sec": 585.6645755542038,
+      "tg_tokens_per_sec": 12271173.18918919,
+      "ttft": 3.8947207927703857,
+      "ttot_avg": 7.892096484148945e-08,
+      "total_time": 3.8947560787200928,
+      "mem_used_mb": 1.0,
+      "mem_peak_mb": 7945.328125,
+      "compression_stats": {},
+      "scenario": "Medium (2K tokens)",
+      "scenario_prompt_length": 2048
+    },
+    {
+      "config_name": "Baseline (Standard KVCache)",
+      "prompt_length": 9235,
+      "generated_tokens": 0,
+      "pp_tokens_per_sec": 876.9793260369602,
+      "tg_tokens_per_sec": 0,
+      "ttft": null,
+      "ttot_avg": 0,
+      "total_time": 10.530464887619019,
+      "mem_used_mb": 1.875,
+      "mem_peak_mb": 7948.96875,
+      "compression_stats": {},
+      "scenario": "Long (8K tokens)",
+      "scenario_prompt_length": 8192
+    },
+    {
+      "config_name": "Baseline (Standard KVCache)",
+      "prompt_length": 18583,
+      "generated_tokens": 0,
+      "pp_tokens_per_sec": 799.5588284904986,
+      "tg_tokens_per_sec": 0,
+      "ttft": null,
+      "ttot_avg": 0,
+      "total_time": 23.2415668964386,
+      "mem_used_mb": 4.234375,
+      "mem_peak_mb": 7956.21875,
+      "compression_stats": {},
+      "scenario": "Ultra-long (16K tokens)",
+      "scenario_prompt_length": 16384
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "model": "/Users/lisihao/models/qwen3.5-35b-mlx",
+  "timestamp": "2026-03-21T10:26:17.536613",
+  "num_layers": 40,
+  "results": [
+    {
+      "config": "Baseline (Standard KVCache)",
+      "pp_speed": 152.19012678440856,
+      "tg_speed": 178.92212510182964,
+      "total_time": 3.2919349670410156,
+      "prompt_tokens": 501,
+      "generated_tokens": 589,
+      "scenario": "Short (512 tokens)"
+    },
+    {
+      "config": "Fast Path 5x",
+      "pp_speed": 273.2948456450731,
+      "tg_speed": 190.37904417191717,
+      "total_time": 1.8331849575042725,
+      "prompt_tokens": 501,
+      "generated_tokens": 349,
+      "scenario": "Short (512 tokens)"
+    },
+    {
+      "config": "Quality Path 5x",
+      "pp_speed": 272.3402829357877,
+      "tg_speed": 189.71408931055868,
+      "total_time": 1.8396103382110596,
+      "prompt_tokens": 501,
+      "generated_tokens": 349,
+      "scenario": "Short (512 tokens)"
+    },
+    {
+      "config": "Fast Path 10x",
+      "pp_speed": 273.2455195965111,
+      "tg_speed": 190.34468331174125,
+      "total_time": 1.8335158824920654,
+      "prompt_tokens": 501,
+      "generated_tokens": 349,
+      "scenario": "Short (512 tokens)"
+    },
+    {
+      "config": "Baseline (Standard KVCache)",
+      "pp_speed": 603.609870839692,
+      "tg_speed": 177.67426982737558,
+      "total_time": 3.3150551319122314,
+      "prompt_tokens": 2001,
+      "generated_tokens": 589,
+      "scenario": "Medium (2K tokens)"
+    },
+    {
+      "config": "Fast Path 5x",
+      "pp_speed": 597.9381160437636,
+      "tg_speed": 104.58687686922401,
+      "total_time": 3.3465001583099365,
+      "prompt_tokens": 2001,
+      "generated_tokens": 350,
+      "scenario": "Medium (2K tokens)"
+    },
+    {
+      "config": "Quality Path 5x",
+      "pp_speed": 599.2250019723556,
+      "tg_speed": 104.811969360482,
+      "total_time": 3.339313268661499,
+      "prompt_tokens": 2001,
+      "generated_tokens": 350,
+      "scenario": "Medium (2K tokens)"
+    },
+    {
+      "config": "Fast Path 10x",
+      "pp_speed": 599.2038250566341,
+      "tg_speed": 104.80826525228481,
+      "total_time": 3.3394312858581543,
+      "prompt_tokens": 2001,
+      "generated_tokens": 350,
+      "scenario": "Medium (2K tokens)"
+    },
+    {
+      "config": "Baseline (Standard KVCache)",
+      "pp_speed": 795.7715555559139,
+      "tg_speed": 58.581358108040654,
+      "total_time": 10.05439305305481,
+      "prompt_tokens": 8001,
+      "generated_tokens": 589,
+      "scenario": "Long (8K tokens)"
+    },
+    {
+      "config": "Fast Path 5x",
+      "pp_speed": 829.1988354666022,
+      "tg_speed": 33.99290314123804,
+      "total_time": 9.649072885513306,
+      "prompt_tokens": 8001,
+      "generated_tokens": 328,
+      "scenario": "Long (8K tokens)"
+    },
+    {
+      "config": "Quality Path 5x",
+      "pp_speed": 441.6613445656078,
+      "tg_speed": 5.520076797470414,
+      "total_time": 18.115689992904663,
+      "prompt_tokens": 8001,
+      "generated_tokens": 100,
+      "scenario": "Long (8K tokens)"
+    },
+    {
+      "config": "Fast Path 10x",
+      "pp_speed": 806.031008917119,
+      "tg_speed": 34.65500150824759,
+      "total_time": 9.926417112350464,
+      "prompt_tokens": 8001,
+      "generated_tokens": 344,
+      "scenario": "Long (8K tokens)"
+    }
+  ]
+}
