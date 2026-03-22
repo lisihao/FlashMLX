@@ -250,13 +250,29 @@
   - ✅ Task #90: 集成论文正确实现（2026-03-22 上午完成）
   - ✅ Task #91: Cache Keys Query Generation（质量提升 10%）
   - ✅ Task #92: 批量处理 Heads（性能优化 -98.3%）
+  - 🔴 **CRITICAL FINDING**: NNLS 求解器缺失导致质量崩溃（2026-03-22 19:25）
+    - **发现方式**: `test_real_kv_cache.py` 测试真实 Qwen3-8B KV cache
+    - **症状**: 压缩成功 (92→23 tokens)，但质量崩溃 (37.4% vs 93.2% baseline)
+    - **根本原因 1**: Beta 计算用 log-ratio 线性化近似，不是真正的 NNLS
+      - 代码位置: `compaction_algorithm.py:153-161`
+      - 错误: `beta = mx.mean(mx.log((target_attn + eps) / (base_attn + eps)), axis=0)`
+      - 正确: 应使用 NNLS 求解器 (`nnls_clamped/nnls_pgd/nnls_auto`)
+    - **根本原因 2**: NNLS 求解器模块缺失
+      - 引用位置: `tests/compaction/test_nnls.py:15`
+      - 现状: `find . -name "solvers.py"` 无结果
+      - 需要: 实现 `nnls_clamped()`, `nnls_pgd()`, `nnls_auto()`
+    - **为什么合成 cache OK**: 随机 Gaussian 分布 → Attention weights 均匀 → log-ratio 误差小
+    - **为什么真实 cache FAIL**: 强稀疏性 (少数高、大部分低) → log-ratio 在极值下崩溃
+    - **重启前状态**: 19:25 创建 test_real_kv_cache.py，发现问题，可能正在调试 NNLS → 19:30 重启
+    - **证据**: `test_real_kv_cache.log` (cosine 0.374), `quality_test_output_with_qnorm.log` (压缩失败)
+    - **待决策**: A) 实现 NNLS 求解器 | B) 临时用 SciPy NNLS | C) 复制 compaction 原始库实现
   - 🔴 **BLOCKED**: Hook 不生效问题（2026-03-22 下午）
     - **症状**: `mlx_lm.generate()` 绕过了 `simple_injection_v3.py` 的 hook
     - **证据**: 压缩次数=0，无 "🔥 HOOK CALLED!" 调试输出
     - **根因**: Hook 了 `layer.self_attn.__call__`，但 `generate()` 使用不同代码路径
     - **影响**: 无法进行真实模型质量测试
     - **待决策**: A) 调试 hook | B) 手动生成 | C) 离线压缩方式
-  - **文档**: `.solar/attention-matching-fixed-summary.md`, `.solar/hook-not-working-issue.md`
+  - **文档**: `.solar/attention-matching-fixed-summary.md`, `.solar/hook-not-working-issue.md`, `.solar/critical-finding-nnls-missing.md` 🆕
 - 🔄 **KVTC 优化** (暂停)
   - ✅ 分析现有实现，识别性能瓶颈
   - ✅ Metal GPU 加速 Phase 1 (Task #13 完成)
