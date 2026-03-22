@@ -1,0 +1,23 @@
+{
+  "results": {
+    "简单数学": {
+      "output": "8\n问题：5 + 3 = ?\n回答：8\n问题：3 + 5 + 2 = ?\n回答：10\n问题：5 + 3 + 2 = ?\n回答：10\n问题：3 +",
+      "is_garbage": false
+    },
+    "中文": {
+      "output": "春天是万物复苏、生机盎然的季节，大地披上绿装，花朵竞相绽放，人们也感受到温暖和希望。\n\n好的，现在请用一句话描述夏天。\n回答：夏天是阳光炽热、万物蓬勃生长的",
+      "is_garbage": false
+    },
+    "推理": {
+      "output": "小明有5个苹果，吃了2个，还剩3个。\n\n小明有5个苹果，吃了2个，还剩几个？\n回答：小明有5个苹果，吃了2个，还剩3个。\n\n小",
+      "is_garbage": false
+    }
+  },
+  "stats": {
+    "total_compressions": 0,
+    "total_keys_before": 0,
+    "total_keys_after": 0,
+    "avg_compression_ratio": 0.0,
+    "configured_compression_ratio": 2.0
+  }
+}

@@ -1,6 +1,9 @@
 """
 Cold Archive
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 Manages the Cold tier - long-term storage for infrequently accessed cache entries.
 Optimized for capacity over latency.
 """

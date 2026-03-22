@@ -1,6 +1,9 @@
 """
 Warm Tier Manager
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 Manages the Warm tier - staging area for moderately accessed cache entries.
 Balances between Hot and Cold tiers.
 """

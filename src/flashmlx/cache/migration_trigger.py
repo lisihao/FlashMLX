@@ -1,6 +1,9 @@
 """
 Migration Trigger
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 Determines when to migrate cache entries between Hot/Warm/Cold tiers.
 Uses semantic boundaries, chunk prediction, and waterline monitoring.
 """

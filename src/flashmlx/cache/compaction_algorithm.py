@@ -141,8 +141,10 @@ class HighestAttentionKeysCompaction:
         elif self.beta_method == 'ones':
             beta = mx.ones((t,), dtype=K.dtype)
         elif self.beta_method == 'nnls':
-            # Solve for beta using NNLS to match attention distribution
+            # Solve for beta using improved log-ratio method with NNLS refinement
             # Goal: softmax(queries @ C1^T / sqrt(d) + beta) ≈ attn_weights[:, indices]
+
+            from ..compaction.solvers import nnls_pgd
 
             # Compute compressed attention scores (without beta)
             attn_scores_C1 = queries @ C1.T * scale  # (n, t)
@@ -150,18 +152,54 @@ class HighestAttentionKeysCompaction:
             # Extract target attention weights for selected keys
             target_attn = attn_weights[:, indices]  # (n, t)
 
-            # Linearization: beta ≈ log(target_attn / base_attn) * temperature
-            # where base_attn = softmax(attn_scores_C1)
+            # Compute base attention distribution (before beta correction)
             base_attn = mx.softmax(attn_scores_C1, axis=-1)  # (n, t)
 
-            # Compute average log-ratio across queries
-            # Add small epsilon to avoid log(0)
-            eps = 1e-8
-            log_ratio = mx.log((target_attn + eps) / (base_attn + eps))  # (n, t)
-            beta = mx.mean(log_ratio, axis=0)  # (t,)
+            # Improved log-ratio method with better numerical stability
+            # Goal: For each key j, find beta[j] such that:
+            #   softmax(scores_C1[:,j] + beta[j])[j] ≈ target_attn[:,j]
+            #
+            # Linearization (Taylor approximation around scores_C1):
+            #   softmax(scores + delta)[j] ≈ softmax(scores)[j] * (1 + delta[j] - sum_k softmax(scores)[k] * delta[k])
+            #
+            # Simplified first-order approximation:
+            #   beta[j] ≈ log(target_attn[:,j] / base_attn[:,j])
 
-            # Optional: refine beta using NNLS if needed
-            # For now, use the log-ratio approximation which is simpler and faster
+            # Add epsilon to avoid log(0) and division by zero
+            eps = 1e-10
+            target_attn_safe = mx.maximum(target_attn, eps)
+            base_attn_safe = mx.maximum(base_attn, eps)
+
+            # Log-ratio for each (query, key) pair
+            log_ratio = mx.log(target_attn_safe / base_attn_safe)  # (n, t)
+
+            # For each compressed key j, use NNLS to find beta[j] that best fits all queries
+            # Formulation: min_{beta[j]} || beta[j] - log_ratio[:,j] ||^2  s.t. beta[j] >= -10
+            # (Allow slightly negative beta for numerical stability, but not too negative)
+
+            beta_list = []
+            for j in range(t):
+                # Target log-ratio for this compressed key across all queries
+                y_j = log_ratio[:, j]  # (n,)
+
+                # Design matrix: ones column (beta[j] applies equally to all queries)
+                M_j = mx.ones((n, 1), dtype=K.dtype)  # (n, 1)
+
+                # Solve constrained LSQ: min_{beta[j] >= -10} || M_j @ beta[j] - y_j ||^2
+                # Lower bound = -10 to allow some negative correction if needed
+                # This is more robust than strict non-negativity constraint
+                beta_j_array = nnls_pgd(
+                    M_j, y_j,
+                    lower_bound=-10.0,  # Allow negative beta for stability
+                    max_iters=50,
+                    verbose=False
+                )  # (1,)
+                beta_j = float(beta_j_array[0])
+
+                beta_list.append(beta_j)
+
+            # Convert to MLX array
+            beta = mx.array(beta_list, dtype=K.dtype)
         else:
             # Default: ones
             beta = mx.ones((t,), dtype=K.dtype)

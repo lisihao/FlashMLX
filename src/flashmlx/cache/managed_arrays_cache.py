@@ -1,6 +1,9 @@
 """
 Managed Arrays Cache
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 SSM layer cache wrapper that integrates with HybridCacheManager.
 Provides MLX-LM compatible interface with automatic memory management.
 """

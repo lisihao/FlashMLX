@@ -1,6 +1,9 @@
 """
 Layer Scheduler
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 Automatic routing for hybrid cache management based on layer type.
 Provides unified store/retrieve interface that routes to appropriate strategies.
 """

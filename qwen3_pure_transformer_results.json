@@ -1,0 +1,107 @@
+[
+  {
+    "scenario": "简单数学",
+    "prompt": "问题：3 + 5 = ?\n回答：",
+    "baseline": {
+      "text": "8\n问题：5 + 3 = ?\n回答：8\n问题：3 + 5 + 2 = ?\n回答：10",
+      "tg": 22.113278113230116,
+      "num_tokens": 29
+    },
+    "compressed": [
+      {
+        "compression_ratio": 2.0,
+        "text": "’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S’S",
+        "tg": 8.13709789857961,
+        "num_tokens": 30,
+        "token_overlap": 0.0,
+        "tg_change": -63.20266105769602
+      },
+      {
+        "compression_ratio": 2.5,
+        "text": "1) ))))))))))))))))))))))))))",
+        "tg": 3.2583386266924617,
+        "num_tokens": 9,
+        "token_overlap": 0.0,
+        "tg_change": -85.26523923767306
+      },
+      {
+        "compression_ratio": 3.0,
+        "text": "1) ))))))))))))))))))))))))))",
+        "tg": 3.2441317063604127,
+        "num_tokens": 9,
+        "token_overlap": 0.0,
+        "tg_change": -85.32948534473735
+      }
+    ]
+  },
+  {
+    "scenario": "中文理解",
+    "prompt": "请用一句话描述春天的特点。\n回答：",
+    "baseline": {
+      "text": "mis脚脚脚脚脚脚脚脚脚 lis lis.payload.payload.payload.payload_perm_perm_perm_perm_perm_perm_perm_perm NRF NRF NRF NRF NRF NRF NRF NRF NRF NRF NRF NRF NRF NRF`]`]`]`]`]```ffffffffffffffffffffffffffffffff",
+      "tg": 7.830087225684645,
+      "num_tokens": 48
+    },
+    "compressed": [
+      {
+        "compression_ratio": 2.0,
+        "text": "blocks sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions sessions/proto/proto learnedss) and and and",
+        "tg": 7.70338501870979,
+        "num_tokens": 47,
+        "token_overlap": 0.0,
+        "tg_change": -1.6181455368624753
+      },
+      {
+        "compression_ratio": 2.5,
+        "text": "uju\n \n RAT\n \n\n \n\n \n�t\n \n Irma\n \n ‘\n \n�t\n \n\n \n�t�t�t \n�t�t�t \n�t�t�t \n�t�t�t \n\n\n�t�t�tuju�t�t�tuju�tanne旷视野",
+        "tg": 10.953217658041318,
+        "num_tokens": 48,
+        "token_overlap": 0.0,
+        "tg_change": 39.88627894350938
+      },
+      {
+        "compression_ratio": 3.0,
+        "text": "请\n\n \n\n\n\n[\n\n999)9)())()))))))))))))))))))))))))))))))))))))",
+        "tg": 5.127752345312096,
+        "num_tokens": 22,
+        "token_overlap": 0.0,
+        "tg_change": -34.51219382982369
+      }
+    ]
+  },
+  {
+    "scenario": "简单推理",
+    "prompt": "如果小明有5个苹果，吃了2个，还剩几个？\n回答：",
+    "baseline": {
+      "text": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+      "tg": 1.3461675359634013,
+      "num_tokens": 5
+    },
+    "compressed": [
+      {
+        "compression_ratio": 2.0,
+        "text": "'**� Airways Airways Airways Airways Airways emitting emitting emitting残忍残忍ragments生产总生产总生产总生产总五星蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯蚯工作站工作站",
+        "tg": 8.173182058153834,
+        "num_tokens": 41,
+        "token_overlap": 0.0,
+        "tg_change": 507.144492777015
+      },
+      {
+        "compression_ratio": 2.5,
+        "text": "– fraternity –   –冻 –dispose –冻 –xda – –\n\n –dispose – –\n\n – –\n\n – – – –\n\n – – – –\n\n – – –CharCode –     –     –     –",
+        "tg": 11.288685094558296,
+        "num_tokens": 39,
+        "token_overlap": 0.0,
+        "tg_change": 738.5795076003976
+      },
+      {
+        "compression_ratio": 3.0,
+        "text": "，，)）)))))))))))))))))))))))))))))))))))",
+        "tg": 3.6770095661271904,
+        "num_tokens": 13,
+        "token_overlap": 0.0,
+        "tg_change": 173.1465042718991
+      }
+    ]
+  }
+]

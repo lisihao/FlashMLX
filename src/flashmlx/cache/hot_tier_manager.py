@@ -1,6 +1,9 @@
 """
 Hot Tier Manager
 
+⚠️  DEPRECATED: 2026-03-22 - SSM cache sealed. See SSM_CACHE_DEPRECATION.md
+
+
 Manages the Hot tier - active, frequently accessed cache entries.
 Optimized for low-latency access and small working set.
 """

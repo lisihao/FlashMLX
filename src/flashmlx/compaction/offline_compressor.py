@@ -32,8 +32,9 @@ def offline_compress_kv_cache_per_head(
     use_omp: bool = True,
     use_fast_omp: bool = False,
     max_omp_iters: int = 100,
-    verbose: bool = True
-) -> Tuple[mx.array, mx.array, mx.array]:
+    verbose: bool = True,
+    return_queries: bool = False
+) -> Tuple[mx.array, mx.array, mx.array] | Tuple[mx.array, mx.array, mx.array, mx.array]:
     """
     Offline compress single head's KV cache (完整论文算法)
 
@@ -99,7 +100,10 @@ def offline_compress_kv_cache_per_head(
     if verbose:
         print(f"      [Compression] {t1-t0:.2f}s")
 
-    return C1, beta, C2
+    if return_queries:
+        return C1, beta, C2, queries
+    else:
+        return C1, beta, C2
 
 
 def offline_compress_kv_cache(
@@ -110,8 +114,9 @@ def offline_compress_kv_cache(
     use_omp: bool = True,
     use_fast_omp: bool = False,
     max_omp_iters: int = 100,
-    verbose: bool = True
-) -> Tuple[mx.array, mx.array, mx.array]:
+    verbose: bool = True,
+    return_queries: bool = False
+) -> Tuple[mx.array, mx.array, mx.array] | Tuple[mx.array, mx.array, mx.array, mx.array]:
     """
     Offline compress multi-head KV cache (完整论文实现)
 
@@ -164,6 +169,7 @@ def offline_compress_kv_cache(
     C1_list = []
     beta_list = []
     C2_list = []
+    queries_list = [] if return_queries else None
 
     total_time = 0
 
@@ -176,15 +182,22 @@ def offline_compress_kv_cache(
         K_head = keys[0, head_idx]  # (seq_len, head_dim)
         V_head = values[0, head_idx]
 
-        C1, beta, C2 = offline_compress_kv_cache_per_head(
+        result = offline_compress_kv_cache_per_head(
             K_head, V_head,
             compression_ratio=compression_ratio,
             num_queries=num_queries,
             use_omp=use_omp,
             use_fast_omp=use_fast_omp,
             max_omp_iters=max_omp_iters,
-            verbose=verbose
+            verbose=verbose,
+            return_queries=return_queries
         )
+
+        if return_queries:
+            C1, beta, C2, queries = result
+            queries_list.append(queries)
+        else:
+            C1, beta, C2 = result
 
         C1_list.append(C1)
         beta_list.append(beta)
@@ -216,7 +229,12 @@ def offline_compress_kv_cache(
         print(f"  Avg time per head: {total_time/n_heads:.2f}s")
         print("=" * 70)
 
-    return C1_all, beta_all, C2_all
+    if return_queries:
+        # Stack queries: (n_heads, num_queries, head_dim) -> (1, n_heads, num_queries, head_dim)
+        queries_all = mx.stack(queries_list, axis=0)[None, ...]
+        return C1_all, beta_all, C2_all, queries_all
+    else:
+        return C1_all, beta_all, C2_all
 
 
 def offline_compress_mlx_lm_cache(

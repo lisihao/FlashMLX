@@ -1,6 +1,26 @@
 """
 Hybrid Cache Manager
 
+⚠️  DEPRECATED: 2026-03-22 ⚠️
+
+This module is DEPRECATED. SSM cache components are sealed.
+
+Deprecation Reason:
+- SSM caching overlaps with ThunderLLAMA prefix caching
+- GPU stability issues in production
+- See: SSM_CACHE_DEPRECATION.md
+
+Preserved Components:
+- LayerType enum (may be useful for layer detection)
+- Architecture concepts (reference only)
+
+Active Alternative:
+- Use AttentionMatchingCompressor for Attention layers only
+- Use ThunderLLAMA prefix caching for cross-request reuse
+
+---
+
+Original Purpose (Archived):
 Unified cache management system for mixed-architecture LLMs (SSM + Attention).
 Routes cache operations to appropriate strategies based on layer type.
 """
