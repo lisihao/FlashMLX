@@ -1,11 +1,11 @@
 {
   "512": {
     "baseline": {
-      "ttft_ms": 1022.5281715393066,
-      "ttft_s": 1.0225281715393066,
-      "avg_tbt_ms": 11.355130359379931,
-      "pp_tok_s": 549.6181089602345,
-      "tg_tok_s": 88.06591983983238,
+      "ttft_ms": 940.6001567840576,
+      "ttft_s": 0.9406001567840576,
+      "avg_tbt_ms": 11.263495743876755,
+      "pp_tok_s": 597.4908636221114,
+      "tg_tok_s": 88.78238361688344,
       "prompt_tokens": 562,
       "generated_tokens": 100,
       "mem_before_mb": 18605.02954864502,
@@ -13,29 +13,29 @@
       "mem_used_mb": 0.4843769073486328
     },
     "hybrid": {
-      "ttft_ms": 783.4758758544922,
-      "ttft_s": 0.7834758758544922,
-      "avg_tbt_ms": 11.243728676227608,
-      "pp_tok_s": 717.3162790584444,
-      "tg_tok_s": 88.93846772683871,
+      "ttft_ms": 846.5752601623535,
+      "ttft_s": 0.8465752601623535,
+      "avg_tbt_ms": 13.863301036333796,
+      "pp_tok_s": 663.851197225184,
+      "tg_tok_s": 72.13289225842662,
       "prompt_tokens": 562,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18669.408456802368,
+      "mem_used_mb": 64.37890625,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 2.730366492146597
       }
     }
   },
   "1024": {
     "baseline": {
-      "ttft_ms": 1273.8349437713623,
-      "ttft_s": 1.2738349437713623,
-      "avg_tbt_ms": 11.284534377281112,
-      "pp_tok_s": 848.6185791069225,
-      "tg_tok_s": 88.61685972735185,
+      "ttft_ms": 1278.135061264038,
+      "ttft_s": 1.278135061264038,
+      "avg_tbt_ms": 11.328143302840417,
+      "pp_tok_s": 845.7635133887359,
+      "tg_tok_s": 88.27571944197247,
       "prompt_tokens": 1081,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
@@ -43,29 +43,29 @@
       "mem_used_mb": 0.484375
     },
     "hybrid": {
-      "ttft_ms": 1264.1220092773438,
-      "ttft_s": 1.2641220092773438,
-      "avg_tbt_ms": 11.263474069460475,
-      "pp_tok_s": 855.1389755629455,
-      "tg_tok_s": 88.78255446171595,
+      "ttft_ms": 1264.3709182739258,
+      "ttft_s": 1.2643709182739258,
+      "avg_tbt_ms": 13.785487473613083,
+      "pp_tok_s": 854.9706295647346,
+      "tg_tok_s": 72.54005358273389,
       "prompt_tokens": 1081,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18672.474863052368,
+      "mem_used_mb": 67.4453125,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 3.132007233273056
       }
     }
   },
   "2048": {
     "baseline": {
-      "ttft_ms": 2405.9810638427734,
-      "ttft_s": 2.4059810638427734,
-      "avg_tbt_ms": 11.442716675575333,
-      "pp_tok_s": 884.0468580425185,
-      "tg_tok_s": 87.39183433026149,
+      "ttft_ms": 2502.2730827331543,
+      "ttft_s": 2.5022730827331543,
+      "avg_tbt_ms": 11.488353363191239,
+      "pp_tok_s": 850.0271272057744,
+      "tg_tok_s": 87.04467632445976,
       "prompt_tokens": 2127,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
@@ -73,29 +73,29 @@
       "mem_used_mb": 0.484375
     },
     "hybrid": {
-      "ttft_ms": 2403.8052558898926,
-      "ttft_s": 2.4038052558898926,
-      "avg_tbt_ms": 11.432038413153755,
-      "pp_tok_s": 884.8470543894293,
-      "tg_tok_s": 87.47346394929845,
+      "ttft_ms": 2446.218967437744,
+      "ttft_s": 2.446218967437744,
+      "avg_tbt_ms": 13.980706532796225,
+      "pp_tok_s": 869.5051540001322,
+      "tg_tok_s": 71.52714332814152,
       "prompt_tokens": 2127,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18672.424081802368,
+      "mem_used_mb": 67.39453125,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 3.4651162790697674
       }
     }
   },
   "4096": {
     "baseline": {
-      "ttft_ms": 4576.304912567139,
-      "ttft_s": 4.576304912567139,
-      "avg_tbt_ms": 11.814192087963374,
-      "pp_tok_s": 906.4081347833802,
-      "tg_tok_s": 84.6439597861988,
+      "ttft_ms": 4696.953058242798,
+      "ttft_s": 4.696953058242798,
+      "avg_tbt_ms": 11.760080703581222,
+      "pp_tok_s": 883.1257090637883,
+      "tg_tok_s": 85.03343005932574,
       "prompt_tokens": 4148,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
@@ -103,29 +103,29 @@
       "mem_used_mb": 0.484375
     },
     "hybrid": {
-      "ttft_ms": 4652.949094772339,
-      "ttft_s": 4.652949094772339,
-      "avg_tbt_ms": 11.688232421875,
-      "pp_tok_s": 891.4776232261692,
-      "tg_tok_s": 85.55613577023499,
+      "ttft_ms": 4509.459972381592,
+      "ttft_s": 4.509459972381592,
+      "avg_tbt_ms": 13.954427507188585,
+      "pp_tok_s": 919.844066785076,
+      "tg_tok_s": 71.66184348908995,
       "prompt_tokens": 4148,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18669.427988052368,
+      "mem_used_mb": 64.3984375,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 3.6941624365482233
       }
     }
   },
   "8192": {
     "baseline": {
-      "ttft_ms": 9694.089889526367,
-      "ttft_s": 9.694089889526367,
-      "avg_tbt_ms": 12.452180939491349,
-      "pp_tok_s": 851.3434571012859,
-      "tg_tok_s": 80.30721725449392,
+      "ttft_ms": 9814.722061157227,
+      "ttft_s": 9.814722061157227,
+      "avg_tbt_ms": 12.415091196695963,
+      "pp_tok_s": 840.8796447392125,
+      "tg_tok_s": 80.54713285280826,
       "prompt_tokens": 8253,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
@@ -133,29 +133,29 @@
       "mem_used_mb": 0.484375
     },
     "hybrid": {
-      "ttft_ms": 9761.073112487793,
-      "ttft_s": 9.761073112487793,
-      "avg_tbt_ms": 12.480119262078796,
-      "pp_tok_s": 845.5012993849574,
-      "tg_tok_s": 80.12743940985636,
+      "ttft_ms": 9013.551950454712,
+      "ttft_s": 9.013551950454712,
+      "avg_tbt_ms": 14.078829023573133,
+      "pp_tok_s": 915.6212828599336,
+      "tg_tok_s": 71.028634435835,
       "prompt_tokens": 8253,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18672.427988052368,
+      "mem_used_mb": 67.3984375,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 3.836616847826087
       }
     }
   },
   "16384": {
     "baseline": {
-      "ttft_ms": 20827.007055282593,
-      "ttft_s": 20.827007055282593,
-      "avg_tbt_ms": 13.571002266623756,
-      "pp_tok_s": 790.8481500140593,
-      "tg_tok_s": 73.68652516250619,
+      "ttft_ms": 20905.278205871582,
+      "ttft_s": 20.905278205871582,
+      "avg_tbt_ms": 13.569020261668195,
+      "pp_tok_s": 787.8871468629322,
+      "tg_tok_s": 73.69728843466687,
       "prompt_tokens": 16471,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
@@ -163,19 +163,19 @@
       "mem_used_mb": 0.484375
     },
     "hybrid": {
-      "ttft_ms": 21409.406900405884,
-      "ttft_s": 21.409406900405884,
-      "avg_tbt_ms": 13.57445331534954,
-      "pp_tok_s": 769.3347170531725,
-      "tg_tok_s": 73.66779175329538,
+      "ttft_ms": 18034.315824508667,
+      "ttft_s": 18.034315824508667,
+      "avg_tbt_ms": 14.171573850843641,
+      "pp_tok_s": 913.3143813316102,
+      "tg_tok_s": 70.56379273925666,
       "prompt_tokens": 16471,
       "generated_tokens": 100,
       "mem_before_mb": 18605.029550552368,
-      "mem_after_mb": 18605.513925552368,
-      "mem_used_mb": 0.484375,
+      "mem_after_mb": 18672.427988052368,
+      "mem_used_mb": 67.3984375,
       "cache_stats": {
         "ssm_hit_rate": 0.0,
-        "attention_compression": 1.0
+        "attention_compression": 3.916050686378036
       }
     }
   }
