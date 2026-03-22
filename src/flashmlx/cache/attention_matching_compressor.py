@@ -100,16 +100,15 @@ class AttentionMatchingCompressor:
             raise ValueError(f"Keys and values must have same shape, got {keys.shape} vs {values.shape}")
 
         # Calculate target sequence length after compression
-        target_seq_len = int(seq_len / self.compression_ratio)
+        target_seq_len = max(1, int(seq_len / self.compression_ratio))
 
-        if target_seq_len < 1:
-            raise ValueError(
-                f"Compression ratio {self.compression_ratio} too high for seq_len {seq_len}. "
-                f"Target seq_len would be {target_seq_len}"
-            )
-
-        # If already at or below target length, no compression needed
-        if seq_len <= target_seq_len:
+        # If sequence is too short to compress meaningfully, return as-is
+        # (need at least compression_ratio tokens to achieve target compression)
+        if seq_len < self.compression_ratio or seq_len <= target_seq_len:
+            # Track no compression for statistics
+            self.compression_stats['total_compressions'] += 1
+            self.compression_stats['total_keys_before'] += seq_len
+            self.compression_stats['total_keys_after'] += seq_len
             return keys, values
 
         # Step 1: Compute average attention weights (recent N steps)
@@ -178,7 +177,8 @@ class AttentionMatchingCompressor:
         avg_key_norms = mx.mean(key_norms, axis=(0, 1))
 
         # Convert to numpy for history storage
-        current_weights = np.array(avg_key_norms)
+        # Use tolist() to avoid MLX -> numpy buffer format issues
+        current_weights = np.array(avg_key_norms.tolist())
 
         # Normalize to sum to 1 (simulating softmax attention distribution)
         current_weights = current_weights / current_weights.sum()
