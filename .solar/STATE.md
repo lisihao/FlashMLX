@@ -246,15 +246,17 @@
   - 关键发现：4x compression 最优，64MB budget 充足，长上下文 ROI 最高
 
 ### In-Progress
-- 🔥 **混合架构缓存管理 - SSM + Attention Matching 整合** (当前优先级 - Task #62)
-  - **源头**: Fast KV Compaction via Attention Matching 论文
-  - **双策略架构**:
-    - 30 SSM 层 → Hybrid Memory Manager v3 (3+1 tier: Hot/Warm/Cold/Pinned)
-    - 10 Attention 层 → Attention Matching 压缩 (β 校准 + weighted eviction)
-  - **统一调度**: LayerScheduler 自动路由层到对应策略
-  - **状态**: Phase 1 完成 ✅ Phase 2 完成 ✅ Phase 3 完成 ✅ Phase 4 完成 ✅ Phase 5 完成 ✅ Phase 6.1 完成 ✅
-  - **任务拆解**: 18 个子任务 (Task #66-#83)
-  - **进度**: 15/18 完成 (83.3%)
+- 🔥 **Attention Matching 修复与质量验证** (当前优先级 - Task #90-93)
+  - ✅ Task #90: 集成论文正确实现（2026-03-22 上午完成）
+  - ✅ Task #91: Cache Keys Query Generation（质量提升 10%）
+  - ✅ Task #92: 批量处理 Heads（性能优化 -98.3%）
+  - 🔴 **BLOCKED**: Hook 不生效问题（2026-03-22 下午）
+    - **症状**: `mlx_lm.generate()` 绕过了 `simple_injection_v3.py` 的 hook
+    - **证据**: 压缩次数=0，无 "🔥 HOOK CALLED!" 调试输出
+    - **根因**: Hook 了 `layer.self_attn.__call__`，但 `generate()` 使用不同代码路径
+    - **影响**: 无法进行真实模型质量测试
+    - **待决策**: A) 调试 hook | B) 手动生成 | C) 离线压缩方式
+  - **文档**: `.solar/attention-matching-fixed-summary.md`, `.solar/hook-not-working-issue.md`
 - 🔄 **KVTC 优化** (暂停)
   - ✅ 分析现有实现，识别性能瓶颈
   - ✅ Metal GPU 加速 Phase 1 (Task #13 完成)
