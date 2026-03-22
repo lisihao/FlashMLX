@@ -132,6 +132,21 @@ class PerLayerSSMCache(ArraysCache):
 
         return 0
 
+    def make_mask(self, N: int, **kwargs):
+        """
+        Create attention mask (compatible with MLX-LM).
+
+        Args:
+            N: Sequence length
+            **kwargs: Additional arguments (e.g., return_array, window_size)
+                     These are ignored for SSM layers as they don't use masks
+
+        Returns:
+            None (SSM layers don't use attention masks)
+        """
+        # SSM layers don't use attention masks, just call parent
+        return super().make_mask(N)
+
     def empty(self) -> bool:
         """Check if cache is empty."""
         return all(c is None for c in self.cache)

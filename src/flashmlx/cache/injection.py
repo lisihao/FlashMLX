@@ -28,7 +28,7 @@ Example:
     >>> output = model.generate(...)
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import mlx.core as mx
 
 from .hybrid_cache_manager import HybridCacheManager, HybridCacheConfig, LayerType
@@ -37,6 +37,16 @@ from .managed_arrays_cache import ManagedArraysCache
 from .compressed_kv_cache import CompressedKVCache
 from .per_layer_ssm_cache import PerLayerSSMCache
 from .per_layer_attention_cache import PerLayerAttentionCache
+
+
+class CacheList(list):
+    """
+    Custom list subclass that can store additional attributes.
+
+    Used to store cache objects while keeping references to manager
+    and original methods for restoration.
+    """
+    pass
 
 
 class LayerCacheProxy:
@@ -293,9 +303,9 @@ def inject_hybrid_cache_manager(
     # Create HybridCacheManager (shared by all layers)
     manager = HybridCacheManager(config=config, layer_types=layer_types)
 
-    # Create per-layer cache objects
+    # Create per-layer cache objects (using custom list subclass)
     num_layers = len(layer_types)
-    cache_list = []
+    cache_list = CacheList()
 
     for layer_idx in range(num_layers):
         layer_type = layer_types.get(layer_idx)

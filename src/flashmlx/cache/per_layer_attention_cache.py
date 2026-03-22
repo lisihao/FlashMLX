@@ -74,53 +74,68 @@ class PerLayerAttentionCache(ArraysCache):
 
     def __setitem__(self, idx: int, value: mx.array):
         """
-        Set cache slot value with automatic compression.
+        Set cache slot value.
 
-        For Attention layers, keys (slot 0) and values (slot 1) are compressed
-        using Attention Matching algorithm with β-calibration.
+        Note: Compression is handled in update_and_fetch(), not here.
+        This method is only used for direct cache manipulation.
 
         Args:
             idx: Slot index (0 for keys, 1 for values)
             value: Key or Value array
         """
-        if value is None:
-            super().__setitem__(idx, value)
-            return
+        # Store as-is (no compression in direct assignment)
+        # Compression happens in update_and_fetch()
+        super().__setitem__(idx, value)
 
-        # If we have both keys and values, compress them together
-        if idx == 1 and self.cache[0] is not None:
-            # Slot 1 (values) - compress with keys
-            keys = self.cache[0]
-            values = value
+    def update_and_fetch(self, keys: mx.array, values: mx.array) -> tuple[mx.array, mx.array]:
+        """
+        Update KV cache with new keys/values and return compressed cache.
 
-            # Apply Attention Matching compression
-            compressed_keys, compressed_values = self.manager.store_attention(
-                layer_idx=self.layer_idx,
-                keys=keys,
-                values=values,
-                query=self._last_query,  # Use last query if available
-                size_bytes=keys.nbytes + values.nbytes if hasattr(keys, 'nbytes') else 0
-            )
+        This is the main interface used by MLX-LM Attention layers.
 
-            # Store compressed KV
-            super().__setitem__(0, compressed_keys)
-            super().__setitem__(1, compressed_values)
+        Args:
+            keys: New key array (batch, num_heads, new_seq_len, head_dim)
+            values: New value array (batch, num_heads, new_seq_len, head_dim)
 
-            # Update compression stats
-            original_size = keys.shape[2] if len(keys.shape) > 2 else 0
-            compressed_size = compressed_keys.shape[2] if len(compressed_keys.shape) > 2 else 0
-            if compressed_size > 0:
-                ratio = original_size / compressed_size
-                self._total_compressions += 1
-                self._total_compression_ratio += ratio
+        Returns:
+            (compressed_keys, compressed_values) - Full KV cache
+        """
+        # Get current cached keys and values
+        cached_keys = self.cache[0]
+        cached_values = self.cache[1]
 
-        elif idx == 0:
-            # Slot 0 (keys) - store temporarily, wait for values
-            super().__setitem__(idx, value)
-
+        # Concatenate with new keys/values
+        if cached_keys is None:
+            # First call - no existing cache
+            full_keys = keys
+            full_values = values
         else:
-            # Other slots - store as-is
-            super().__setitem__(idx, value)
+            # Concatenate along sequence dimension (axis 2)
+            full_keys = mx.concatenate([cached_keys, keys], axis=2)
+            full_values = mx.concatenate([cached_values, values], axis=2)
+
+        # Apply Attention Matching compression
+        compressed_keys, compressed_values = self.manager.store_attention(
+            layer_idx=self.layer_idx,
+            keys=full_keys,
+            values=full_values,
+            query=self._last_query,
+            size_bytes=full_keys.nbytes + full_values.nbytes if hasattr(full_keys, 'nbytes') else 0
+        )
+
+        # Store compressed KV in cache
+        self.cache[0] = compressed_keys
+        self.cache[1] = compressed_values
+
+        # Update compression stats
+        original_size = full_keys.shape[2] if len(full_keys.shape) > 2 else 0
+        compressed_size = compressed_keys.shape[2] if len(compressed_keys.shape) > 2 else 0
+        if compressed_size > 0:
+            ratio = original_size / compressed_size
+            self._total_compressions += 1
+            self._total_compression_ratio += ratio
+
+        return compressed_keys, compressed_values
 
     def set_query(self, query: mx.array):
         """
@@ -148,6 +163,33 @@ class PerLayerAttentionCache(ArraysCache):
                 return self.cache[0].shape[0]
 
         return 0
+
+    def make_mask(self, N: int, return_array: bool = False, window_size: Optional[int] = None):
+        """
+        Create attention mask (compatible with MLX-LM).
+
+        Args:
+            N: Sequence length
+            return_array: If True, always return array instead of string
+            window_size: Optional sliding window size
+
+        Returns:
+            Attention mask (can be "causal" string or actual mask array)
+        """
+        # Import create_causal_mask from MLX-LM
+        from mlx_lm.models.base import create_causal_mask
+
+        # For single token generation (N=1), no mask needed
+        if N == 1:
+            return None
+
+        offset = self.offset
+
+        # Use causal mask with offset
+        if offset + N > (window_size or float('inf')) or return_array:
+            return create_causal_mask(N, offset, window_size=window_size)
+        else:
+            return "causal"
 
     def empty(self) -> bool:
         """Check if cache is empty."""
