@@ -28,14 +28,20 @@ from .hybrid_cache_manager import (
 from .layer_scheduler import LayerScheduler
 from .managed_arrays_cache import ManagedArraysCache
 from .compressed_kv_cache import CompressedKVCache
+from .per_layer_ssm_cache import PerLayerSSMCache
+from .per_layer_attention_cache import PerLayerAttentionCache
 from .injection import (
-    HybridCacheWrapper,
     inject_hybrid_cache_manager,
     restore_original_cache,
-    create_layer_types_from_model
+    get_cache_statistics,
+    create_layer_types_from_model,
+    # Deprecated - kept for backward compatibility
+    HybridCacheWrapper,
+    LayerCacheProxy
 )
 
 __all__ = [
+    # Core compression and memory management
     "AttentionMatchingCompressor",
     "BudgetManager",
     "BudgetConfig",
@@ -55,14 +61,28 @@ __all__ = [
     "SemanticBoundaryDetector",
     "ChunkPredictor",
     "WaterlineMonitor",
+
+    # Hybrid cache manager
     "HybridCacheManager",
     "HybridCacheConfig",
     "LayerType",
     "LayerScheduler",
+
+    # Per-layer cache implementations (NEW)
+    "PerLayerSSMCache",
+    "PerLayerAttentionCache",
+
+    # Legacy global cache managers (deprecated but kept for compatibility)
     "ManagedArraysCache",
     "CompressedKVCache",
-    "HybridCacheWrapper",
+
+    # Injection utilities
     "inject_hybrid_cache_manager",
     "restore_original_cache",
+    "get_cache_statistics",
     "create_layer_types_from_model",
+
+    # Deprecated wrappers (kept for backward compatibility)
+    "HybridCacheWrapper",
+    "LayerCacheProxy",
 ]

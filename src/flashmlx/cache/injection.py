@@ -35,6 +35,53 @@ from .hybrid_cache_manager import HybridCacheManager, HybridCacheConfig, LayerTy
 from .layer_scheduler import LayerScheduler
 from .managed_arrays_cache import ManagedArraysCache
 from .compressed_kv_cache import CompressedKVCache
+from .per_layer_ssm_cache import PerLayerSSMCache
+from .per_layer_attention_cache import PerLayerAttentionCache
+
+
+class LayerCacheProxy:
+    """
+    Per-layer cache proxy that forwards operations to HybridCacheWrapper.
+
+    Makes hybrid cache compatible with MLX-LM's expectation that cache[layer_idx]
+    returns a per-layer cache object.
+    """
+
+    def __init__(self, wrapper: 'HybridCacheWrapper', layer_idx: int):
+        """
+        Initialize layer cache proxy.
+
+        Args:
+            wrapper: Parent HybridCacheWrapper
+            layer_idx: Layer index this proxy represents
+        """
+        self.wrapper = wrapper
+        self.layer_idx = layer_idx
+        self.layer_type = wrapper.get_layer_type(layer_idx)
+        # Track internal state (for SSM layers with multi-slot cache)
+        self._state_slots = {}
+
+    def __getitem__(self, slot: int):
+        """
+        Get cache state for a slot (SSM layers use slots 0 and 1).
+
+        Args:
+            slot: Cache slot index
+
+        Returns:
+            Cached state array or None
+        """
+        return self._state_slots.get(slot)
+
+    def __setitem__(self, slot: int, value: mx.array):
+        """
+        Set cache state for a slot.
+
+        Args:
+            slot: Cache slot index
+            value: State array to cache
+        """
+        self._state_slots[slot] = value
 
 
 class HybridCacheWrapper:
@@ -62,6 +109,8 @@ class HybridCacheWrapper:
         self.scheduler = scheduler
         self.ssm_cache = ssm_cache
         self.attention_cache = attention_cache
+        # Cache proxy objects for each layer
+        self._layer_proxies: Dict[int, LayerCacheProxy] = {}
 
     def update_and_fetch_ssm(
         self,
@@ -147,6 +196,47 @@ class HybridCacheWrapper:
         """Get layer type (SSM or ATTENTION)."""
         return self.scheduler.get_layer_type(layer_idx)
 
+    def __getitem__(self, index: int) -> LayerCacheProxy:
+        """
+        Get cache proxy for a specific layer (makes wrapper indexable like list).
+
+        Args:
+            index: Layer index
+
+        Returns:
+            LayerCacheProxy for the layer
+        """
+        # Return cached proxy if exists
+        if index in self._layer_proxies:
+            return self._layer_proxies[index]
+
+        # Create new proxy
+        proxy = LayerCacheProxy(self, index)
+        self._layer_proxies[index] = proxy
+        return proxy
+
+    def __setitem__(self, index: int, value):
+        """
+        Set cache for a specific layer (for list compatibility).
+
+        Note: This is a no-op as our hybrid cache manages layers automatically.
+        """
+        # Our hybrid cache doesn't support per-layer cache replacement
+        # This method exists only for interface compatibility
+        pass
+
+    def __len__(self) -> int:
+        """
+        Return number of layers.
+
+        Returns:
+            Total number of layers (SSM + Attention)
+        """
+        return (
+            self.scheduler.hybrid_manager.num_ssm_layers +
+            self.scheduler.hybrid_manager.num_attention_layers
+        )
+
     def __repr__(self) -> str:
         ssm_stats = self.ssm_cache.get_statistics()
         attn_stats = self.attention_cache.get_statistics()
@@ -166,22 +256,21 @@ def inject_hybrid_cache_manager(
     config: HybridCacheConfig,
     layer_types: Dict[int, LayerType],
     auto_inject: bool = True
-) -> HybridCacheWrapper:
+) -> List[Any]:
     """
     Inject hybrid cache manager into MLX-LM model.
 
-    This function creates a HybridCacheManager and wraps it with
-    ManagedArraysCache and CompressedKVCache, providing automatic
-    routing based on layer type.
+    This function creates a HybridCacheManager and returns a list of
+    per-layer cache objects that are compatible with MLX-LM's expectations.
 
     Args:
         model: MLX-LM model instance (e.g., Qwen3.5 model)
         config: HybridCacheConfig with budget and compression settings
         layer_types: Dictionary mapping layer_idx → LayerType
-        auto_inject: If True, automatically replace model.cache (default: True)
+        auto_inject: If True, automatically replace model.make_cache (default: True)
 
     Returns:
-        HybridCacheWrapper instance for manual control
+        List of per-layer cache objects (PerLayerSSMCache or PerLayerAttentionCache)
 
     Example:
         >>> # Qwen3.5-35B: 40 layers (30 SSM + 10 Attention)
@@ -196,55 +285,117 @@ def inject_hybrid_cache_manager(
         ...     compression_ratio=3.0
         ... )
         >>>
-        >>> cache_wrapper = inject_hybrid_cache_manager(model, config, layer_types)
+        >>> cache_list = inject_hybrid_cache_manager(model, config, layer_types)
         >>>
         >>> # Model now uses hybrid cache automatically
         >>> output = model.generate(prompt, max_tokens=100)
     """
-    # Create HybridCacheManager
+    # Create HybridCacheManager (shared by all layers)
     manager = HybridCacheManager(config=config, layer_types=layer_types)
 
-    # Create LayerScheduler
-    scheduler = LayerScheduler(manager)
+    # Create per-layer cache objects
+    num_layers = len(layer_types)
+    cache_list = []
 
-    # Create cache wrappers
-    ssm_cache = ManagedArraysCache(scheduler)
-    attention_cache = CompressedKVCache(scheduler)
+    for layer_idx in range(num_layers):
+        layer_type = layer_types.get(layer_idx)
 
-    # Create unified wrapper
-    wrapper = HybridCacheWrapper(
-        scheduler=scheduler,
-        ssm_cache=ssm_cache,
-        attention_cache=attention_cache
-    )
+        if layer_type == LayerType.SSM:
+            # Create SSM cache for this layer (2 slots: conv_state + ssm_state)
+            cache = PerLayerSSMCache(
+                manager=manager,
+                layer_idx=layer_idx,
+                size=2
+            )
+        elif layer_type == LayerType.ATTENTION:
+            # Create Attention cache for this layer (2 slots: keys + values)
+            cache = PerLayerAttentionCache(
+                manager=manager,
+                layer_idx=layer_idx,
+                size=2
+            )
+        else:
+            raise ValueError(f"Unknown layer type for layer {layer_idx}: {layer_type}")
+
+        cache_list.append(cache)
 
     # Auto-inject if requested
     if auto_inject:
-        # Store original cache (for restoration if needed)
+        # Store original make_cache method if it exists
+        if hasattr(model, 'make_cache'):
+            original_make_cache = model.make_cache
+
+            # Store in cache_list for restoration
+            cache_list._original_make_cache = original_make_cache
+
+            # Replace make_cache to return our cache list
+            model.make_cache = lambda: cache_list
+
+        # Also set model.cache for backward compatibility
         if hasattr(model, 'cache'):
-            wrapper._original_cache = model.cache
+            cache_list._original_cache = model.cache
+        model.cache = cache_list
 
-        # Replace model cache
-        model.cache = wrapper
+        # Store manager reference for statistics access
+        cache_list._manager = manager
 
-    return wrapper
+    return cache_list
 
 
-def restore_original_cache(model: Any, wrapper: HybridCacheWrapper):
+def get_cache_statistics(cache_list: List[Any]) -> Dict[str, Any]:
+    """
+    Get comprehensive cache statistics from cache list.
+
+    Args:
+        cache_list: Per-layer cache list returned by inject_hybrid_cache_manager
+
+    Returns:
+        Dictionary with cache statistics
+
+    Example:
+        >>> cache_list = inject_hybrid_cache_manager(model, config, layer_types)
+        >>> stats = get_cache_statistics(cache_list)
+        >>> print(stats['ssm']['hit_rate'])
+    """
+    if not hasattr(cache_list, '_manager'):
+        raise ValueError("Cache list does not have manager reference")
+
+    # Get manager statistics
+    manager_stats = cache_list._manager.get_statistics()
+
+    # Add per-layer compression statistics
+    attention_compression_stats = []
+    for cache in cache_list:
+        if isinstance(cache, PerLayerAttentionCache):
+            attention_compression_stats.append(cache.get_compression_stats())
+
+    # Combine statistics
+    stats = manager_stats.copy()
+    stats['per_layer_attention_compression'] = attention_compression_stats
+
+    return stats
+
+
+def restore_original_cache(model: Any, cache_list: List[Any]):
     """
     Restore original cache from before injection.
 
     Args:
         model: Model instance
-        wrapper: HybridCacheWrapper with stored original cache
+        cache_list: Per-layer cache list with stored original cache
 
     Example:
-        >>> wrapper = inject_hybrid_cache_manager(model, config, layer_types)
+        >>> cache_list = inject_hybrid_cache_manager(model, config, layer_types)
         >>> # ... use model ...
-        >>> restore_original_cache(model, wrapper)
+        >>> restore_original_cache(model, cache_list)
     """
-    if hasattr(wrapper, '_original_cache'):
-        model.cache = wrapper._original_cache
+    # Restore original make_cache method
+    if hasattr(cache_list, '_original_make_cache'):
+        model.make_cache = cache_list._original_make_cache
+
+    # Restore original cache attribute
+    if hasattr(cache_list, '_original_cache'):
+        model.cache = cache_list._original_cache
     else:
         # No original cache, set to None
         model.cache = None

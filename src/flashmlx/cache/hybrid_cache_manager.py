@@ -387,6 +387,35 @@ class HybridCacheManager:
 
         return stats
 
+    def clear_ssm(self, layer_idx: int):
+        """
+        Clear SSM cache for a specific layer.
+
+        Args:
+            layer_idx: Layer index to clear
+        """
+        if self.layer_types.get(layer_idx) != LayerType.SSM:
+            raise ValueError(f"Layer {layer_idx} is not an SSM layer")
+
+        # Try to evict from each tier
+        # Hot tier
+        result = self.hot_tier.evict(layer_idx)
+        if result:
+            _, size_bytes = result
+            self.budget_manager.deallocate(TierType.HOT, layer_idx, size_bytes)
+
+        # Warm tier
+        result = self.warm_tier.evict(layer_idx)
+        if result:
+            _, size_bytes = result
+            self.budget_manager.deallocate(TierType.WARM, layer_idx, size_bytes)
+
+        # Cold tier
+        result = self.cold_tier.evict(layer_idx)
+        if result:
+            _, size_bytes = result
+            self.budget_manager.deallocate(TierType.COLD, layer_idx, size_bytes)
+
     def clear(self):
         """Clear all caches"""
         self.hot_tier.clear()

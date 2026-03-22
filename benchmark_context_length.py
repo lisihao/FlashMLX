@@ -18,6 +18,7 @@ from mlx_lm import load, stream_generate
 from flashmlx.cache import (
     inject_hybrid_cache_manager,
     restore_original_cache,
+    get_cache_statistics,
     create_layer_types_from_model,
     HybridCacheConfig
 )
@@ -162,10 +163,10 @@ def benchmark_context_length(
     print(f"✓ Actual prompt length: {actual_length} tokens")
 
     # Setup hybrid cache if requested
-    cache_wrapper = None
+    cache_list = None
     if use_hybrid and config:
-        layer_types = create_layer_types_from_model(model, "every 4th")
-        cache_wrapper = inject_hybrid_cache_manager(
+        layer_types = create_layer_types_from_model(model, attention_layer_pattern="every 4th")
+        cache_list = inject_hybrid_cache_manager(
             model, config, layer_types, auto_inject=True
         )
         print(f"✓ Hybrid cache enabled (compression={config.compression_ratio}x, budget={config.total_budget_bytes/(1024**2):.0f}MB)")
@@ -175,14 +176,26 @@ def benchmark_context_length(
     perf = measure_performance(model, tokenizer, prompt, max_tokens=100)
 
     # Get cache statistics if hybrid
-    if cache_wrapper:
-        stats = cache_wrapper.get_statistics()
-        ssm_stats = stats.get('ssm', {}).get('local_cache', {})
-        att_stats = stats.get('attention', {}).get('local_cache', {})
+    if cache_list:
+        stats = get_cache_statistics(cache_list)
+
+        # Extract SSM statistics
+        ssm_hot = stats.get('ssm', {}).get('hot', {})
+        ssm_warm = stats.get('ssm', {}).get('warm', {})
+        ssm_cold = stats.get('ssm', {}).get('cold', {})
+
+        # Calculate overall SSM hit rate
+        total_accesses = ssm_hot.get('total_accesses', 0) + ssm_warm.get('total_accesses', 0) + ssm_cold.get('total_accesses', 0)
+        total_hits = ssm_hot.get('hits', 0) + ssm_warm.get('hits', 0) + ssm_cold.get('hits', 0)
+        ssm_hit_rate = total_hits / total_accesses if total_accesses > 0 else 0.0
+
+        # Extract Attention compression
+        att_stats = stats.get('attention', {})
+        attention_compression = att_stats.get('avg_compression_ratio', 0.0)
 
         perf['cache_stats'] = {
-            'ssm_hit_rate': ssm_stats.get('hit_rate', 0.0),
-            'attention_compression': att_stats.get('avg_compression_ratio', 0.0)
+            'ssm_hit_rate': ssm_hit_rate,
+            'attention_compression': attention_compression
         }
 
     # Print results
@@ -195,13 +208,13 @@ def benchmark_context_length(
     print(f"TG Throughput:          {perf['tg_tok_s']:7.1f} tok/s")
     print(f"Memory Used:            {perf['mem_used_mb']:7.1f} MB")
 
-    if cache_wrapper:
+    if cache_list:
         print(f"\nCache Statistics:")
         print(f"  SSM hit rate:         {perf['cache_stats']['ssm_hit_rate']:7.1%}")
         print(f"  Attention compression:{perf['cache_stats']['attention_compression']:7.2f}x")
 
         # Restore original cache
-        restore_original_cache(model, cache_wrapper)
+        restore_original_cache(model, cache_list)
 
     # Clear cache
     gc.collect()
