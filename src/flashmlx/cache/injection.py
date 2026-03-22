@@ -264,11 +264,11 @@ class HybridCacheWrapper:
 def inject_hybrid_cache_manager(
     model: Any,
     config: HybridCacheConfig,
-    layer_types: Dict[int, LayerType],
+    layer_types: Optional[Dict[int, LayerType]] = None,
     auto_inject: bool = True
 ) -> List[Any]:
     """
-    Inject hybrid cache manager into MLX-LM model.
+    Inject hybrid cache manager into MLX-LM model with automatic layer type detection.
 
     This function creates a HybridCacheManager and returns a list of
     per-layer cache objects that are compatible with MLX-LM's expectations.
@@ -276,30 +276,50 @@ def inject_hybrid_cache_manager(
     Args:
         model: MLX-LM model instance (e.g., Qwen3.5 model)
         config: HybridCacheConfig with budget and compression settings
-        layer_types: Dictionary mapping layer_idx → LayerType
+        layer_types: Optional dictionary mapping layer_idx → LayerType.
+                    If None, automatically detects layer types by inspecting model structure.
         auto_inject: If True, automatically replace model.make_cache (default: True)
 
     Returns:
         List of per-layer cache objects (PerLayerSSMCache or PerLayerAttentionCache)
 
     Example:
-        >>> # Qwen3.5-35B: 40 layers (30 SSM + 10 Attention)
-        >>> layer_types = {}
-        >>> for i in range(40):
-        ...     # Every 4th layer is Attention
-        ...     is_attention = (i + 1) % 4 == 0
-        ...     layer_types[i] = LayerType.ATTENTION if is_attention else LayerType.SSM
-        >>>
+        >>> # Automatic detection (recommended)
         >>> config = HybridCacheConfig(
         ...     total_budget_bytes=256 * 1024 * 1024,  # 256MB
         ...     compression_ratio=3.0
         ... )
+        >>> cache_list = inject_hybrid_cache_manager(model, config)  # Auto-detect!
         >>>
+        >>> # Manual specification (advanced)
+        >>> layer_types = {i: LayerType.ATTENTION for i in range(32)}  # Pure Transformer
         >>> cache_list = inject_hybrid_cache_manager(model, config, layer_types)
         >>>
         >>> # Model now uses hybrid cache automatically
         >>> output = model.generate(prompt, max_tokens=100)
     """
+    # Auto-detect layer types if not provided
+    if layer_types is None:
+        print("🔍 Auto-detecting layer types from model structure...")
+        layer_types = create_layer_types_from_model(model)
+
+        # Print detection summary
+        num_ssm = sum(1 for t in layer_types.values() if t == LayerType.SSM)
+        num_attention = sum(1 for t in layer_types.values() if t == LayerType.ATTENTION)
+        total = len(layer_types)
+
+        print(f"✓ Detected {total} layers: {num_ssm} SSM + {num_attention} Attention")
+
+        if num_ssm == 0:
+            print("  → Pure Transformer model detected (all Attention layers)")
+            print("  → Using Attention Matching compression for all layers")
+        elif num_attention == 0:
+            print("  → Pure SSM model detected (all SSM layers)")
+            print("  → Using Hot/Warm/Cold tiered memory for all layers")
+        else:
+            print(f"  → Hybrid architecture detected (Qwen3.5-MoE style)")
+            print(f"  → Attention layers: Attention Matching compression")
+            print(f"  → SSM layers: Hot/Warm/Cold tiered memory")
     # Create HybridCacheManager (shared by all layers)
     manager = HybridCacheManager(config=config, layer_types=layer_types)
 
