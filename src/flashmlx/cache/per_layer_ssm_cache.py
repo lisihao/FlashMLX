@@ -1,9 +1,16 @@
 """
 Per-Layer SSM Cache
 
-MLX-LM compatible cache for SSM layers with hybrid memory management.
-Each instance manages cache for a single SSM layer, but shares a global
-HybridCacheManager for coordinated budget allocation.
+MLX-LM compatible cache for SSM layers.
+Each instance manages cache for a single SSM layer within a single request.
+
+Design Philosophy:
+- SSM states are small and fixed-size (unlike KV cache which grows with seq_len)
+- Within a single request: use simple in-memory cache (ArraysCache)
+- Across requests: future work for request-level caching with Hot/Warm/Cold tiers
+
+Note: This is different from PerLayerAttentionCache which compresses KV cache
+      within a single request to save memory.
 """
 
 from typing import Optional, List
@@ -17,12 +24,18 @@ class PerLayerSSMCache(ArraysCache):
     """
     Per-layer cache for SSM (State-Space Model) layers.
 
-    Inherits from MLX-LM's ArraysCache for full compatibility, but routes
-    storage operations through HybridCacheManager for tiered memory management.
+    Inherits from MLX-LM's ArraysCache for full compatibility.
+    Uses simple in-memory storage for single-request scenarios.
 
     SSM layers typically have 2 cache slots:
     - Slot 0: Convolution state
     - Slot 1: SSM state
+
+    Design Note:
+        Unlike Attention layers which need KV cache compression (memory pressure),
+        SSM states are small and fixed-size. Hot/Warm/Cold tiering is designed
+        for cross-request scenarios (e.g., reusing system prompt states),
+        which is future work.
 
     Example:
         >>> manager = HybridCacheManager(config, layer_types)
@@ -46,7 +59,7 @@ class PerLayerSSMCache(ArraysCache):
         Initialize per-layer SSM cache.
 
         Args:
-            manager: Shared HybridCacheManager for memory coordination
+            manager: Shared HybridCacheManager (for future cross-request caching)
             layer_idx: Layer index this cache manages
             size: Number of cache slots (default 2 for SSM: conv + state)
             left_padding: Optional left padding for batched inputs
@@ -65,57 +78,8 @@ class PerLayerSSMCache(ArraysCache):
                 f"(type: {layer_type})"
             )
 
-        # Track whether we've stored to managed cache
-        self._managed_storage = [False] * size
-
-    def __setitem__(self, idx: int, value: mx.array):
-        """
-        Set cache slot value and store to managed cache.
-
-        Args:
-            idx: Slot index (0 for conv_state, 1 for ssm_state)
-            value: State array
-        """
-        # Store locally (in-memory, fast access)
-        super().__setitem__(idx, value)
-
-        # Also store in managed cache (tiered Hot/Warm/Cold)
-        if value is not None:
-            # Estimate size in bytes
-            size_bytes = value.nbytes if hasattr(value, 'nbytes') else 0
-
-            # Store to managed cache via HybridCacheManager
-            # (This will route to Hot/Warm/Cold tiers based on access patterns)
-            self.manager.store_ssm(
-                layer_idx=self.layer_idx,
-                data=value,
-                size_bytes=size_bytes,
-                priority=1.0  # Default priority
-            )
-
-            self._managed_storage[idx] = True
-
-    def __getitem__(self, idx: int) -> Optional[mx.array]:
-        """
-        Get cache slot value, trying managed cache if not in local cache.
-
-        Args:
-            idx: Slot index
-
-        Returns:
-            Cached state array or None
-        """
-        # Try local cache first
-        value = super().__getitem__(idx)
-
-        # If not found locally but was stored to managed cache, try retrieving
-        if value is None and idx < len(self._managed_storage) and self._managed_storage[idx]:
-            value = self.manager.retrieve_ssm(self.layer_idx)
-            if value is not None:
-                # Re-populate local cache
-                super().__setitem__(idx, value)
-
-        return value
+    # Removed __setitem__ and __getitem__ overrides
+    # Use default ArraysCache behavior for single-request scenarios
 
     @property
     def offset(self) -> int:
@@ -157,11 +121,7 @@ class PerLayerSSMCache(ArraysCache):
         return sum(c.nbytes for c in self.cache if c is not None)
 
     def clear(self):
-        """Clear both local and managed cache."""
+        """Clear cache."""
         # Clear local cache
         for i in range(len(self.cache)):
             self.cache[i] = None
-            self._managed_storage[i] = False
-
-        # Clear managed cache for this layer
-        self.manager.clear_ssm(self.layer_idx)

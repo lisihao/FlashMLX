@@ -126,8 +126,10 @@
    - 但通过压缩节省的 KV Cache 内存远超此值
 
 3. **SSM 层缓存未生效**
-   - SSM hit rate 0%
-   - 需要进一步优化访问模式
+   - SSM hit rate 0% - **这是正常的**
+   - SSM 缓存设计用于**跨请求**场景（例如复用 system prompt state）
+   - 当前是单请求测试，没有跨请求复用
+   - 详见：`SSM_CACHE_DESIGN.md`
 
 ---
 
