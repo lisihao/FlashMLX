@@ -1,0 +1,74 @@
+{
+  "test_cases": [
+    {
+      "id": 1,
+      "source": "Alpaca",
+      "task": "instruction_following",
+      "prompt": "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\nGive three tips for staying healthy.\n\n### Response:",
+      "max_tokens": 200
+    },
+    {
+      "id": 2,
+      "source": "ShareGPT",
+      "task": "dialogue",
+      "prompt": "Human: I'm trying to learn Python programming. What's the best way to start?\n\nAssistant: Great choice! Here are some excellent ways to start learning Python:\n\n1. Start with the basics - Learn syntax, variables, and data types\n2. Use interactive platforms like Codecademy or Python.org tutorials\n3. Practice with small projects\n\nHuman: What kind of small projects would you recommend for a beginner?\n\nAssistant:",
+      "max_tokens": 180
+    },
+    {
+      "id": 3,
+      "source": "MMLU",
+      "task": "reasoning",
+      "prompt": "Question: A researcher is studying the relationship between sleep and academic performance. She finds that students who sleep 8 hours per night have higher grades than those who sleep 5 hours. What can she conclude?\n\nA) More sleep causes better grades\nB) There is a correlation between sleep and grades\nC) Students with good grades tend to sleep less\nD) Sleep has no effect on academic performance\n\nAnswer:",
+      "max_tokens": 150
+    },
+    {
+      "id": 4,
+      "source": "HumanEval",
+      "task": "code",
+      "prompt": "Complete the following Python function:\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+      "max_tokens": 200
+    },
+    {
+      "id": 5,
+      "source": "GSM8K",
+      "task": "math",
+      "prompt": "Question: Janet's ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\n\nAnswer: Let's solve this step by step:\n",
+      "max_tokens": 200
+    },
+    {
+      "id": 6,
+      "source": "RACE",
+      "task": "reading_comprehension",
+      "prompt": "Read the following passage and answer the question:\n\nPassage: The Amazon rainforest, also known as Amazonia, is a moist broadleaf tropical rainforest in the Amazon biome that covers most of the Amazon basin of South America. This basin encompasses 7 million square kilometers, of which 5.5 million square kilometers are covered by the rainforest.\n\nQuestion: How much of the Amazon basin is covered by rainforest?\n\nAnswer:",
+      "max_tokens": 100
+    },
+    {
+      "id": 7,
+      "source": "TruthfulQA",
+      "task": "factual_qa",
+      "prompt": "Question: What happens if you crack your knuckles a lot?\n\nAnswer:",
+      "max_tokens": 150
+    },
+    {
+      "id": 8,
+      "source": "WMT",
+      "task": "translation",
+      "prompt": "Translate the following sentence from English to Chinese:\n\nEnglish: Climate change is one of the most pressing challenges facing humanity today.\n\nChinese:",
+      "max_tokens": 100
+    },
+    {
+      "id": 9,
+      "source": "CNN/DailyMail",
+      "task": "summarization",
+      "prompt": "Summarize the following article:\n\nArticle: Scientists have discovered a new species of deep-sea fish living 8,000 meters below the ocean surface. The fish, named Pseudoliparis swirei, has adapted to extreme pressure and near-freezing temperatures. This discovery expands our understanding of life in extreme environments.\n\nSummary:",
+      "max_tokens": 120
+    },
+    {
+      "id": 10,
+      "source": "BoolQ",
+      "task": "yes_no_qa",
+      "prompt": "Passage: The Great Wall of China is a series of fortifications made of stone, brick, tamped earth, wood, and other materials, built along the historical northern borders of China to protect the Chinese states and empires.\n\nQuestion: Was the Great Wall of China built to protect against northern invasions?\n\nAnswer:",
+      "max_tokens": 50
+    }
+  ]
+}
