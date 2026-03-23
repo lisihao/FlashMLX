@@ -21,17 +21,23 @@ class HighestAttentionKeysCompaction:
         beta_method: str = 'nnls',
         c2_method: str = 'lsq',
         c2_ridge_lambda: float = 0.0,
-        c2_solver: str = 'lstsq'
+        c2_solver: str = 'lstsq',
+        nnls_iters: int = 1000,
+        nnls_lower_bound: Optional[float] = None,
+        nnls_upper_bound: Optional[float] = None
     ):
         """
         Initialize compaction algorithm.
 
         Args:
             score_method: Method for aggregating attention scores ('mean', 'max', 'sum')
-            beta_method: Method for computing beta ('nnls', 'zeros', 'ones')
+            beta_method: Method for computing beta ('nnls', 'log-ratio', 'zeros', 'ones')
             c2_method: Method for computing C2 ('lsq', 'direct')
             c2_ridge_lambda: Ridge regularization parameter
             c2_solver: Solver for least squares ('lstsq', 'solve')
+            nnls_iters: Number of iterations for NNLS solver (default: 1000)
+            nnls_lower_bound: Lower bound for NNLS solution (default: None uses 1e-12)
+            nnls_upper_bound: Upper bound for NNLS solution (default: None, no upper bound)
         """
         if score_method not in ('mean', 'max', 'sum'):
             raise ValueError(f"score_method must be 'mean', 'max', or 'sum', got {score_method}")
@@ -43,6 +49,9 @@ class HighestAttentionKeysCompaction:
         self.c2_method = c2_method
         self.c2_ridge_lambda = c2_ridge_lambda
         self.c2_solver = c2_solver
+        self.nnls_iters = nnls_iters
+        self.nnls_lower_bound = nnls_lower_bound
+        self.nnls_upper_bound = nnls_upper_bound
 
     def compute_compacted_cache(
         self,
@@ -140,10 +149,9 @@ class HighestAttentionKeysCompaction:
             beta = mx.zeros((t,), dtype=K.dtype)
         elif self.beta_method == 'ones':
             beta = mx.ones((t,), dtype=K.dtype)
-        elif self.beta_method == 'nnls':
-            # Solve for beta using improved log-ratio method with NNLS refinement
+        elif self.beta_method == 'log-ratio':
+            # Log-ratio method (verified quality=1.000 on commit 536d91e)
             # Goal: softmax(queries @ C1^T / sqrt(d) + beta) ≈ attn_weights[:, indices]
-
             from ..compaction.solvers import nnls_pgd
 
             # Compute compressed attention scores (without beta)
@@ -155,17 +163,7 @@ class HighestAttentionKeysCompaction:
             # Compute base attention distribution (before beta correction)
             base_attn = mx.softmax(attn_scores_C1, axis=-1)  # (n, t)
 
-            # Improved log-ratio method with better numerical stability
-            # Goal: For each key j, find beta[j] such that:
-            #   softmax(scores_C1[:,j] + beta[j])[j] ≈ target_attn[:,j]
-            #
-            # Linearization (Taylor approximation around scores_C1):
-            #   softmax(scores + delta)[j] ≈ softmax(scores)[j] * (1 + delta[j] - sum_k softmax(scores)[k] * delta[k])
-            #
-            # Simplified first-order approximation:
-            #   beta[j] ≈ log(target_attn[:,j] / base_attn[:,j])
-
-            # Add epsilon to avoid log(0) and division by zero
+            # Log-ratio approximation: beta[j] ≈ mean_over_queries(log(target_attn[:,j] / base_attn[:,j]))
             eps = 1e-10
             target_attn_safe = mx.maximum(target_attn, eps)
             base_attn_safe = mx.maximum(base_attn, eps)
@@ -173,33 +171,51 @@ class HighestAttentionKeysCompaction:
             # Log-ratio for each (query, key) pair
             log_ratio = mx.log(target_attn_safe / base_attn_safe)  # (n, t)
 
-            # For each compressed key j, use NNLS to find beta[j] that best fits all queries
-            # Formulation: min_{beta[j]} || beta[j] - log_ratio[:,j] ||^2  s.t. beta[j] >= -10
-            # (Allow slightly negative beta for numerical stability, but not too negative)
+            # Average across queries to get beta for each key
+            # This is the simple log-ratio method from the paper
+            beta = mx.mean(log_ratio, axis=0)  # (t,)
 
-            beta_list = []
-            for j in range(t):
-                # Target log-ratio for this compressed key across all queries
-                y_j = log_ratio[:, j]  # (n,)
+        elif self.beta_method == 'nnls':
+            # NNLS method: match partition functions
+            # Ported from author's implementation (https://github.com/adamzweiger/compaction)
+            # highest_attention_keys.py lines 216-224
 
-                # Design matrix: ones column (beta[j] applies equally to all queries)
-                M_j = mx.ones((n, 1), dtype=K.dtype)  # (n, 1)
+            # Special case: when t == T (no compression), beta should be exactly 0
+            if t == T:
+                beta = mx.zeros((t,), dtype=K.dtype)
+            else:
+                from ..compaction.nnls_author import nnls_pg_author
 
-                # Solve constrained LSQ: min_{beta[j] >= -10} || M_j @ beta[j] - y_j ||^2
-                # Lower bound = -10 to allow some negative correction if needed
-                # This is more robust than strict non-negativity constraint
-                beta_j_array = nnls_pgd(
-                    M_j, y_j,
-                    lower_bound=-10.0,  # Allow negative beta for stability
-                    max_iters=50,
-                    verbose=False
-                )  # (1,)
-                beta_j = float(beta_j_array[0])
+                # Compute exp_scores in fp32 for numerical stability (same as author)
+                # Author: scores32 = scores_raw.to(torch.float32) * inv_sqrt_d
+                # Author: exp_scores = torch.exp(scores32 - max_scores)
+                # Note: attn_scores is already scaled (queries @ K.T * scale)
+                scores32 = attn_scores  # Don't multiply scale again!
+                max_scores = mx.max(scores32, axis=1, keepdims=True)  # (n, 1)
+                exp_scores = mx.exp(scores32 - max_scores)  # (n, T) fp32
 
-                beta_list.append(beta_j)
+                # Compute target = partition function (author line 217)
+                # Author: target = exp_scores.sum(dim=1)
+                target = mx.sum(exp_scores, axis=1)  # (n,)
 
-            # Convert to MLX array
-            beta = mx.array(beta_list, dtype=K.dtype)
+                # Build design matrix M for NNLS (author lines 219-220)
+                # CRITICAL: Select columns from exp_scores, don't recompute!
+                # Author: M = exp_scores[:, selected_indices_tensor]
+                M = exp_scores[:, indices]  # (n, t)
+
+                # Solve NNLS using author's exact implementation (author line 223)
+                # Author: B = self._nnls_pg(M, target, self.nnls_iters, self.nnls_lower_bound, self.nnls_upper_bound)
+                B = nnls_pg_author(
+                    M, target,
+                    iters=self.nnls_iters,
+                    lower_bound=self.nnls_lower_bound,
+                    upper_bound=self.nnls_upper_bound,
+                    debug=False
+                )  # (t,) fp32 (>=0)
+
+                # Convert to log-space (author line 224)
+                # Author: beta32 = torch.log(B)
+                beta = mx.log(B)  # (t,)
         else:
             # Default: ones
             beta = mx.ones((t,), dtype=K.dtype)
@@ -255,8 +271,9 @@ class HighestAttentionKeysCompaction:
         scores_K = queries @ K.T * scale  # (n, T)
         attn_K = mx.softmax(scores_K, axis=-1)  # (n, T)
 
-        # Step 2: Compute attention weights for compressed keys C1
-        scores_C1 = queries @ C1.T * scale  # (n, t)
+        # Step 2: Compute attention weights for compressed keys C1 (with beta correction)
+        # CRITICAL: Must include beta to match the compressed attention distribution
+        scores_C1 = queries @ C1.T * scale + beta  # (n, t) - add beta bias
         attn_C1 = mx.softmax(scores_C1, axis=-1)  # (n, t)
 
         # Step 3: Compute target: y = attn_K @ V (n, d)
@@ -304,30 +321,25 @@ class HighestAttentionKeysCompaction:
         # Gradient descent solution or direct approximation
         # Since XTX is well-conditioned (with regularization), use iterative refinement
 
-        # Alternative: Try Cholesky decomposition (symmetric positive definite)
+        # Alternative: Use numpy for stable solve
+        # Note: MLX's linalg.cholesky() is not supported on GPU, so we use numpy
         try:
-            # XTX_reg is symmetric positive definite
-            # Cholesky: XTX_reg = L @ L^T
-            L = mx.linalg.cholesky(XTX_reg)  # (t, t)
-
-            # Solve L @ y = XTy
-            # Then solve L^T @ C2 = y
-            # For now, use simple inverse approach with small matrices
-            # (t is typically 25-100, so inversion is cheap)
-
-            # Convert to numpy, solve, convert back (workaround)
             import numpy as np
+
+            # Convert to numpy for stable solve
             XTX_reg_np = np.array(XTX_reg)
             XTy_np = np.array(XTy)
 
-            # Solve using numpy
-            C2_np = np.linalg.solve(XTX_reg_np, XTy_np)
+            # Solve using numpy's lstsq (more stable than solve for potentially ill-conditioned systems)
+            C2_np, _, _, _ = np.linalg.lstsq(XTX_reg_np, XTy_np, rcond=None)
 
             # Convert back to MLX
             C2 = mx.array(C2_np, dtype=X.dtype)
 
-        except Exception:
+        except Exception as e:
             # Fallback: use direct method
+            import warnings
+            warnings.warn(f"LSQ C2 computation failed: {e}. Falling back to direct method.")
             similarity = C1 @ K.T  # (t, T)
             indices = mx.argmax(similarity, axis=1)  # (t,)
             C2 = V[indices]
