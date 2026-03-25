@@ -79,7 +79,7 @@ def extract_queries_from_model(model, tokenizer, target_layers, compressed_layer
     3. 后面未处理的层使用普通 KVCache
     """
     from mlx_lm.models.cache import ArraysCache, KVCache
-    from mlx_lm.models.compacted_cache import CompactedKVCache
+    from mlx_lm.models.hybrid_cache import HybridKVCache
 
     log(f"Extracting queries from partially compressed model (target: {num_queries_target})...")
     log(f"  Compressed layers: 0-{len(compressed_layers_calibration)-1}")
@@ -119,15 +119,10 @@ def extract_queries_from_model(model, tokenizer, target_layers, compressed_layer
         # Create cache with mixed compression state
         cache = ArraysCache(size=len(model.model.layers))
 
-        # Already compressed layers: use CompactedKVCache with calibration
+        # Already compressed layers: use HybridKVCache with calibration
         for layer_idx in range(len(compressed_layers_calibration)):
-            cache[layer_idx] = CompactedKVCache(
-                max_size=1000,  # Large enough to not trigger runtime compression
-                enable_compression=False,  # We'll manually trigger compression
+            cache[layer_idx] = HybridKVCache(
                 compression_ratio=2.0,
-                use_quality_path=True,
-                quality_fit_beta=True,
-                quality_fit_c2=True,
                 calibration_file=temp_calib_file,
                 layer_idx=layer_idx
             )
@@ -143,7 +138,7 @@ def extract_queries_from_model(model, tokenizer, target_layers, compressed_layer
         # Manually trigger compression for already-compressed layers
         for layer_idx in range(len(compressed_layers_calibration)):
             if cache[layer_idx].offset > 100:  # If there's enough content
-                cache[layer_idx].compact()  # Apply pre-fitted compression
+                cache[layer_idx].compress()  # Apply pre-fitted compression
 
         # Decode tokens
         y = mx.array([[prompt_tokens[-1]]])
@@ -203,12 +198,26 @@ def fit_am_layer(layer_idx, keys, values, queries, compression_ratio=2.0):
     queries_avg = np.mean(queries_np, axis=0)  # (num_queries, head_dim)
 
     # Compute attention scores: Q @ K^T
-    scores = queries_avg @ keys_avg.T  # (num_queries, seq_len)
-    scores = scores / np.sqrt(head_dim)  # Scale
+    raw_scores = queries_avg @ keys_avg.T  # (num_queries, seq_len)
+    raw_scores = raw_scores / np.sqrt(head_dim)  # Scale
 
-    # Apply softmax
-    scores_exp = np.exp(scores - np.max(scores, axis=1, keepdims=True))
-    scores = scores_exp / np.sum(scores_exp, axis=1, keepdims=True)
+    # Debug: Check for NaN/Inf in raw_scores
+    if np.any(np.isnan(raw_scores)) or np.any(np.isinf(raw_scores)):
+        print(f"❌ Layer {layer_idx}: raw_scores contains NaN/Inf!")
+        print(f"   queries_avg: NaN={np.any(np.isnan(queries_avg))}, Inf={np.any(np.isinf(queries_avg))}")
+        print(f"   keys_avg: NaN={np.any(np.isnan(keys_avg))}, Inf={np.any(np.isinf(keys_avg))}")
+        print(f"   raw_scores range: [{raw_scores.min()}, {raw_scores.max()}]")
+        # Skip this layer if data is corrupted
+        return None
+
+    # Apply softmax (using scipy for numerical stability)
+    import scipy.special
+    scores = scipy.special.softmax(raw_scores, axis=1)  # (num_queries, seq_len)
+
+    # Debug: Check for NaN in scores after softmax
+    if np.any(np.isnan(scores)):
+        print(f"❌ Layer {layer_idx}: scores contains NaN after softmax!")
+        return None
 
     # Average attention scores across queries
     avg_scores = np.mean(scores, axis=0)  # (seq_len,)
@@ -221,7 +230,14 @@ def fit_am_layer(layer_idx, keys, values, queries, compression_ratio=2.0):
 
     # Fit beta using bounded least-squares
     R_S = scores[:, selected_indices]  # (num_queries, budget)
-    target = np.mean(scores, axis=1)   # (num_queries,) - mean attention
+
+    # ✅ FIX: Target should be row-wise SUM (= 1.0 after softmax), not mean
+    # AM goal: S @ 1 ≈ S[:, selected] @ beta
+    # where S @ 1 = row-wise sum = 1.0 (softmax property)
+    target = np.sum(scores, axis=1)   # (num_queries,) - should be all 1.0
+
+    # Verify target is close to 1.0
+    assert np.abs(target.mean() - 1.0) < 0.01, f"Target mean {target.mean()} != 1.0, softmax issue?"
 
     # Solve: R_S @ beta ≈ target
     # With bounds: 0 ≤ beta_i ≤ 2
@@ -276,8 +292,8 @@ def main():
     
     # Load existing calibration for Phase 1 (layers 0-17)
     # Priority: on-policy file (if running Phase 3) > offline file
-    onpolicy_calibration_file = f"am_calibration_{args.model}_{args.ratio}x_onpolicy.pkl"
-    offline_calibration_file = f"/tmp/am_calibration_{args.model}_{args.ratio}x.pkl"
+    onpolicy_calibration_file = f"calibrations/am_calibration_{args.model}_{args.ratio}x_onpolicy.pkl"
+    offline_calibration_file = f"calibrations/am_calibration_{args.model}_{args.ratio}x.pkl"
 
     # Choose calibration file based on phase and availability
     if args.phase == '3' and Path(onpolicy_calibration_file).exists():

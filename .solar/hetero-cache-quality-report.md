@@ -1,7 +1,7 @@
 # Heterogeneous Memory Compaction 质量对比报告
 
-**日期**: 2026-03-21 14:14:54
-**模型**: mlx-community/Qwen3.5-35B-A3B-6bit
+**日期**: 2026-03-23 09:53:51
+**模型**: /Volumes/toshiba/models/qwen3.5-35b-mlx
 **Prompt**: '介绍机器学习的基本概念和应用场景'
 **Max tokens**: 200
 
@@ -9,10 +9,10 @@
 
 | 配置 | 成功 | Tokens | 耗时 | 速度 |
 |------|------|--------|------|------|
-| Baseline | ✅ | 200 | 5.48s | 36.52 tok/s |
-| Conservative (ratio=2.0, size=8192) | ✅ | 200 | 3.09s | 64.68 tok/s |
-| Moderate (ratio=3.0, size=8192) | ✅ | 200 | 3.07s | 65.10 tok/s |
-| Aggressive (ratio=5.0, size=4096) | ✅ | 200 | 3.09s | 64.80 tok/s |
+| Baseline | ✅ | 200 | 3.92s | 51.03 tok/s |
+| Conservative (ratio=2.0, size=8192) | ✅ | 197 | 2.42s | 81.54 tok/s |
+| Moderate (ratio=3.0, size=8192) | ✅ | 197 | 2.42s | 81.51 tok/s |
+| Aggressive (ratio=5.0, size=4096) | ✅ | 197 | 2.43s | 81.08 tok/s |
 
 ## 生成内容对比
 
@@ -22,34 +22,66 @@
 。
 
 <think>
+Let me think about how to approach this coding problem.
 
+Problem: 介绍机器学习的基本概念和应用场景。
+
+Key considerations:
+- Approach: 机器学习（Machine Learning, ML）是人工智能（AI）的一个子领域，其核心思想是让计算机从数据中学习规律，而不是通过显式编程来执行特定任务。
+
+Let me implement this solution.
 </think>
 
-机器学习（Machine Learning, ML）是人工智能（AI）的核心分支之一，其核心思想是**让计算机从数据中自动学习规律，而无需进行显式的编程指令**。简单来说，传统编程是“输入规则 + 数据 → 输出答案”，而机器学习是“输入数据 + 答案 → 输出规则”。
+# 机器学习基本概念与应用场景详解
 
-以下是对机器学习基本概念、主要分类及典型应用场景的详细介绍：
+## 一、机器学习的基本概念
 
-### 一、核心基本概念
+### 1. 什么是机器学习？
 
-1.  **数据（Data）**：机器学习的“燃料”。包括结构化数据（如表格）、非结构化数据（如图片、文本、音频）等。数据的质量（准确性、完整性）直接决定了模型的效果。
-2.  **特征（Features）**：从原始数据中提取出的、对预测目标有贡献的属性。例如，在预测房价时，“面积”、“地段”、“房龄”就是特征。
-3.  **模型（Model）**：经过训练后形成的数学函数```
+机器学习（Machine Learning, ML）是人工智能（AI）的一个子领域，其核心思想是让计算机从数据中学习规律，而不是通过显式编程来执行特定任务。
+
+**核心公式**：
+$$f(x) = \text{模型从数据中学习到的映射关系}$$
+
+### 2. 机器学习的三大要素
+
+| 要素 | 说明 |
+|------|------|
+| **数据** | 训练模型的原材料```
 
 ### Conservative (ratio=2.0, size=8192)
 
 ```
 ：
-# 1999999999999999999999999999999999999999999999999999999999999999999999999999990/ 19999999999999999999999999999999999999999999999999999999999990/ 1999999999999990/ 1999999999999999999990/ 199999999```
+
+
+
+#
+let's the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the
+... (截断, 总共 776 字符)
+```
 
 ### Moderate (ratio=3.0, size=8192)
 
 ```
 ：
-# 1999999999999999999999999999999999999999999999999999999999999999999999999999990/ 19999999999999999999999999999999999999999999999999999999999990/ 1999999999999990/ 1999999999999999999990/ 199999999```
+
+
+
+#
+let's the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the
+... (截断, 总共 776 字符)
+```
 
 ### Aggressive (ratio=5.0, size=4096)
 
 ```
 ：
-# 1999999999999999999999999999999999999999999999999999999999999999999999999999990/ 19999999999999999999999999999999999999999999999999999999999990/ 1999999999999990/ 1999999999999999999990/ 199999999```
+
+
+
+#
+let's the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the
+... (截断, 总共 776 字符)
+```
 
