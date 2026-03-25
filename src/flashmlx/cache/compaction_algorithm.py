@@ -327,13 +327,14 @@ class HighestAttentionKeysCompaction:
             import numpy as np
 
             # Convert to numpy for stable solve
-            XTX_reg_np = np.array(XTX_reg)
-            XTy_np = np.array(XTy)
+            # Force float32 to avoid dtype issues with float16
+            XTX_reg_np = np.array(XTX_reg, dtype=np.float32)
+            XTy_np = np.array(XTy, dtype=np.float32)
 
             # Solve using numpy's lstsq (more stable than solve for potentially ill-conditioned systems)
             C2_np, _, _, _ = np.linalg.lstsq(XTX_reg_np, XTy_np, rcond=None)
 
-            # Convert back to MLX
+            # Convert back to MLX with original dtype
             C2 = mx.array(C2_np, dtype=X.dtype)
 
         except Exception as e:
