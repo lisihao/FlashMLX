@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "DCT-Fixed",
+    "description": "\u9891\u57df\u5047\u8bbe\uff0c\u5206\u5c42\u91cf\u5316 (Baseline)",
+    "compression_ratio": 65,
+    "accuracy": 0.89,
+    "calibration_config": {
+      "rank": 8,
+      "bits": 4
+    }
+  },
+  "memory": {
+    "before_load_mb": 454.921875,
+    "after_load_mb": 2253.65625,
+    "model_size_mb": 1798.734375
+  },
+  "load_time_s": 34.276468992233276,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "looking very promising. What do you think will be the biggest impact of of AI on our daily lives?",
+      "tokens": 22,
+      "time_s": 0.4527699947357178,
+      "tok_per_s": 48.589792291429156,
+      "prefill_time_s": 0.07307600975036621,
+      "first_token_time_s": 0.22250795364379883
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "have advanced significantly. Can you predict any major changes or developments in the field of of artificial intelligence?",
+      "tokens": 21,
+      "time_s": 0.37178492546081543,
+      "tok_per_s": 56.48426969966891,
+      "prefill_time_s": 0.09264826774597168,
+      "first_token_time_s": 0.15210604667663574
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "what it is and how it works.",
+      "tokens": 9,
+      "time_s": 0.21882414817810059,
+      "tok_per_s": 41.12891595800897,
+      "prefill_time_s": 0.07528114318847656,
+      "first_token_time_s": 0.1262359619140625
+    }
+  ],
+  "avg_tok_per_s": 48.73432598303568
+}

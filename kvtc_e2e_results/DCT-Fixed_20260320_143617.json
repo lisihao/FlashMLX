@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "DCT-Fixed",
+    "description": "\u9891\u57df\u5047\u8bbe\uff0c\u5206\u5c42\u91cf\u5316 (Baseline)",
+    "compression_ratio": 65,
+    "accuracy": 0.89,
+    "calibration_config": {
+      "rank": 8,
+      "bits": 4
+    }
+  },
+  "memory": {
+    "before_load_mb": 455.1875,
+    "after_load_mb": 841.1875,
+    "model_size_mb": 386.0
+  },
+  "load_time_s": 0.5453166961669922,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "as the\nfunction, you are currently\nof the\nof the\nof the\nof the\nof the\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\ntopic\n",
+      "tokens": 100,
+      "time_s": 0.5205299854278564,
+      "tok_per_s": 192.11189134052228,
+      "prefill_time_s": 0.034349918365478516,
+      "first_token_time_s": 0.1981220245361328
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "decide the future of the world. Based on the\nC) williams and john mclaren's most famous work of the 1950s, the\nCranial\nSchiedeland\uff0cthe capital of germany\uff0clocated in the\nCranial\nSchiedeland\uff0cthe\nworld's\ndeficit\uff0cmilton s. m\uff0cthe\nworld's\ndeficit\uff0cthe\nworld's\ndeficit\uff0cthe\nworld's\ndeficit\uff0cwhich is",
+      "tokens": 100,
+      "time_s": 0.35764408111572266,
+      "tok_per_s": 279.6075911225358,
+      "prefill_time_s": 0.02841496467590332,
+      "first_token_time_s": 0.07475996017456055
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "you can't help but use the\nMOMENTS, you can't have the\ndef -t is case, you can modify the\ndef -tentious, you can't have\ndef -n't have\n-nt, you can\n-nt, you can't\n-nt, you can't\n-nt, you can't\n-nt, you can't\n-nt, you can't\n-nt, you can't\n-nt, you can't\n",
+      "tokens": 100,
+      "time_s": 0.35366296768188477,
+      "tok_per_s": 282.75507796436494,
+      "prefill_time_s": 0.025563955307006836,
+      "first_token_time_s": 0.07160496711730957
+    }
+  ],
+  "avg_tok_per_s": 251.49152014247434
+}

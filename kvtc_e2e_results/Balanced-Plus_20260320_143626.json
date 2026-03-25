@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Balanced-Plus",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 30%, 6/5/4/3/2/0 bits)",
+    "compression_ratio": 34,
+    "accuracy": 0.77,
+    "calibration_config": {
+      "keep": 0.3,
+      "bits": "6/5/4/3/2/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 532.40625,
+    "after_load_mb": 868.96875,
+    "model_size_mb": 336.5625
+  },
+  "load_time_s": 0.36048102378845215,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "like to be a while of the future of artificial intelligence is like to be a while of the future of the future of the future of the future of the author is a while of the future of the author is a while of the author is a while of the author a while of the author a while you are a while of the author a while of the author you are a while of the author a while of the author you are a while of the author you are a while of the author a while",
+      "tokens": 100,
+      "time_s": 0.36020398139953613,
+      "tok_per_s": 277.62047385334307,
+      "prefill_time_s": 0.034648895263671875,
+      "first_token_time_s": 0.07718396186828613
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will",
+      "tokens": 100,
+      "time_s": 0.3485991954803467,
+      "tok_per_s": 286.8623946828294,
+      "prefill_time_s": 0.03168988227844238,
+      "first_token_time_s": 0.07451295852661133
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "\"Quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing",
+      "tokens": 100,
+      "time_s": 0.3451540470123291,
+      "tok_per_s": 289.72570614658895,
+      "prefill_time_s": 0.02770376205444336,
+      "first_token_time_s": 0.07127499580383301
+    }
+  ],
+  "avg_tok_per_s": 284.7361915609204
+}

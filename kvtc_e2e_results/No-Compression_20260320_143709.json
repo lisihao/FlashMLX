@@ -1,0 +1,46 @@
+{
+  "config": {
+    "name": "No-Compression",
+    "description": "\u65e0\u538b\u7f29\uff08\u53c2\u8003\u901f\u5ea6\u4e0a\u9650\uff09",
+    "compression_ratio": 1,
+    "accuracy": 0.0,
+    "calibration_config": {}
+  },
+  "memory": {
+    "before_load_mb": 537.421875,
+    "after_load_mb": 874.03125,
+    "model_size_mb": 336.609375
+  },
+  "load_time_s": 0.3738839626312256,
+  "compression_applied": false,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "to become more intelligent and more capable of understanding and processing human language.",
+      "tokens": 15,
+      "time_s": 0.14617085456848145,
+      "tok_per_s": 102.61963675509921,
+      "prefill_time_s": 0.03590512275695801,
+      "first_token_time_s": 0.10068511962890625
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "revolutionize the way we communicate and share information. What are some of the new ways that people will use technology to communicate and share information?",
+      "tokens": 29,
+      "time_s": 0.14356303215026855,
+      "tok_per_s": 202.00186333237565,
+      "prefill_time_s": 0.02020406723022461,
+      "first_token_time_s": 0.07178378105163574
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "",
+      "tokens": 1,
+      "time_s": 0.06956315040588379,
+      "tok_per_s": 14.375427135850622,
+      "prefill_time_s": 0.012560844421386719,
+      "first_token_time_s": 0.06493330001831055
+    }
+  ],
+  "avg_tok_per_s": 106.33230907444181
+}

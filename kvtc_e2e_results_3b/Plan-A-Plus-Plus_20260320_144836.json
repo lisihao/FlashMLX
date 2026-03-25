@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Plan-A-Plus-Plus",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 80%, 5/4/3/0 bits)",
+    "compression_ratio": 12,
+    "accuracy": 0.35,
+    "calibration_config": {
+      "keep": 0.8,
+      "bits": "5/4/3/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 559.609375,
+    "after_load_mb": 2282.21875,
+    "model_size_mb": 1722.609375
+  },
+  "load_time_s": 0.47344064712524414,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "incredibly exciting and full of possibilities. It's going to transform many aspects of our lives, from the way we work to the way we communicate. However, I'm also concerned about the potential risks and ethical issues that could arise. What do you think?",
+      "tokens": 52,
+      "time_s": 0.692608118057251,
+      "tok_per_s": 75.07853090988702,
+      "prefill_time_s": 0.08659505844116211,
+      "first_token_time_s": 0.13843488693237305
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "have advanced significantly. Can you provide a detailed scenario of of how self-driving cars will be integrated into our daily lives? Please include aspects such as infrastructure changes, public acceptance, and potential job displacement.",
+      "tokens": 41,
+      "time_s": 0.5864381790161133,
+      "tok_per_s": 69.91359271455869,
+      "prefill_time_s": 0.11255383491516113,
+      "first_token_time_s": 0.1531519889831543
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "Alibaba Cloud Qwen.",
+      "tokens": 6,
+      "time_s": 0.18885421752929688,
+      "tok_per_s": 31.770537499747512,
+      "prefill_time_s": 0.09140491485595703,
+      "first_token_time_s": 0.12767910957336426
+    }
+  ],
+  "avg_tok_per_s": 58.92088704139774
+}

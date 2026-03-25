@@ -258,7 +258,96 @@ def test_magnitude_tiered():
           f"精度提升 {(1 - tier_err_prec/dct_err)*100:.1f}%")
     print()
 
-    results.append(("方案 A (High Prec 60%)", tier_enc_prec_time, tier_dec_prec_time, tier_err_prec, tier_size_prec))
+    results.append(("方案 A (High Prec 40%)", tier_enc_prec_time, tier_dec_prec_time, tier_err_prec, tier_size_prec))
+
+    # ========================================================================
+    # 方案 A+: Ultra Precision (70% + 5-bit)
+    # ========================================================================
+    print("-" * 70)
+    print("方案 A+ (Ultra Precision): Magnitude + Tiered (保留 70% + 5-bit)")
+    print("说明: Top 25% → 5-bit, 25-50% → 4-bit, 50-70% → 3-bit, 70-100% → 0-bit")
+    print("目标: 精度 <0.35 (接近 P4 原始), 压缩率 >25x")
+    print("-" * 70)
+
+    tiered_config_ultra = KVTCMagnitudeTieredConfig(
+        tier_ratios=(0.25, 0.50, 0.70),  # 保留 70%
+        tier_bits=(5, 4, 3, 0),  # 使用 5-bit 高精度！
+        pruning_method="l2",
+    )
+
+    # 注意：需要修改 config.bits 为 5 以支持 5-bit 量化
+    config_5bit = KVTCCodecConfig(
+        rank=8,
+        bits=5,  # 5-bit！
+        group_size=16,
+        sample_limit=256,
+        zero_bit_energy_fraction=0.001,
+    )
+
+    tier_cal_ultra = fit_magnitude_tiered_calibration([keys_flat], [values_flat], config_5bit, tiered_config_ultra)
+
+    t0 = time.time()
+    tier_enc_ultra = encode_tensor_magnitude_tiered(keys_flat, tier_cal_ultra.keys)
+    tier_enc_ultra_time = time.time() - t0
+
+    t0 = time.time()
+    tier_dec_ultra = decode_tensor_magnitude_tiered(tier_enc_ultra, tier_cal_ultra.keys)
+    tier_dec_ultra_time = time.time() - t0
+
+    tier_err_ultra = np.linalg.norm(tier_dec_ultra - keys_flat) / np.linalg.norm(keys_flat)
+    tier_size_ultra = measure_compression_ratio(tier_enc_ultra)
+
+    print(f"⏱️  Encode: {tier_enc_ultra_time*1000:.2f} ms")
+    print(f"⏱️  Decode: {tier_dec_ultra_time*1000:.2f} ms")
+    print(f"📊 Relative error: {tier_err_ultra:.6f}")
+    print(f"💾 Compressed size: {tier_size_ultra / 1024:.2f} KB")
+    print(f"📦 Compression ratio: {keys_flat.nbytes / tier_size_ultra:.2f}x")
+    print(f"🎯 vs DCT-Fixed: 压缩率 {(tier_size_ultra/dct_size - 1)*100:+.1f}%, "
+          f"精度提升 {(1 - tier_err_ultra/dct_err)*100:.1f}%")
+    print(f"🎯 vs P4 原始 (90%): 对比精度目标 0.275")
+    print()
+
+    results.append(("方案 A+ (Ultra Prec 70%)", tier_enc_ultra_time, tier_dec_ultra_time, tier_err_ultra, tier_size_ultra))
+
+    # ========================================================================
+    # 方案 A++: Super Precision (80% + 5-bit)
+    # ========================================================================
+    print("-" * 70)
+    print("方案 A++ (Super Precision): Magnitude + Tiered (保留 80% + 5-bit)")
+    print("说明: Top 30% → 5-bit, 30-60% → 4-bit, 60-80% → 3-bit, 80-100% → 0-bit")
+    print("目标: 精度 <0.30 (超越 P4 原始), 压缩率 >20x")
+    print("-" * 70)
+
+    tiered_config_super = KVTCMagnitudeTieredConfig(
+        tier_ratios=(0.30, 0.60, 0.80),  # 保留 80%
+        tier_bits=(5, 4, 3, 0),  # 使用 5-bit 高精度！
+        pruning_method="l2",
+    )
+
+    tier_cal_super = fit_magnitude_tiered_calibration([keys_flat], [values_flat], config_5bit, tiered_config_super)
+
+    t0 = time.time()
+    tier_enc_super = encode_tensor_magnitude_tiered(keys_flat, tier_cal_super.keys)
+    tier_enc_super_time = time.time() - t0
+
+    t0 = time.time()
+    tier_dec_super = decode_tensor_magnitude_tiered(tier_enc_super, tier_cal_super.keys)
+    tier_dec_super_time = time.time() - t0
+
+    tier_err_super = np.linalg.norm(tier_dec_super - keys_flat) / np.linalg.norm(keys_flat)
+    tier_size_super = measure_compression_ratio(tier_enc_super)
+
+    print(f"⏱️  Encode: {tier_enc_super_time*1000:.2f} ms")
+    print(f"⏱️  Decode: {tier_dec_super_time*1000:.2f} ms")
+    print(f"📊 Relative error: {tier_err_super:.6f}")
+    print(f"💾 Compressed size: {tier_size_super / 1024:.2f} KB")
+    print(f"📦 Compression ratio: {keys_flat.nbytes / tier_size_super:.2f}x")
+    print(f"🎯 vs DCT-Fixed: 压缩率 {(tier_size_super/dct_size - 1)*100:+.1f}%, "
+          f"精度提升 {(1 - tier_err_super/dct_err)*100:.1f}%")
+    print(f"🎯 vs P4 原始 (90%): 对比精度目标 0.275")
+    print()
+
+    results.append(("方案 A++ (Super Prec 80%)", tier_enc_super_time, tier_dec_super_time, tier_err_super, tier_size_super))
 
     # ========================================================================
     # Summary
@@ -300,12 +389,28 @@ def test_magnitude_tiered():
         print(f"   {name:30s}  {comp_ratio:11.2f}x  {err:14.6f}")
     print()
 
+    # P4 原始对比
+    print("📌 **P4 原始结果对比** (参考值):")
+    print(f"   Conservative (90%): 相对误差 0.275, 压缩率 10.28x")
+    print(f"   Moderate (75%):     相对误差 0.384, 压缩率 11.77x")
+    print(f"   Aggressive (50%):   相对误差 0.579, 压缩率 17.32x")
+    print()
+
+    # Find best precision results
+    best_prec_result = min(results[1:], key=lambda x: x[3])  # Lowest error
+    best_prec_name, _, _, best_prec_err, best_prec_size = best_prec_result
+    best_prec_comp = keys_flat.nbytes / best_prec_size
+
     # Recommendation
     print("🎯 **Recommendation**:")
-    print(f"   方案 A (Balanced 40%) 是最佳选择：")
-    print(f"   - 压缩率接近 DCT-Fixed（{keys_flat.nbytes / tier_size:.2f}x vs {keys_flat.nbytes / dct_size:.2f}x）")
-    print(f"   - 精度大幅提升（误差 {tier_err:.6f} vs {dct_err:.6f}，提升 {(1 - tier_err/dct_err)*100:.1f}%）")
-    print(f"   - 数据驱动，适应性强（不依赖频域假设）")
+    if best_prec_err < 0.35:
+        print(f"   ✅ {best_prec_name} 达到精度目标：")
+        print(f"   - 精度：{best_prec_err:.6f} (目标 <0.35, 接近 P4 原始)")
+        print(f"   - 压缩率：{best_prec_comp:.2f}x (vs P4 原始 10-17x，提升 {(best_prec_comp/12 - 1)*100:+.1f}%)")
+        print(f"   - 数据驱动，自适应（不依赖频域假设）")
+    else:
+        print(f"   ⚠️  当前最佳精度 {best_prec_err:.6f} 仍未达到目标 <0.35")
+        print(f"   建议：进一步提高保留率或使用更高 bit 数")
     print()
 
     print("🔧 **35B 模型实际应用建议**:")

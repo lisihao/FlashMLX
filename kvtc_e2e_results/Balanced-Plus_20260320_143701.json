@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Balanced-Plus",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 30%, 6/5/4/3/2/0 bits)",
+    "compression_ratio": 34,
+    "accuracy": 0.77,
+    "calibration_config": {
+      "keep": 0.3,
+      "bits": "6/5/4/3/2/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 531.375,
+    "after_load_mb": 868.875,
+    "model_size_mb": 337.5
+  },
+  "load_time_s": 0.3570699691772461,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "like to be a while of the future of artificial intelligence is like to be a while of the future of the future of the future of the future of the author is a while of the future of the author is a while of the author is a while of the author a while of the author a while you are a while of the author a while of the author you are a while of the author a while of the author you are a while of the author you are a while of the author a while",
+      "tokens": 100,
+      "time_s": 0.3749558925628662,
+      "tok_per_s": 266.6980356449091,
+      "prefill_time_s": 0.038977861404418945,
+      "first_token_time_s": 0.07969403266906738
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will be a global leader in the market, you will",
+      "tokens": 100,
+      "time_s": 0.3633899688720703,
+      "tok_per_s": 275.186462384724,
+      "prefill_time_s": 0.03218698501586914,
+      "first_token_time_s": 0.08080005645751953
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "\"Quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing is a quantum computing",
+      "tokens": 100,
+      "time_s": 0.3601391315460205,
+      "tok_per_s": 277.6704646637975,
+      "prefill_time_s": 0.0289609432220459,
+      "first_token_time_s": 0.07833123207092285
+    }
+  ],
+  "avg_tok_per_s": 273.18498756447684
+}

@@ -1,0 +1,249 @@
+{
+  "total_tests": 5,
+  "successful": 5,
+  "failed": 0,
+  "results": [
+    {
+      "config": {
+        "name": "DCT-Fixed",
+        "description": "\u9891\u57df\u5047\u8bbe\uff0c\u5206\u5c42\u91cf\u5316 (Baseline)",
+        "compression_ratio": 65,
+        "accuracy": 0.89,
+        "calibration_config": {
+          "rank": 8,
+          "bits": 4
+        }
+      },
+      "memory": {
+        "before_load_mb": 454.921875,
+        "after_load_mb": 2253.65625,
+        "model_size_mb": 1798.734375
+      },
+      "load_time_s": 34.276468992233276,
+      "compression_applied": true,
+      "generation_tests": [
+        {
+          "prompt": "The future of artificial intelligence is",
+          "response": "looking very promising. What do you think will be the biggest impact of of AI on our daily lives?",
+          "tokens": 22,
+          "time_s": 0.4527699947357178,
+          "tok_per_s": 48.589792291429156,
+          "prefill_time_s": 0.07307600975036621,
+          "first_token_time_s": 0.22250795364379883
+        },
+        {
+          "prompt": "In the year 2050, technology will",
+          "response": "have advanced significantly. Can you predict any major changes or developments in the field of of artificial intelligence?",
+          "tokens": 21,
+          "time_s": 0.37178492546081543,
+          "tok_per_s": 56.48426969966891,
+          "prefill_time_s": 0.09264826774597168,
+          "first_token_time_s": 0.15210604667663574
+        },
+        {
+          "prompt": "Explain quantum computing in simple terms:",
+          "response": "what it is and how it works.",
+          "tokens": 9,
+          "time_s": 0.21882414817810059,
+          "tok_per_s": 41.12891595800897,
+          "prefill_time_s": 0.07528114318847656,
+          "first_token_time_s": 0.1262359619140625
+        }
+      ],
+      "avg_tok_per_s": 48.73432598303568
+    },
+    {
+      "config": {
+        "name": "Plan-A-Balanced",
+        "description": "Magnitude + Tiered (\u4fdd\u7559 25%, 4/3/2/0 bits)",
+        "compression_ratio": 56,
+        "accuracy": 0.83,
+        "calibration_config": {
+          "keep": 0.25,
+          "bits": "4/3/2/0"
+        }
+      },
+      "memory": {
+        "before_load_mb": 548.453125,
+        "after_load_mb": 2275.03125,
+        "model_size_mb": 1726.578125
+      },
+      "load_time_s": 0.47363901138305664,
+      "compression_applied": true,
+      "generation_tests": [
+        {
+          "prompt": "The future of artificial intelligence is",
+          "response": "here! The future of artificial intelligence is here! The future of artificial intelligence is here! The future artificial intelligence is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is",
+          "tokens": 100,
+          "time_s": 1.184593915939331,
+          "tok_per_s": 84.41711429921061,
+          "prefill_time_s": 0.07876014709472656,
+          "first_token_time_s": 0.12588095664978027
+        },
+        {
+          "prompt": "In the year 2050, technology will",
+          "response": "have advanced further. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 20",
+          "tokens": 100,
+          "time_s": 1.2088239192962646,
+          "tok_per_s": 82.7250341457642,
+          "prefill_time_s": 0.09967708587646484,
+          "first_token_time_s": 0.15086698532104492
+        },
+        {
+          "prompt": "Explain quantum computing in simple terms:",
+          "response": "Quantum computing in simple terms is understanding the concept of of quantum computing. It is the concept of of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of",
+          "tokens": 100,
+          "time_s": 1.188694715499878,
+          "tok_per_s": 84.12588925992434,
+          "prefill_time_s": 0.08138418197631836,
+          "first_token_time_s": 0.1320786476135254
+        }
+      ],
+      "avg_tok_per_s": 83.75601256829971
+    },
+    {
+      "config": {
+        "name": "Balanced-Plus",
+        "description": "Magnitude + Tiered (\u4fdd\u7559 30%, 6/5/4/3/2/0 bits)",
+        "compression_ratio": 34,
+        "accuracy": 0.77,
+        "calibration_config": {
+          "keep": 0.3,
+          "bits": "6/5/4/3/2/0"
+        }
+      },
+      "memory": {
+        "before_load_mb": 553.09375,
+        "after_load_mb": 2277.78125,
+        "model_size_mb": 1724.6875
+      },
+      "load_time_s": 0.4667391777038574,
+      "compression_applied": true,
+      "generation_tests": [
+        {
+          "prompt": "The future of artificial intelligence is",
+          "response": "currently being developed by a team of developers. The team is working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future",
+          "tokens": 100,
+          "time_s": 1.1807968616485596,
+          "tok_per_s": 84.68857197027594,
+          "prefill_time_s": 0.07929325103759766,
+          "first_token_time_s": 0.12360191345214844
+        },
+        {
+          "prompt": "In the year 2050, technology will",
+          "response": "have advanced to a point where it can solve most of of the world's problems. However, there will still be some issues that require human intervention and cooperation. Can you elaborate on some of the issues that might still require human intervention and cooperation in the year 2050? And how can technology and human collaboration address these issues? In your response, please provide specific examples.",
+          "tokens": 78,
+          "time_s": 0.9794211387634277,
+          "tok_per_s": 79.63887740719915,
+          "prefill_time_s": 0.10298895835876465,
+          "first_token_time_s": 0.1539473533630371
+        },
+        {
+          "prompt": "Explain quantum computing in simple terms:",
+          "response": "A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A",
+          "tokens": 100,
+          "time_s": 1.1848950386047363,
+          "tok_per_s": 84.3956610011248,
+          "prefill_time_s": 0.08325600624084473,
+          "first_token_time_s": 0.12549591064453125
+        }
+      ],
+      "avg_tok_per_s": 82.9077034595333
+    },
+    {
+      "config": {
+        "name": "Plan-A-Plus-Plus",
+        "description": "Magnitude + Tiered (\u4fdd\u7559 80%, 5/4/3/0 bits)",
+        "compression_ratio": 12,
+        "accuracy": 0.35,
+        "calibration_config": {
+          "keep": 0.8,
+          "bits": "5/4/3/0"
+        }
+      },
+      "memory": {
+        "before_load_mb": 559.609375,
+        "after_load_mb": 2282.21875,
+        "model_size_mb": 1722.609375
+      },
+      "load_time_s": 0.47344064712524414,
+      "compression_applied": true,
+      "generation_tests": [
+        {
+          "prompt": "The future of artificial intelligence is",
+          "response": "incredibly exciting and full of possibilities. It's going to transform many aspects of our lives, from the way we work to the way we communicate. However, I'm also concerned about the potential risks and ethical issues that could arise. What do you think?",
+          "tokens": 52,
+          "time_s": 0.692608118057251,
+          "tok_per_s": 75.07853090988702,
+          "prefill_time_s": 0.08659505844116211,
+          "first_token_time_s": 0.13843488693237305
+        },
+        {
+          "prompt": "In the year 2050, technology will",
+          "response": "have advanced significantly. Can you provide a detailed scenario of of how self-driving cars will be integrated into our daily lives? Please include aspects such as infrastructure changes, public acceptance, and potential job displacement.",
+          "tokens": 41,
+          "time_s": 0.5864381790161133,
+          "tok_per_s": 69.91359271455869,
+          "prefill_time_s": 0.11255383491516113,
+          "first_token_time_s": 0.1531519889831543
+        },
+        {
+          "prompt": "Explain quantum computing in simple terms:",
+          "response": "Alibaba Cloud Qwen.",
+          "tokens": 6,
+          "time_s": 0.18885421752929688,
+          "tok_per_s": 31.770537499747512,
+          "prefill_time_s": 0.09140491485595703,
+          "first_token_time_s": 0.12767910957336426
+        }
+      ],
+      "avg_tok_per_s": 58.92088704139774
+    },
+    {
+      "config": {
+        "name": "No-Compression",
+        "description": "\u65e0\u538b\u7f29\uff08\u53c2\u8003\u901f\u5ea6\u4e0a\u9650\uff09",
+        "compression_ratio": 1,
+        "accuracy": 0.0,
+        "calibration_config": {}
+      },
+      "memory": {
+        "before_load_mb": 564.328125,
+        "after_load_mb": 2285.0,
+        "model_size_mb": 1720.671875
+      },
+      "load_time_s": 0.563974142074585,
+      "compression_applied": false,
+      "generation_tests": [
+        {
+          "prompt": "The future of artificial intelligence is",
+          "response": "looking very promising. What do you think will be the biggest impact of AI on our daily lives?",
+          "tokens": 21,
+          "time_s": 0.2888038158416748,
+          "tok_per_s": 72.71372069236237,
+          "prefill_time_s": 0.07689619064331055,
+          "first_token_time_s": 0.10891866683959961
+        },
+        {
+          "prompt": "In the year 2050, technology will",
+          "response": "have significantly advanced. Predict how this will impact our daily lives and work.",
+          "tokens": 16,
+          "time_s": 0.27739381790161133,
+          "tok_per_s": 57.67972812456488,
+          "prefill_time_s": 0.07114601135253906,
+          "first_token_time_s": 0.1391618251800537
+        },
+        {
+          "prompt": "Explain quantum computing in simple terms:",
+          "response": "Quantum computing is a type of computing where the basic unit of information, called a qubit, can exist in multiple states simultaneously due to a principle called superposition. This allows quantum computers to process a vast amount of possibilities at once. Additionally, quantum computers use another principle called entanglement, where qubits can become interconnected, meaning the state of one (whether it's measured or not) can depend on the state of another. This combination allows quantum computers to perform certain tasks much faster than classical",
+          "tokens": 100,
+          "time_s": 0.9745550155639648,
+          "tok_per_s": 102.61093360863885,
+          "prefill_time_s": 0.054923057556152344,
+          "first_token_time_s": 0.11962699890136719
+        }
+      ],
+      "avg_tok_per_s": 77.6681274751887
+    }
+  ]
+}

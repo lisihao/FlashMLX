@@ -96,11 +96,15 @@ class CompactedKVCache(_BaseCache):
         use_quality_path: bool = False,
         quality_fit_beta: bool = True,
         quality_fit_c2: bool = True,
+        calibration_file: Optional[str] = None,
+        layer_idx: Optional[int] = None,
     ):
         # Attention layer attributes (compressed KV cache)
         self.keys = None
         self.values = None
-        self.offset = 0
+        self.beta = None  # ✅ AM Fix: Store attention bias for compressed KV
+        self.offset = 0  # Physical cache offset (how many slots used)
+        self.sequence_position = 0  # ✅ RoPE Fix: Logical sequence position (never resets after compression)
         self.max_size = max_size
         self.compression_ratio = compression_ratio
         self.recent_ratio = recent_ratio
@@ -121,6 +125,45 @@ class CompactedKVCache(_BaseCache):
         self._ssm_states = [None, None]  # [conv_state, ssm_state]
         self.lengths = None  # Optional: for SSM length tracking
 
+        # ✅ Offline Calibration support
+        self.calibration = None
+        self.layer_idx = layer_idx
+        if calibration_file is not None:
+            self._load_calibration(calibration_file, layer_idx)
+
+    def _load_calibration(self, calibration_file: str, layer_idx: int):
+        """Load pre-fitted calibration parameters from file."""
+        import pickle
+        import numpy as np
+
+        if layer_idx is None:
+            raise ValueError("layer_idx must be specified when using calibration_file")
+
+        try:
+            with open(calibration_file, 'rb') as f:
+                calibration_data = pickle.load(f)
+
+            # Extract calibration for this layer
+            layer_calibration = calibration_data['calibration'][layer_idx]
+
+            # Convert numpy arrays back to MLX
+            self.calibration = {
+                'Ck': mx.array(layer_calibration['Ck']),
+                'beta': mx.array(layer_calibration['beta']),
+                'selected_indices': mx.array(layer_calibration['selected_indices']),
+                'compression_ratio': layer_calibration['compression_ratio'],
+                'budget': layer_calibration['budget']
+            }
+
+            print(f"[CompactedKVCache] Loaded calibration for layer {layer_idx}")
+            print(f"  Budget: {self.calibration['budget']}")
+            print(f"  Compression ratio: {self.calibration['compression_ratio']}")
+
+        except Exception as e:
+            print(f"[CompactedKVCache] Failed to load calibration: {e}")
+            print(f"  Will fall back to runtime calibration")
+            self.calibration = None
+
     def update_and_fetch(self, keys, values):
         """
         Update cache with new keys/values and fetch all cached data.
@@ -134,8 +177,13 @@ class CompactedKVCache(_BaseCache):
 
         Returns
         -------
-        keys, values : tuple of mx.array
-            All cached keys and values
+        keys : mx.array
+            All cached keys
+        values : mx.array
+            All cached values
+        beta : mx.array or None
+            Attention bias for AM compression (shape: B, n_heads, offset)
+            None if compression not used or beta not available
         """
         B, n_kv_heads, num_steps, head_dim = keys.shape
 
@@ -159,20 +207,48 @@ class CompactedKVCache(_BaseCache):
             self.keys = new_keys
             self.values = new_values
 
+            # ✅ CRITICAL FIX: Expand beta along with keys/values
+            if self.beta is not None:
+                new_beta = mx.zeros((B, n_kv_heads, new_steps), dtype=self.beta.dtype)
+                if self.offset > 0:
+                    new_beta[..., :self.offset] = self.beta[..., :self.offset]
+                self.beta = new_beta
+
         # Append new keys/values
         self.keys[..., self.offset:self.offset + num_steps, :] = keys
         self.values[..., self.offset:self.offset + num_steps, :] = values
         self.offset += num_steps
+        self.sequence_position += num_steps  # ✅ RoPE Fix: Track sequence position separately
 
-        # Check if need compression
-        if self.enable_compression and self.offset > self.max_size:
-            self._compress()
+        # ✅ Phase 1 Fix: 移除热路径压缩检查
+        # 压缩应该由 CompactionEngine 独立触发，不在 update_and_fetch() 中执行
+        # Original code (removed):
+        # if self.enable_compression and self.offset > self.max_size:
+        #     self._compress()
 
-        return self.keys[..., :self.offset, :], self.values[..., :self.offset, :]
+        # ✅ AM Fix: Return beta for attention bias
+        # beta shape: (B, n_heads, offset) - one bias per cached token
+        beta_slice = self.beta[..., :self.offset] if self.beta is not None else None
 
-    def _compress(self):
+        return (
+            self.keys[..., :self.offset, :],
+            self.values[..., :self.offset, :],
+            beta_slice
+        )
+
+    def _compress(self, queries: Optional[mx.array] = None):
         """
         Compress the KV cache using Fast Path or Quality Path.
+
+        If pre-fitted calibration is available, directly applies it (fast).
+        Otherwise, falls back to runtime calibration (slower).
+
+        Parameters
+        ----------
+        queries : mx.array, optional
+            Reference queries (Qref) for AM compression.
+            Shape: (B, n_heads, num_queries, head_dim)
+            Only used if calibration is not available.
 
         Reduces cache size from current offset to target budget.
         """
@@ -187,49 +263,176 @@ class CompactedKVCache(_BaseCache):
         current_keys = self.keys[..., :self.offset, :]  # (B, n_heads, offset, head_dim)
         current_values = self.values[..., :self.offset, :]
 
-        # Compress each batch independently
-        compressed_keys_list = []
-        compressed_values_list = []
+        # ✅ Check if offline calibration is available and applicable
+        use_calibration = False
+        if self.calibration is not None:
+            # Check if ALL calibration indices are within current sequence length
+            import numpy as np
+            selected_indices = self.calibration['selected_indices']
+            max_index = int(np.max(np.array(selected_indices)))
+            current_length = self.offset
 
-        for b in range(B):
-            K_batch = current_keys[b]  # (n_heads, offset, head_dim)
-            V_batch = current_values[b]
-
-            if self.use_quality_path:
-                # Compress using Quality Path
-                # Note: queries=None means using keys as queries (self-attention approximation)
-                C1, beta, C2 = compact_multi_head_quality(
-                    K_batch, V_batch, budget=target_budget,
-                    queries=None,  # Use keys as queries
-                    fit_beta=self.quality_fit_beta,
-                    fit_c2=self.quality_fit_c2
-                )
-                # Note: beta is used internally during compression but not stored
+            # CRITICAL: Indices must be strictly within bounds
+            if max_index < current_length:
+                use_calibration = True
+                calibration_length = max_index + 1
+                print(f"[CompactedKVCache] Using pre-fitted calibration (fast path)")
+                print(f"[CompactedKVCache]   Calibration max index: {max_index}, Current length: {current_length}")
             else:
-                # Compress using Fast Path v2
-                C1, beta, C2 = compact_multi_head_fast_v2(
-                    K_batch, V_batch, budget=target_budget, recent_ratio=self.recent_ratio
-                )
-                # Note: beta is always 0 in Fast Path
+                calibration_length = max_index + 1
+                out_of_bounds = int(np.sum(np.array(selected_indices) >= current_length))
+                print(f"[CompactedKVCache] Indices out of bounds: {out_of_bounds}/{len(selected_indices)}")
+                print(f"[CompactedKVCache]   Max index: {max_index}, Current length: {current_length}")
+                print(f"[CompactedKVCache] Falling back to runtime calibration for safety")
 
-            compressed_keys_list.append(C1[None, ...])  # (1, n_heads, budget, head_dim)
-            compressed_values_list.append(C2[None, ...])
+        # ✅ Offline Calibration Path (fast)
+        if use_calibration:
+            # Apply pre-fitted compression (no OMP, just indexing)
+            selected_indices = self.calibration['selected_indices']
+            beta = self.calibration['beta']
+            budget = self.calibration['budget']
 
-        # Concatenate batches
-        compressed_keys = mx.concatenate(compressed_keys_list, axis=0)  # (B, n_heads, budget, head_dim)
-        compressed_values = mx.concatenate(compressed_values_list, axis=0)
+            # Adapt budget to target_budget
+            if len(selected_indices) > target_budget:
+                selected_indices = selected_indices[:target_budget]
+                beta = beta[:target_budget]
+                budget = target_budget
+
+            # Compress each batch independently
+            compressed_keys_list = []
+            compressed_values_list = []
+            compressed_beta_list = []
+
+            for b in range(B):
+                K_batch = current_keys[b]  # (n_heads, offset, head_dim)
+                V_batch = current_values[b]
+
+                # Apply compression for each head
+                C1_heads = []
+                C2_heads = []
+                beta_heads = []
+
+                for h in range(n_heads):
+                    # Select keys/values using calibration indices
+                    C1_h = mx.take(K_batch[h], selected_indices, axis=0)  # (budget, head_dim)
+                    C2_h = mx.take(V_batch[h], selected_indices, axis=0)
+
+                    # Apply beta weighting
+                    C1_h = C1_h * beta[:, None]  # (budget, head_dim)
+                    C2_h = C2_h * beta[:, None]
+
+                    C1_heads.append(C1_h[None, ...])  # (1, budget, head_dim)
+                    C2_heads.append(C2_h[None, ...])
+                    beta_heads.append(beta[None, :])  # (1, budget)
+
+                C1 = mx.concatenate(C1_heads, axis=0)  # (n_heads, budget, head_dim)
+                C2 = mx.concatenate(C2_heads, axis=0)
+                beta_batch = mx.concatenate(beta_heads, axis=0)  # (n_heads, budget)
+
+                compressed_keys_list.append(C1[None, ...])
+                compressed_values_list.append(C2[None, ...])
+                compressed_beta_list.append(beta_batch[None, ...])
+
+            compressed_keys = mx.concatenate(compressed_keys_list, axis=0)
+            compressed_values = mx.concatenate(compressed_values_list, axis=0)
+            compressed_beta = mx.concatenate(compressed_beta_list, axis=0)
+
+        else:
+            # ✅ Runtime Calibration: Fallback to runtime fitting (slower)
+            print(f"[CompactedKVCache] Using runtime calibration (slow path)")
+
+            compressed_keys_list = []
+            compressed_values_list = []
+            compressed_beta_list = []
+
+            for b in range(B):
+                K_batch = current_keys[b]  # (n_heads, offset, head_dim)
+                V_batch = current_values[b]
+
+                # Extract queries for this batch (if provided)
+                Q_batch = queries[b] if queries is not None else None
+
+                if self.use_quality_path:
+                    # Compress using Quality Path
+                    C1, beta, C2 = compact_multi_head_quality(
+                        K_batch, V_batch, budget=target_budget,
+                        queries=Q_batch,
+                        fit_beta=self.quality_fit_beta,
+                        fit_c2=self.quality_fit_c2
+                    )
+                else:
+                    # Compress using Fast Path v2
+                    C1, beta, C2 = compact_multi_head_fast_v2(
+                        K_batch, V_batch, budget=target_budget, recent_ratio=self.recent_ratio
+                    )
+
+                compressed_keys_list.append(C1[None, ...])
+                compressed_values_list.append(C2[None, ...])
+                compressed_beta_list.append(beta[None, ...])
+
+            compressed_keys = mx.concatenate(compressed_keys_list, axis=0)
+            compressed_values = mx.concatenate(compressed_values_list, axis=0)
+            compressed_beta = mx.concatenate(compressed_beta_list, axis=0)
 
         # Update cache with compressed data
         self.keys[..., :target_budget, :] = compressed_keys
         self.values[..., :target_budget, :] = compressed_values
+
+        # ✅ AM Fix: Initialize beta storage if needed
+        if self.beta is None:
+            # Allocate beta with same structure as keys (but without head_dim)
+            self.beta = mx.zeros((B, n_heads, self.keys.shape[2]), dtype=compressed_beta.dtype)
+
+        # ✅ AM Fix: Store beta
+        self.beta[..., :target_budget] = compressed_beta
 
         # Update statistics
         self.num_compressions += 1
         self.total_tokens_before += self.offset
         self.total_tokens_after += target_budget
 
-        # Update offset
+        # ✅ RoPE Fix: Reset physical cache offset, but DON'T reset sequence_position
+        # - offset: physical cache size (resets to budget after compression)
+        # - sequence_position: logical position for RoPE (never resets)
         self.offset = target_budget
+        # sequence_position remains unchanged - it tracks the true position in the sequence!
+
+    def compact(self, queries: Optional[mx.array] = None) -> bool:
+        """
+        Manually trigger compression (to be called by CompactionEngine).
+
+        This is the correct way to compress the KV cache, as opposed to
+        automatic compression in update_and_fetch() which is in the hot path.
+
+        Parameters
+        ----------
+        queries : mx.array, optional
+            Reference queries (Qref) for AM compression.
+            Shape: (B, n_heads, num_queries, head_dim)
+            If None, uses keys as queries (approximation).
+
+        Returns
+        -------
+        bool
+            True if compression was performed, False otherwise.
+
+        Examples
+        --------
+        >>> # Offline compaction (correct way)
+        >>> if cache.offset > cache.max_size:
+        >>>     # Sample reference queries
+        >>>     queries = sample_recent_queries(cache, num_queries=128)
+        >>>     # Trigger compression
+        >>>     cache.compact(queries=queries)
+        """
+        if not self.enable_compression:
+            return False
+
+        if self.offset <= self.max_size:
+            return False
+
+        self._compress(queries=queries)
+        return True
 
     def get_stats(self) -> dict:
         """
@@ -272,9 +475,11 @@ class CompactedKVCache(_BaseCache):
             self.keys = None
             self.values = None
             self.offset = 0
+            self.sequence_position = 0  # ✅ RoPE Fix: Reset sequence position
         else:
             self.keys, self.values = v
             self.offset = self.keys.shape[2]
+            self.sequence_position = self.offset  # ✅ RoPE Fix: Restore sequence position
 
     @property
     def meta_state(self):

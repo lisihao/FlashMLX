@@ -74,9 +74,15 @@ class Attention(nn.Module):
         )
         values = values.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
 
+        # ✅ AM Fix: Get beta from cache for compressed KV
+        beta = None
         if cache is not None:
-            queries = self.rope(queries, offset=cache.offset)
-            keys = self.rope(keys, offset=cache.offset)
+            # ✅ RoPE Fix: Use sequence_position for RoPE (not physical cache offset)
+            # For CompactedKVCache with compression, sequence_position tracks the true
+            # position in the sequence, while offset tracks physical cache usage.
+            rope_offset = getattr(cache, 'sequence_position', cache.offset)
+            queries = self.rope(queries, offset=rope_offset)
+            keys = self.rope(keys, offset=rope_offset)
             keys, values = cache.update_and_fetch(keys, values)
         else:
             queries = self.rope(queries)

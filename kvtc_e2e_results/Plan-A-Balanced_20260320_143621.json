@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Plan-A-Balanced",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 25%, 4/3/2/0 bits)",
+    "compression_ratio": 56,
+    "accuracy": 0.83,
+    "calibration_config": {
+      "keep": 0.25,
+      "bits": "4/3/2/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 524.796875,
+    "after_load_mb": 864.9375,
+    "model_size_mb": 340.140625
+  },
+  "load_time_s": 0.4290192127227783,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "called Qwen, created by Alibaba Cloud customers, such as Dummies and Users of different AI users.",
+      "tokens": 22,
+      "time_s": 0.16872596740722656,
+      "tok_per_s": 130.38893975876374,
+      "prefill_time_s": 0.0361027717590332,
+      "first_token_time_s": 0.09538030624389648
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "continue to advance, revolutionize the way we live our lives, and the world we live in is a digital one.",
+      "tokens": 25,
+      "time_s": 0.1492290496826172,
+      "tok_per_s": 167.52770357494344,
+      "prefill_time_s": 0.03290700912475586,
+      "first_token_time_s": 0.07904505729675293
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "\"Quantum\" creates you are a \"Quantum computer.",
+      "tokens": 14,
+      "time_s": 0.11285591125488281,
+      "tok_per_s": 124.05198668221534,
+      "prefill_time_s": 0.027418851852416992,
+      "first_token_time_s": 0.07419991493225098
+    }
+  ],
+  "avg_tok_per_s": 140.65621000530749
+}

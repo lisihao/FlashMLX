@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Balanced-Plus",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 30%, 6/5/4/3/2/0 bits)",
+    "compression_ratio": 34,
+    "accuracy": 0.77,
+    "calibration_config": {
+      "keep": 0.3,
+      "bits": "6/5/4/3/2/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 553.09375,
+    "after_load_mb": 2277.78125,
+    "model_size_mb": 1724.6875
+  },
+  "load_time_s": 0.4667391777038574,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "currently being developed by a team of developers. The team is working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future of artificial intelligence. The team is currently working on the future",
+      "tokens": 100,
+      "time_s": 1.1807968616485596,
+      "tok_per_s": 84.68857197027594,
+      "prefill_time_s": 0.07929325103759766,
+      "first_token_time_s": 0.12360191345214844
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "have advanced to a point where it can solve most of of the world's problems. However, there will still be some issues that require human intervention and cooperation. Can you elaborate on some of the issues that might still require human intervention and cooperation in the year 2050? And how can technology and human collaboration address these issues? In your response, please provide specific examples.",
+      "tokens": 78,
+      "time_s": 0.9794211387634277,
+      "tok_per_s": 79.63887740719915,
+      "prefill_time_s": 0.10298895835876465,
+      "first_token_time_s": 0.1539473533630371
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A quantum computer is a type of computer. A",
+      "tokens": 100,
+      "time_s": 1.1848950386047363,
+      "tok_per_s": 84.3956610011248,
+      "prefill_time_s": 0.08325600624084473,
+      "first_token_time_s": 0.12549591064453125
+    }
+  ],
+  "avg_tok_per_s": 82.9077034595333
+}

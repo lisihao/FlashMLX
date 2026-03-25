@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Plan-A-Plus-Plus",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 80%, 5/4/3/0 bits)",
+    "compression_ratio": 12,
+    "accuracy": 0.35,
+    "calibration_config": {
+      "keep": 0.8,
+      "bits": "5/4/3/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 536.390625,
+    "after_load_mb": 873.90625,
+    "model_size_mb": 337.515625
+  },
+  "load_time_s": 0.3807389736175537,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": ", artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial intelligence is a new frontier of artificial",
+      "tokens": 100,
+      "time_s": 0.37245988845825195,
+      "tok_per_s": 268.48528686924294,
+      "prefill_time_s": 0.04944014549255371,
+      "first_token_time_s": 0.08217692375183105
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "be evolving in which areas?",
+      "tokens": 7,
+      "time_s": 0.09460186958312988,
+      "tok_per_s": 73.99430931805065,
+      "prefill_time_s": 0.03191781044006348,
+      "first_token_time_s": 0.07474613189697266
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "que\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Qw\n\nYou are Qw\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Q\n\nWhat\n\nWhat is Q\n\nWhat is Q\n\nWhat is Q\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Qwen\n\nYou are Q\n\nYou are Q\n\nWhat\n\nYou are Q\n\nWhat-sn\n\nYou What ih",
+      "tokens": 100,
+      "time_s": 0.34309816360473633,
+      "tok_per_s": 291.4617756893746,
+      "prefill_time_s": 0.028490304946899414,
+      "first_token_time_s": 0.07142806053161621
+    }
+  ],
+  "avg_tok_per_s": 211.31379062555607
+}

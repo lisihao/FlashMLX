@@ -1,0 +1,49 @@
+{
+  "config": {
+    "name": "Plan-A-Balanced",
+    "description": "Magnitude + Tiered (\u4fdd\u7559 25%, 4/3/2/0 bits)",
+    "compression_ratio": 56,
+    "accuracy": 0.83,
+    "calibration_config": {
+      "keep": 0.25,
+      "bits": "4/3/2/0"
+    }
+  },
+  "memory": {
+    "before_load_mb": 548.453125,
+    "after_load_mb": 2275.03125,
+    "model_size_mb": 1726.578125
+  },
+  "load_time_s": 0.47363901138305664,
+  "compression_applied": true,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "here! The future of artificial intelligence is here! The future of artificial intelligence is here! The future artificial intelligence is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is here! The future artificial technology is",
+      "tokens": 100,
+      "time_s": 1.184593915939331,
+      "tok_per_s": 84.41711429921061,
+      "prefill_time_s": 0.07876014709472656,
+      "first_token_time_s": 0.12588095664978027
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "have advanced further. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 2000, technology will have further advanced. In the year 20",
+      "tokens": 100,
+      "time_s": 1.2088239192962646,
+      "tok_per_s": 82.7250341457642,
+      "prefill_time_s": 0.09967708587646484,
+      "first_token_time_s": 0.15086698532104492
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "Quantum computing in simple terms is understanding the concept of of quantum computing. It is the concept of of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of quantum computing. It is the concept of",
+      "tokens": 100,
+      "time_s": 1.188694715499878,
+      "tok_per_s": 84.12588925992434,
+      "prefill_time_s": 0.08138418197631836,
+      "first_token_time_s": 0.1320786476135254
+    }
+  ],
+  "avg_tok_per_s": 83.75601256829971
+}

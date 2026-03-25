@@ -115,9 +115,24 @@ def scaled_dot_product_attention(
     mask: Optional[mx.array],
     sinks: Optional[mx.array] = None,
 ) -> mx.array:
+    """
+    Scaled dot-product attention with optional AM compression.
+
+    If cache has beta (from HybridKVCache), applies AM compensation:
+        attn_weights = softmax(Q @ K^T / scale) * beta
+    """
+    # Check if cache has beta (AM compressed)
+    beta = getattr(cache, 'beta', None) if cache is not None else None
+
+    if beta is not None and callable(getattr(cache, 'get_beta', None)):
+        # Get beta from HybridKVCache
+        beta = cache.get_beta()
+
     if hasattr(cache, "bits"):
         if sinks is not None:
             raise ValueError("Quantized SDPA does not support attention sinks.")
+        if beta is not None:
+            raise ValueError("Quantized SDPA does not support AM beta compensation.")
         return quantized_scaled_dot_product_attention(
             queries,
             keys,
@@ -128,11 +143,63 @@ def scaled_dot_product_attention(
             bits=cache.bits,
         )
     else:
-        return mx.fast.scaled_dot_product_attention(
-            queries,
-            keys,
-            values,
-            scale=scale,
-            mask=mask,
-            sinks=sinks,
-        )
+        # AM compensation: beta applied AFTER softmax
+        if beta is not None:
+            B, n_heads, q_len, head_dim = queries.shape
+            n_kv_heads = keys.shape[1]
+            kv_len = keys.shape[2]
+
+            # 🔍 Debug: Print initial shapes
+            import sys
+
+            # GQA: Repeat keys, values, beta to match query heads
+            if n_heads != n_kv_heads:
+                n_repeats = n_heads // n_kv_heads
+                keys = mx.repeat(keys, n_repeats, axis=1)
+                values = mx.repeat(values, n_repeats, axis=1)
+
+                # Expand beta: (budget,) -> (B, n_heads, budget)
+                if beta.ndim == 1:
+                    beta = mx.expand_dims(beta, axis=0)  # (1, budget)
+                    beta = mx.expand_dims(beta, axis=0)  # (1, 1, budget)
+                    beta = mx.broadcast_to(beta, (B, n_kv_heads, beta.shape[-1]))
+
+                beta = mx.repeat(beta, n_repeats, axis=1)
+
+            # Expand beta if needed: (budget,) -> (B, n_heads, budget)
+            if beta.ndim == 1:
+                beta = mx.expand_dims(beta, axis=0)  # (1, budget)
+                beta = mx.expand_dims(beta, axis=0)  # (1, 1, budget)
+                beta = mx.broadcast_to(beta, (B, n_heads, beta.shape[-1]))
+
+            # Compute scores: Q @ K^T / scale
+            scores = mx.matmul(queries, keys.transpose(0, 1, 3, 2)) / scale
+
+            # ✅ AM: Apply beta compensation BEFORE softmax (as log-space addition)
+            # beta shape: (B, n_heads, kv_len) after expansion
+            # scores shape: (B, n_heads, q_len, kv_len)
+            # Add log(beta) to scores (broadcast over q_len dimension)
+            log_beta = mx.log(beta[:, :, None, :] + 1e-10)
+            scores = scores + log_beta  # (B, n_heads, q_len, kv_len)
+
+            # Apply mask if provided
+            if mask is not None:
+                scores = scores + mask
+
+            # Softmax (now incorporates beta compensation)
+            attn_weights = mx.softmax(scores, axis=-1)  # (B, n_heads, q_len, kv_len)
+
+            # Matmul with values
+            output = mx.matmul(attn_weights, values)
+
+            return output
+        else:
+            # No beta: use fast path
+            return mx.fast.scaled_dot_product_attention(
+                queries,
+                keys,
+                values,
+                scale=scale,
+                mask=mask,
+                sinks=sinks,
+            )

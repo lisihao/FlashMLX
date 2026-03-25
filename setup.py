@@ -35,6 +35,8 @@ setup(
     packages=[
         "mlx_lm",
         "mlx_lm.models",
+        "mlx_lm.compaction",
+        "mlx_lm.compaction.solvers",
         "mlx_lm.quant",
         "mlx_lm.tuner",
         "mlx_lm.tool_parsers",

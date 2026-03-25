@@ -1,0 +1,46 @@
+{
+  "config": {
+    "name": "No-Compression",
+    "description": "\u65e0\u538b\u7f29\uff08\u53c2\u8003\u901f\u5ea6\u4e0a\u9650\uff09",
+    "compression_ratio": 1,
+    "accuracy": 0.0,
+    "calibration_config": {}
+  },
+  "memory": {
+    "before_load_mb": 564.328125,
+    "after_load_mb": 2285.0,
+    "model_size_mb": 1720.671875
+  },
+  "load_time_s": 0.563974142074585,
+  "compression_applied": false,
+  "generation_tests": [
+    {
+      "prompt": "The future of artificial intelligence is",
+      "response": "looking very promising. What do you think will be the biggest impact of AI on our daily lives?",
+      "tokens": 21,
+      "time_s": 0.2888038158416748,
+      "tok_per_s": 72.71372069236237,
+      "prefill_time_s": 0.07689619064331055,
+      "first_token_time_s": 0.10891866683959961
+    },
+    {
+      "prompt": "In the year 2050, technology will",
+      "response": "have significantly advanced. Predict how this will impact our daily lives and work.",
+      "tokens": 16,
+      "time_s": 0.27739381790161133,
+      "tok_per_s": 57.67972812456488,
+      "prefill_time_s": 0.07114601135253906,
+      "first_token_time_s": 0.1391618251800537
+    },
+    {
+      "prompt": "Explain quantum computing in simple terms:",
+      "response": "Quantum computing is a type of computing where the basic unit of information, called a qubit, can exist in multiple states simultaneously due to a principle called superposition. This allows quantum computers to process a vast amount of possibilities at once. Additionally, quantum computers use another principle called entanglement, where qubits can become interconnected, meaning the state of one (whether it's measured or not) can depend on the state of another. This combination allows quantum computers to perform certain tasks much faster than classical",
+      "tokens": 100,
+      "time_s": 0.9745550155639648,
+      "tok_per_s": 102.61093360863885,
+      "prefill_time_s": 0.054923057556152344,
+      "first_token_time_s": 0.11962699890136719
+    }
+  ],
+  "avg_tok_per_s": 77.6681274751887
+}

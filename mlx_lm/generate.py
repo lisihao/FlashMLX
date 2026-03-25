@@ -35,6 +35,7 @@ from .models.cache import (
     materialize_prompt_cache,
     load_prompt_cache,
 )
+from .models.compacted_cache import CompactedKVCache
 from .sample_utils import make_sampler
 from .tokenizer_utils import TokenizerWrapper
 from .utils import does_model_support_input_embeddings, load
@@ -438,7 +439,7 @@ def generate_step(
                 ),
             )
             quantize_cache_fn(prompt_cache)
-            mx.eval([c.state for c in prompt_cache])
+            mx.eval([c.state for c in prompt_cache if c is not None])
             prompt_processed_tokens += n_to_process
             prompt_progress_callback(prompt_processed_tokens, total_prompt_tokens)
             prompt = prompt[n_to_process:]
@@ -1104,7 +1105,7 @@ class BatchGenerator:
                     self.prefill_step_size, inputs.shape[1] - prompt_checkpoint
                 )
                 self.model(inputs[:, :n_to_process], cache=prompt_cache)
-                mx.eval([c.state for c in prompt_cache])
+                mx.eval([c.state for c in prompt_cache if c is not None])
                 inputs = inputs[:, n_to_process:]
                 processed_tokens += n_to_process
                 self.prompt_progress_callback(
@@ -1138,7 +1139,7 @@ class BatchGenerator:
                     self.prefill_step_size, inputs.shape[1] - prompt_checkpoint
                 )
                 self.model(inputs[:, :n_to_process], cache=prompt_cache)
-                mx.eval([c.state for c in prompt_cache])
+                mx.eval([c.state for c in prompt_cache if c is not None])
                 inputs = inputs[:, n_to_process:]
                 processed_tokens += n_to_process
                 self.prompt_progress_callback(
