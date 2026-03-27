@@ -92,7 +92,8 @@ class TripleLayerKVCache(_BaseCache):
         enable_warm_quant: bool = True,
         enable_cold_am: bool = True,
         enable_cold_quant: bool = True,  # Quantize Cold layer (when AM disabled)
-        warm_overflow_threshold: int = 64  # Batch Warm→Cold migration
+        warm_overflow_threshold: int = 64,  # Batch Warm→Cold migration
+        lazy_prefill_threshold: int = 8192  # Skip Q4_0 during prefill for contexts below this
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -120,6 +121,8 @@ class TripleLayerKVCache(_BaseCache):
         # AM compression is applied at promotion time (first TG token), not during prefill.
         self.enable_cold_quant = enable_cold_quant or enable_cold_am
         self.warm_overflow_threshold = warm_overflow_threshold
+        self.lazy_prefill_threshold = lazy_prefill_threshold
+        self.adaptive_ratio = (compression_ratio == 0)  # 0 = auto-select
 
         # L0 (Recent): exact storage
         self.recent_keys = None
@@ -269,19 +272,33 @@ class TripleLayerKVCache(_BaseCache):
             self.recent_keys = mx.concatenate([self.recent_keys, keys], axis=2)
             self.recent_values = mx.concatenate([self.recent_values, values], axis=2)
 
-        # 2. SIZE-BASED AGING: trigger when Recent exceeds capacity
+        # 2. LAZY PREFILL: during prefill (multi-token), skip Q4_0 quantization
+        #    when context is small enough. Tokens stay in bf16 Recent for PP speed.
+        #    Aging + quantization is deferred to promotion (first TG token).
+        #    For long contexts (> threshold), do incremental aging to avoid TTFT spike.
+        if keys.shape[2] > 1:
+            if self.recent_keys.shape[2] <= self.lazy_prefill_threshold:
+                return self.recent_keys, self.recent_values
+            # Long context: do incremental aging during prefill
+            if self.recent_keys.shape[2] > self.recent_size:
+                self._manage_aging()
+            return self._concat_all_layers()
+
+        # 3. First TG token: reorganize accumulated tokens into layers
+        #    This handles both lazy prefill (all in Recent) and normal aging
         if self.recent_keys.shape[2] > self.recent_size:
             self._manage_aging()
 
         # Save recent length before concat (needed for AM prefix split)
         recent_len = self.recent_keys.shape[2] if self.recent_keys is not None else 0
 
-        # 3. Concatenate all layers (dequant Cold+Warm)
+        # 4. Concatenate all layers (dequant Cold+Warm)
         full_keys, full_values = self._concat_all_layers()
 
-        # 4. Promote to pre-allocated flat buffer on first TG token
-        #    Same strategy as Standard KVCache: zeros + slice assignment
-        if keys.shape[2] == 1 and (self.warm_keys is not None or self.cold_pending_keys is not None):
+        # 5. Promote to pre-allocated flat buffer on first TG token
+        #    Trigger: layers exist from aging, OR large Recent from lazy prefill
+        has_layers = self.warm_keys is not None or self.cold_pending_keys is not None
+        if has_layers:
             B, n_heads, cache_len, head_dim = full_keys.shape
 
             # Record original cache length for correct RoPE positioning
@@ -313,6 +330,19 @@ class TripleLayerKVCache(_BaseCache):
 
         return full_keys, full_values
 
+    def _get_effective_ratio(self, context_len: int) -> float:
+        """Select optimal compression ratio based on context length.
+
+        Data-driven mapping (Qwen3-8B benchmarks):
+            <= 16K: 3.0x — better TG (+5-23%), +59-66% memory savings
+            > 16K:  2.0x — stable TG, avoids 32K regression
+        """
+        if not self.adaptive_ratio:
+            return self.compression_ratio
+        if context_len <= 16384:
+            return 3.0
+        return 2.0
+
     def _am_compress_prefix(
         self,
         keys: mx.array,
@@ -339,9 +369,10 @@ class TripleLayerKVCache(_BaseCache):
         recent_keys = keys[:, :, old_len:, :]
         recent_values = values[:, :, old_len:, :]
 
-        # Compression parameters
+        # Compression parameters — adaptive ratio selects based on context length
+        effective_ratio = self._get_effective_ratio(total_len)
         chunk_size = self.cold_batch_threshold  # 512
-        budget = int(chunk_size / self.compression_ratio)  # 256 for 2.0x
+        budget = int(chunk_size / effective_ratio)
 
         compressed_k = []
         compressed_v = []
@@ -376,7 +407,8 @@ class TripleLayerKVCache(_BaseCache):
 
         if self.layer_idx == 0:
             saved = total_len - result_keys.shape[2]
-            print(f"[AM Promotion] {old_len} old + {recent_len} recent → "
+            ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
+            print(f"[AM Promotion{ratio_info}] {old_len} old + {recent_len} recent → "
                   f"{result_keys.shape[2]} tokens "
                   f"({n_full_chunks} chunks compressed, saved {saved} tokens)")
 

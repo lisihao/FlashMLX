@@ -353,7 +353,9 @@ def generate_step(
         kv_calibration (str, optional): Path to AM calibration file for
           ``"triple_am"`` strategy. Default: ``None``.
         kv_compression_ratio (float, optional): AM compression ratio.
-          Default: 2.0. Use 3.0 for ~66% memory savings. Default: ``None``.
+          Use 2.0 for stable long-context, 3.0 for ~66% memory savings,
+          or 0 for adaptive (auto-selects based on context length).
+          Default: ``None`` (2.0).
 
     Yields:
         Tuple[mx.array, mx.array]: One token and a vector of log probabilities.

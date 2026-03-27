@@ -28,12 +28,19 @@ Usage:
     # Auto-detect best strategy
     text = generate(model, tokenizer, prompt, kv_cache="auto")
 
+    # Adaptive compression ratio (auto-selects 2.0x or 3.0x based on context)
+    text = generate(model, tokenizer, prompt,
+                    kv_cache="triple_am",
+                    kv_calibration="/path/to/am_calibration.pkl",
+                    kv_compression_ratio=0)  # 0 = adaptive
+
 Performance characteristics (Qwen3-8B, measured):
     | Strategy   | TG Speed | TG Memory Savings | Quality     |
     |------------|----------|-------------------|-------------|
     | standard   | baseline | 0%                | baseline    |
     | triple     | ~100%    | ~2% (TG), ~42% (prefill) | lossless |
     | triple_am  | 104-119% | 43-53% (TG)      | key facts preserved |
+    | adaptive   | 105-123% | 53-66% (TG)      | key facts preserved |
 """
 
 from typing import Optional, Dict, List, Any
@@ -48,6 +55,12 @@ DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
 VALID_STRATEGIES = ("standard", "triple", "triple_am", "auto")
+
+# Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
+# Data-driven mapping (Qwen3-8B benchmarks):
+#   <= 8K tokens:  3.0x — better TG (+5-12%), +59-64% memory savings
+#   > 8K tokens:   2.0x — stable TG, avoids long-context regression
+ADAPTIVE_RATIO = 0.0
 
 
 def make_optimized_cache(
