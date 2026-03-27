@@ -317,6 +317,9 @@ def generate_step(
     quantized_kv_start: int = 0,
     prompt_progress_callback: Optional[Callable[[int, int], None]] = None,
     input_embeddings: Optional[mx.array] = None,
+    kv_cache: Optional[str] = None,
+    kv_calibration: Optional[str] = None,
+    kv_compression_ratio: Optional[float] = None,
 ) -> Generator[Tuple[mx.array, mx.array], None, None]:
     """
     A generator producing token ids based on the given prompt from the model.
@@ -345,6 +348,12 @@ def generate_step(
            prompt tokens processed so far and the total number of prompt tokens.
         input_embeddings (mx.array, optional): Input embeddings to use instead of or in
           conjunction with prompt tokens. Default: ``None``.
+        kv_cache (str, optional): KV cache strategy. One of ``"standard"``,
+          ``"triple"``, ``"triple_am"``, ``"auto"``. Default: ``None`` (standard).
+        kv_calibration (str, optional): Path to AM calibration file for
+          ``"triple_am"`` strategy. Default: ``None``.
+        kv_compression_ratio (float, optional): AM compression ratio.
+          Default: 2.0. Use 3.0 for ~66% memory savings. Default: ``None``.
 
     Yields:
         Tuple[mx.array, mx.array]: One token and a vector of log probabilities.
@@ -370,6 +379,9 @@ def generate_step(
         prompt_cache = cache.make_prompt_cache(
             model,
             max_kv_size=max_kv_size,
+            kv_cache=kv_cache,
+            kv_calibration=kv_calibration,
+            kv_compression_ratio=kv_compression_ratio,
         )
     else:
         prompt_cache = materialize_prompt_cache(prompt_cache)

@@ -24,6 +24,9 @@ from .kvtc_codec import (
 def make_prompt_cache(
     model: nn.Module,
     max_kv_size: Optional[int] = None,
+    kv_cache: Optional[str] = None,
+    kv_calibration: Optional[str] = None,
+    kv_compression_ratio: Optional[float] = None,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -36,9 +39,31 @@ def make_prompt_cache(
         max_kv_size (Optional[int]): If provided and the model does not have a
             ``make_cache`` method, a ``RotatingKVCache`` is used with a maximum
             size of ``max_kv_size``
+        kv_cache (Optional[str]): Cache strategy. One of:
+            - ``None``: Use default KVCache (backward compatible).
+            - ``"standard"``: Explicit default KVCache.
+            - ``"triple"``: TripleLayerKVCache with Q4_0 (~40% memory savings).
+            - ``"triple_am"``: Triple + AM compression (~50% savings, faster TG).
+            - ``"auto"``: Auto-select based on calibration availability.
+        kv_calibration (Optional[str]): Path to AM calibration .pkl file.
+            Required for ``"triple_am"`` strategy.
+        kv_compression_ratio (Optional[float]): AM compression ratio.
+            Default: 2.0. Use 3.0 for more aggressive compression (~66% savings).
     """
     if hasattr(model, "make_cache"):
         return model.make_cache()
+
+    # Use optimized cache factory when strategy is specified
+    if kv_cache is not None:
+        from mlx_lm.models.cache_factory import make_optimized_cache
+        kwargs = dict(
+            strategy=kv_cache,
+            calibration_file=kv_calibration,
+            max_kv_size=max_kv_size,
+        )
+        if kv_compression_ratio is not None:
+            kwargs["compression_ratio"] = kv_compression_ratio
+        return make_optimized_cache(model, **kwargs)
 
     num_layers = len(model.layers)
     if max_kv_size is not None:

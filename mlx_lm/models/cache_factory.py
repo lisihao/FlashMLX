@@ -1,0 +1,186 @@
+"""
+Smart KV Cache Factory for mlx-lm.
+
+Provides automatic cache strategy selection and parameter optimization.
+
+Strategies:
+    - "standard": Default KVCache (unbounded bf16)
+    - "triple": TripleLayerKVCache with Q4_0 quantization (~40% memory savings)
+    - "triple_am": Triple + AM compression (~50% memory savings, faster TG at long contexts)
+    - "auto": Auto-select based on calibration availability
+
+Usage:
+    from mlx_lm import load, generate
+
+    model, tokenizer = load("model_path")
+
+    # Standard (default, backward compatible)
+    text = generate(model, tokenizer, prompt)
+
+    # Triple with Q4_0 quantization
+    text = generate(model, tokenizer, prompt, kv_cache="triple")
+
+    # Triple + AM compression (needs calibration file)
+    text = generate(model, tokenizer, prompt,
+                    kv_cache="triple_am",
+                    kv_calibration="/path/to/am_calibration.pkl")
+
+    # Auto-detect best strategy
+    text = generate(model, tokenizer, prompt, kv_cache="auto")
+
+Performance characteristics (Qwen3-8B, measured):
+    | Strategy   | TG Speed | TG Memory Savings | Quality     |
+    |------------|----------|-------------------|-------------|
+    | standard   | baseline | 0%                | baseline    |
+    | triple     | ~100%    | ~2% (TG), ~42% (prefill) | lossless |
+    | triple_am  | 104-119% | 43-53% (TG)      | key facts preserved |
+"""
+
+from typing import Optional, Dict, List, Any
+import os
+import mlx.nn as nn
+
+# Default parameters (tuned across Qwen3-8B, validated at 2K-16K context)
+DEFAULT_RECENT_SIZE = 512
+DEFAULT_WARM_SIZE = 2048
+DEFAULT_COMPRESSION_RATIO = 2.0
+DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
+
+# Valid strategies
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "auto")
+
+
+def make_optimized_cache(
+    model: nn.Module,
+    strategy: str = "standard",
+    calibration_file: Optional[str] = None,
+    compression_ratio: float = DEFAULT_COMPRESSION_RATIO,
+    recent_size: int = DEFAULT_RECENT_SIZE,
+    warm_size: int = DEFAULT_WARM_SIZE,
+    max_kv_size: Optional[int] = None,
+) -> List[Any]:
+    """
+    Create optimized KV cache list for model.
+
+    Args:
+        model: The language model.
+        strategy: Cache strategy ("standard", "triple", "triple_am", "auto").
+        calibration_file: Path to AM calibration .pkl file (for triple_am).
+        compression_ratio: AM compression ratio (default: 2.0).
+        recent_size: Recent layer size in tokens (default: 512).
+        warm_size: Warm layer size in tokens (default: 2048).
+        max_kv_size: If set, use RotatingKVCache (overrides strategy).
+
+    Returns:
+        List of cache objects, one per layer.
+    """
+    from mlx_lm.models.cache import KVCache, RotatingKVCache
+
+    if strategy not in VALID_STRATEGIES:
+        raise ValueError(
+            f"Unknown cache strategy: {strategy!r}. "
+            f"Use one of: {', '.join(VALID_STRATEGIES)}"
+        )
+
+    num_layers = len(model.layers)
+
+    # max_kv_size takes precedence (existing behavior)
+    if max_kv_size is not None:
+        return [
+            RotatingKVCache(max_size=max_kv_size, keep=4)
+            for _ in range(num_layers)
+        ]
+
+    # Resolve "auto" strategy
+    if strategy == "auto":
+        strategy = _auto_detect_strategy(calibration_file)
+
+    if strategy == "standard":
+        return [KVCache() for _ in range(num_layers)]
+
+    # Triple or Triple+AM
+    from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+
+    enable_am = (strategy == "triple_am")
+
+    # Validate calibration for AM
+    if enable_am and calibration_file is None:
+        print("[CacheFactory] Warning: triple_am requires calibration_file. "
+              "Falling back to triple (Q4_0 only).")
+        enable_am = False
+
+    if enable_am and not os.path.exists(calibration_file):
+        print(f"[CacheFactory] Warning: calibration file not found: {calibration_file}. "
+              "Falling back to triple (Q4_0 only).")
+        enable_am = False
+
+    return [
+        TripleLayerKVCache(
+            memory_budget_mb=100.0,
+            recent_size=recent_size,
+            warm_size=warm_size,
+            enable_warm_quant=True,
+            enable_cold_am=enable_am,
+            enable_cold_quant=True,
+            calibration_file=calibration_file if enable_am else None,
+            compression_ratio=compression_ratio,
+            warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
+            layer_idx=i,
+        )
+        for i in range(num_layers)
+    ]
+
+
+def _auto_detect_strategy(calibration_file: Optional[str]) -> str:
+    """Auto-detect best cache strategy based on available resources."""
+    if calibration_file and os.path.exists(calibration_file):
+        return "triple_am"
+
+    # Default to triple (Q4_0) — always safe, ~40% prefill savings, ~0% TG overhead
+    return "triple"
+
+
+def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
+    """
+    Get diagnostic info about cache configuration.
+
+    Useful for logging and debugging.
+
+    Returns:
+        dict with cache strategy, type, and configuration details.
+    """
+    from mlx_lm.models.cache import KVCache, RotatingKVCache
+
+    if not cache_list:
+        return {"strategy": "empty", "num_layers": 0}
+
+    c0 = cache_list[0]
+    info = {
+        "num_layers": len(cache_list),
+        "type": type(c0).__name__,
+    }
+
+    try:
+        from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+        if isinstance(c0, TripleLayerKVCache):
+            info["strategy"] = "triple_am" if c0.enable_cold_am else "triple"
+            info["recent_size"] = c0.recent_size
+            info["warm_size"] = c0.warm_size
+            info["compression_ratio"] = c0.compression_ratio
+            info["flat_mode"] = c0._flat_mode
+            if c0._flat_mode:
+                info["flat_tokens"] = c0._flat_offset
+                info["true_offset"] = c0._true_offset
+            return info
+    except ImportError:
+        pass
+
+    if isinstance(c0, KVCache):
+        info["strategy"] = "standard"
+    elif isinstance(c0, RotatingKVCache):
+        info["strategy"] = "rotating"
+        info["max_size"] = c0.max_size
+    else:
+        info["strategy"] = "unknown"
+
+    return info
