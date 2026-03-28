@@ -12,6 +12,19 @@
 - 不破坏 MLX 原有功能
 - **铁律：任何优化前必须先用 Profiler 分析，找到瓶颈**
 - **铁律：Profiler 分析不到位时，优先优化 Profiler 而非系统**
+- **🔥 铁律：KV Cache 压缩必须用 memory_budget 触发，不用固定 size**
+  - 所有 KV Cache (DoubleLayer, TripleLayer, 任何新实现) 必须统一设计原则
+  - 压缩触发：只在 `estimated_memory > memory_budget` 时触发
+  - 禁止：基于固定 recent_size/warm_size 触发
+  - 原因：内存预算是真实约束，固定 size 是人为约束
+  - 违反后果：TripleLayer 忘记这个设计，导致架构不一致
+- **🔥 铁律：Warm 层量化必须可插拔，支持不同量化引擎**
+  - 设计：使用策略模式 (QuantizationStrategy 抽象基类)
+  - 默认：Q4_0Quantizer (4-bit symmetric, 2x 压缩)
+  - 扩展：支持 TurboQuant, GPTQ, AWQ 等新算法
+  - 原因：量化技术快速演进，硬编码会过时
+  - 实现：`mlx_lm/models/quantization_strategies.py`
+  - 违反后果：无法使用 Google TurboQuant 等新算法
 
 ## Current Plan
 

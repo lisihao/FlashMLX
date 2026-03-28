@@ -1,225 +1,284 @@
-# 🔴 Critical Finding: AM Compression Incompatible with Qwen3.5 Attention Layers
+# Critical Finding: AM 压缩在 Lazy Compression 下完全失效
 
-**日期**: 2026-03-21 14:15
-**严重性**: 🔴 CRITICAL - Blocks Task #52
-**影响**: Heterogeneous Memory Compaction 方案需要重新评估
-
----
-
-## 实验结果
-
-### 测试配置
-
-| 配置 | max_size | compression_ratio | 生成质量 | 速度 |
-|------|----------|-------------------|----------|------|
-| **Baseline** | - | - | ✅ **GOOD** | 36.52 tok/s |
-| Conservative | 8192 | 2.0 | ❌ **GARBAGE** | 64.68 tok/s |
-| Moderate | 8192 | 3.0 | ❌ **GARBAGE** | 64.68 tok/s |
-| Aggressive | 4096 | 5.0 | ❌ **GARBAGE** | 64.80 tok/s |
-
-### 生成质量对比
-
-**✅ Baseline (无压缩) - 正常输出**:
-```
-机器学习（Machine Learning, ML）是人工智能（AI）的核心分支之一，
-其核心思想是**让计算机从数据中自动学习规律，而无需进行显式的编程指令**。
-简单来说，传统编程是"输入规则 + 数据 → 输出答案"，而机器学习是
-"输入数据 + 答案 → 输出规则"。
-```
-
-**❌ ALL Compressed Configs - 完全相同的乱码**:
-```
-：
-# 1999999999999999999999999999999999999999999999999999999999999999999
-99999999990/ 19999999999999999999999999999999999999999999999999...
-```
+**日期**: 2026-03-25
+**模型**: Qwen3-8B (纯 Transformer，36 层 Attention)
+**场景**: Lazy Compression (Prefill → Generate → Compress → Continue Generate)
 
 ---
 
-## 关键发现
+## 问题现象
 
-### 🚨 Finding #1: Quality Degradation 与 Compression Ratio 无关
+所有 AM 压缩测试都显示**严重质量损失**，即使最保守的配置也失败：
 
-**观察**:
-- ratio=2.0 (conservative) → 乱码
-- ratio=3.0 (moderate) → **完全相同**的乱码
-- ratio=5.0 (aggressive) → **完全相同**的乱码
+| 测试配置 | 压缩比 | 质量 | 输出特征 |
+|----------|--------|------|----------|
+| 压缩所有 36 层 | 2.34x | 0-6% | 完全乱码（星号、换行符） |
+| 只压缩前 18 层 | 2.20x | 0-7% | 完全乱码 |
+| 只压缩前 6 层 | 1.60x | 0% | 完全乱码 |
+| 只压缩 Layer 0 | 1.01x | 0% | 完全乱码 |
+| 不同压缩比 (1.5x/2.0x/3.0x) | 全部 2.26x | 全部 6% | **完全相同的乱码** |
 
-**结论**:
-**质量下降不是因为压缩太激进，而是 AM 压缩本身就与 Qwen3.5 Attention 层不兼容！**
-
-### 🚨 Finding #2: 即使只压缩 10/40 层，质量也完全崩溃
-
-**观察**:
-- 只有 10 个 Attention 层被压缩 (25% coverage)
-- 30 个 SSM 层保持不压缩
-- 但生成质量从正常直接变成乱码
-
-**结论**:
-**压缩少数 Attention 层就足以破坏整个模型的生成质量！**
-
-### 🚨 Finding #3: 无 Shape Mismatch 但质量崩溃
-
-**观察**:
-- ✅ Heterogeneous cache 成功防止 shape mismatch 崩溃
-- ✅ 生成过程没有错误
-- ❌ 但输出质量完全崩溃
-
-**结论**:
-**Heterogeneous cache 架构解决了"崩溃"问题，但暴露了"AM 不适用"问题！**
+**关键观察**：
+1. 所有压缩比配置产生**完全相同**的结果（实际压缩比都是 2.26x）
+2. 即使最小压缩（Layer 0 only）也完全失败
+3. 输出不是"降质"而是"崩溃"（乱码）
 
 ---
 
-## 根因假设
+## 根因分析
 
-### Hypothesis 1: AM 假设在混合架构中被打破
+### 原因 1: Beta 零值导致 Attention 崩溃
 
-**AM 的核心假设**:
-- 有 attention mass: `Mass(q; K) = Σ exp(q·K^T)`
-- 支持 future concatenation invariance
-- β 补偿可以保持 attention 分布
+**Beta 值诊断**：
 
-**在 Qwen3.5 混合架构中**:
-- Attention 层的输出会被后续 SSM 层处理
-- SSM 层的递推状态依赖历史输入的**精确值**
-- AM 压缩改变了 Attention 层输出 → 破坏 SSM 递推 → 累积误差
-
-**类比**:
 ```
-Attention 层 (压缩) → SSM 层 (递推)
-     ↓ 误差              ↑ 放大
+Layer 31-35 (budget=159):
+  Min: -0.000000  ← Beta 中存在零值！
+  Max: 2.000000
+  Log(beta+1e-10) range: [-23.026, 0.693]  ← log(0) = -23
 ```
 
-### Hypothesis 2: Qwen3.5 Attention 层的特殊实现
+**崩溃机制**：
 
-**可能性**:
-- Qwen3.5 的 Attention 层可能不是纯 softmax attention
-- 可能有额外的归一化、残差连接或其他机制
-- 这些机制使得 AM 的 β 补偿失效
+```python
+# base.py:scaled_dot_product_attention()
+scores = mx.matmul(queries, keys.transpose(...)) / scale
+log_beta = mx.log(beta + 1e-10)  # 当 beta=0 时，log(1e-10) = -23.026
+scores = scores + log_beta       # scores += [-23, ..., 0.693]
 
-**验证方法**:
-- 读取 Qwen3.5 的 Attention 层实现代码
-- 检查是否有与标准 softmax attention 不同的地方
-
-### Hypothesis 3: 10 个 Attention 层的位置导致累积误差
-
-**观察**:
-- Qwen3.5 的 Attention 层位置: [3, 7, 11, 15, 19, 23, 27, 31, 35, 39]
-- 分布在整个模型深度
-
-**可能性**:
-- 每个被压缩的 Attention 层引入微小误差
-- 这些误差在后续 SSM 层中累积放大
-- 到最后一层时，累积误差已经完全破坏了表示
-
----
-
-## 下一步行动
-
-### 🔥 Priority 1: 深度诊断 (IMMEDIATE)
-
-**目标**: 理解为什么 AM 压缩破坏 Qwen3.5 生成
-
-**实验**:
-1. **单层压缩测试**: 只压缩最后一个 Attention 层 (layer 39)，看是否仍然产生乱码
-2. **前向传播分析**: 对比压缩前后，每层的激活值分布
-3. **Attention 权重分析**: 检查压缩后 Attention 权重是否异常
-4. **读取 Qwen3.5 源码**: 检查 Attention 层实现是否有特殊之处
-
-**交付**:
-- 诊断报告: `.solar/am-qwen35-incompatibility-diagnosis.md`
-- 如果发现根因，提出修复方案
-
-### 🔥 Priority 2: 探索替代压缩方法 (PARALLEL)
-
-**目标**: 找到适用于 Qwen3.5 Attention 层的压缩方法
-
-**方向**:
-1. **保守选择压缩**: 只保留 top-k 最重要的 keys，不用 β 拟合
-2. **量化压缩**: 对 KV cache 进行 int4/int8 量化
-3. **分段压缩**: 对旧的 KV cache 压缩，最近的 N tokens 保持原样
-4. **完全不压缩 Attention**: 只压缩 SSM 层（反向策略）
-
-**交付**:
-- 实验报告: `.solar/alternative-compression-experiments.md`
-
-### 🔥 Priority 3: 更新 Task Roadmap (IMMEDIATE)
-
-**Task #52 状态**: ⚠️ **BLOCKED** - AM 压缩不可用
-
-**新 Task**:
-- **Task #52.1**: 诊断 AM 与 Qwen3.5 Attention 不兼容的根因
-- **Task #52.2**: 探索替代压缩方法
-- **Task #52.3**: 如果无法修复，考虑只压缩 SSM 层
-
----
-
-## 影响评估
-
-### ✅ 正面影响
-
-1. **提前发现**: 在概念验证阶段就发现了根本性问题，避免浪费时间在错误方向上
-2. **架构验证**: Heterogeneous cache 架构本身是成功的（无崩溃）
-3. **清晰边界**: 明确了 AM 方法的适用边界更窄
-
-### ❌ 负面影响
-
-1. **Task #52 受阻**: 原计划的 Attention-Memory 选择性压缩不可行
-2. **时间延误**: 需要额外时间进行诊断和探索替代方案
-3. **方案不确定**: 可能需要完全重新设计压缩策略
-
-### 🔄 方案调整
-
-**原方案**:
-```
-Attention 层 → AM 压缩 ✅
-SSM 层 → 暂不压缩 → 后续设计专用方法
+# Softmax 后
+attention_weights = softmax(scores)  # exp(-23) ≈ 1e-10 ≈ 0
+output = matmul(attention_weights, values)  # 零权重 → 失去上下文
 ```
 
-**新方案 (待验证)**:
+**验证**：禁用 beta 后，输出从乱码变为有偏移但可读的文本：
+
+```python
+# 禁用 beta
+for cache in hybrid_cache:
+    cache.beta = None
+
+# 结果
+压缩前: ' France is Paris. The capital of France is Paris...'
+压缩后: ' Paris. The capital of France is Paris...'  # 不再乱码，但有偏移
 ```
-Attention 层 → ❓ 需要找新的压缩方法（或不压缩）
-SSM 层 → 优先探索压缩方法（可能比 Attention 层更重要）
+
+### 原因 2: Selected_indices 不适配 Lazy Compression
+
+**Selected_indices 分析**（Layer 0, budget=256）：
+
+```
+范围: [0, 313]
+分布:
+  [  0, 100): 100 个
+  [100, 200): 100 个
+  [200, 300):  55 个
+  [300, 400):   1 个
+  [400, 512):   0 个  ← 完全没有后半部分！
+```
+
+**Lazy Compression 场景**：
+
+```
+Step 1: Prefill 500 tokens
+Step 2: Generate 30 tokens → Total cache = 530 tokens
+Step 3: Compress with selected_indices [0-313]
+        → 保留 positions 0-313 (前 60%)
+        → 丢弃 positions 314-530 ← 包括所有 30 个新生成的 tokens！
+Step 4: Continue Generate with 压缩后的 cache
+        → 模型失去刚生成的 30 tokens 的上下文
+        → 输出错位、重复、不连贯
+```
+
+**示例**：
+
+```
+压缩前生成: " France is Paris. The capital of France is Paris..."
+压缩后生成: " Paris. The capital of France is Paris..."
+            ^^^^^^^^ 丢失了开头的 " France"
 ```
 
 ---
 
-## 关键教训
+## 为什么所有优化尝试都失败？
 
-1. **✅ Heterogeneous memory taxonomy 是正确的**:
-   Attention-Memory vs State-Memory 的分类是有意义的
+| 优化策略 | 结果 | 原因 |
+|----------|------|------|
+| 降低压缩比 (1.5x/2.0x/3.0x) | 全部失败 | `compression_ratio` 参数被忽略，实际使用校准文件的 budget |
+| 部分层压缩 (36/18/12/6 层) | 全部失败 | Beta 零值和 indices 不匹配问题仍然存在 |
+| 单层压缩 (Layer 0 only) | 失败 | 即使单层也有 beta 零值 |
+| 不同序列长度 (350/400/450/512) | 全部失败 | Selected_indices 始终是 [0-313]，不随序列长度调整 |
 
-2. **❌ AM 不是 Attention-Memory 的通用压缩器**:
-   即使是 softmax attention，AM 也可能因为架构交互而失效
-
-3. **✅ 概念验证的价值**:
-   通过简单测试快速发现根本性问题，比盲目实现完整系统要高效
-
-4. **🔄 混合架构的复杂性**:
-   层与层之间的交互可能比单层的特性更重要
+**共性**：所有优化都基于**相同的校准文件**，而校准文件的 beta 和 selected_indices 本质上不适配 Lazy Compression。
 
 ---
 
-## 监护人决策点
+## 根本矛盾
 
-**需要监护人决策**:
+### AM 离线校准的设计假设
 
-1. **是否继续 Task #52**?
-   - Option A: 暂停 #52，优先诊断根因
-   - Option B: 放弃 Attention 层压缩，直接转向 Task #53 (SSM 层压缩)
+```
+1. 在 Prefill 时一次性压缩 512 tokens
+2. Selected_indices 基于前 512 tokens 的 attention 模式
+3. 压缩后立即生成，cache 大小固定为 budget (256/159)
+```
 
-2. **研究方向优先级**?
-   - Option A: 深度诊断为什么 AM 失败（学术价值高）
-   - Option B: 快速转向替代方案（工程价值高）
+### Lazy Compression 的实际场景
 
-3. **是否调整 Roadmap**?
-   - 短期 (1-2 周): 诊断 + 探索替代方案
-   - 中期 (1-2 月): SSM 层压缩（可能比 Attention 层更可行）
-   - 长期 (3-6 月): 统一理论框架（基于实际可行的方法）
+```
+1. Prefill 完成后正常生成多轮
+2. Cache 增长到 500+ tokens
+3. 内存不足时触发压缩
+4. 使用固定的 selected_indices [0-313] 压缩 530+ tokens cache
+   → 丢弃最近生成的 tokens [314-530]
+   → 模型失去短期记忆
+```
+
+### 核心矛盾
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│   离线校准 (Offline Calibration)                        │
+│   - 假设: 固定 512 tokens，一次性压缩                   │
+│   - 输出: 固定 selected_indices [0-313]                 │
+│                                                         │
+│   vs                                                    │
+│                                                         │
+│   Lazy Compression                                      │
+│   - 实际: 可变 cache 大小 (500-2000+ tokens)            │
+│   - 需要: 动态调整 selected_indices                     │
+│                                                         │
+│   → 不兼容！                                            │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-*Critical Finding Report v1.0*
-*创建于: 2026-03-21 14:15*
-*发现者: Solar (Heterogeneous Memory Compaction Research)*
-*状态: 🔴 ACTIVE - 需要监护人决策*
+## 实验证据汇总
+
+### 实验 1: 不同压缩比测试
+
+```bash
+python /tmp/test_compression_ratio_fixed.py
+```
+
+**结果**：
+- 所有压缩比 (1.5x/2.0x/3.0x) 产生相同的压缩 (2.26x)
+- 所有输出相同的乱码：\`' Paris... (.\n..\n*...**......********..
+
+\`
+- 一致性全部 6% (2/30 tokens)
+
+**结论**：\`compression_ratio\` 参数被忽略，实际压缩由校准文件的 \`budget\` 决定。
+
+### 实验 2: Beta 值诊断
+
+```bash
+python /tmp/diagnose_beta.py
+```
+
+**结果**：
+- Layer 0-26: beta ∈ [0.91, 2.00], log(beta) ∈ [-0.09, 0.69]
+- Layer 27-35: beta ∈ [0, 2.00], log(beta) ∈ **[-23.03, 0.69]**
+
+**结论**：后 9 层的 beta 中有零值，导致 log(beta) = -23，attention 权重崩溃。
+
+### 实验 3: 禁用 Beta 测试
+
+```bash
+python /tmp/test_without_beta.py
+```
+
+**结果**：
+- 输出不再是乱码，变为可读文本
+- 但输出有偏移：缺少开头的 " France"
+- 一致性 0% (但不是乱码)
+
+**结论**：Beta 零值导致乱码，但即使禁用 beta，selected_indices 不匹配仍导致质量损失。
+
+### 实验 4: Selected_indices 分析
+
+```bash
+python /tmp/check_selected_indices.py
+```
+
+**结果**：
+- Indices 范围: [0, 313]
+- Lazy Compression cache: 530 tokens
+- 丢弃: positions [314-530] (包括所有新生成的 30 tokens)
+
+**结论**：Selected_indices 是为 512 tokens 校准的，不适配更大的 cache。
+
+---
+
+## 结论
+
+### AM 压缩在 Qwen3-8B Lazy Compression 下完全失效
+
+**两个独立的致命问题**：
+
+1. **Beta 零值崩溃**
+   - 校准产生 beta=0 值
+   - Log-space 补偿导致 attention 权重 ≈ 0
+   - 输出变成乱码
+
+2. **Fixed Indices 不适配动态 Cache**
+   - Selected_indices [0-313] 基于 512 tokens 校准
+   - Lazy Compression cache 可达 530+ tokens
+   - 丢弃最近生成的 tokens → 失去短期记忆
+
+**根本矛盾**：
+
+```
+AM 离线校准 (Offline Calibration)
+  ↓
+假设固定 cache 大小，一次性压缩
+  ↓
+不适配
+  ↓
+Lazy Compression (动态 cache 大小，按需压缩)
+```
+
+### 为什么所有优化都失败
+
+所有优化（降低压缩比、部分层压缩、单层压缩、不同序列长度）都基于**同一个校准文件**，而这个校准文件的 beta 和 selected_indices 本质上不适配 Lazy Compression 场景。
+
+### 可能的解决方案
+
+1. **修复 Beta 零值**：
+   - 重新校准，确保 beta >= 0.1 (clip)
+   - 或使用不同的补偿策略
+
+2. **动态 Selected_indices**：
+   - 根据当前 cache 大小调整 selected_indices
+   - 例如：cache=530, budget=256 → 选择最近 256 个 positions [274-530]
+   - 或使用滑动窗口策略
+
+3. **重新校准 for Lazy Compression**：
+   - 在 Lazy Compression 场景下重新生成校准文件
+   - 校准数据应包含：Prefill → Generate N tokens → Compress
+
+4. **使用不同的压缩算法**：
+   - H2O: 基于 attention score 动态选择（不需要校准）
+   - StreamingLLM: 保留最近 N tokens + 初始 tokens
+   - 这些算法天然适配 Lazy Compression
+
+---
+
+## 附录：测试文件
+
+| 文件 | 用途 |
+|------|------|
+| \`/tmp/correct_lazy_compression_test.py\` | 正确的 Lazy Compression 测试流程 |
+| \`/tmp/test_compression_ratio_fixed.py\` | 不同压缩比测试（修复路径） |
+| \`/tmp/diagnose_beta.py\` | Beta 值诊断 |
+| \`/tmp/test_without_beta.py\` | 禁用 beta 补偿测试 |
+| \`/tmp/check_selected_indices.py\` | Selected_indices 分析 |
+
+---
+
+**生成于**: 2026-03-25
+**作者**: Solar (Claude Opus 4.6)
+**监护人**: 昊哥
