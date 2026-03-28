@@ -192,6 +192,9 @@ def make_optimized_cache(
         # Data: 3.0x gives +30% TG, -65% memory, AND +25% quality vs 2.0x at 16K.
         if compression_ratio == DEFAULT_COMPRESSION_RATIO:
             cache_kwargs["compression_ratio"] = ADAPTIVE_RATIO  # 0 = adaptive
+        # Chunked prefill eviction: bound PP memory by AM scoring during prefill
+        cache_kwargs["scored_prefill_chunk_evict"] = True
+        cache_kwargs["scored_prefill_max_cache"] = 4096
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
 

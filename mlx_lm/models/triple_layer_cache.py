@@ -95,6 +95,8 @@ class TripleLayerKVCache(_BaseCache):
         warm_overflow_threshold: int = 64,  # Batch Warm→Cold migration
         lazy_prefill_threshold: int = 8192,  # Skip Q4_0 during prefill for contexts below this
         scored_mode: bool = False,  # Architecture D: AM-scored on clean bf16
+        scored_prefill_chunk_evict: bool = False,  # Enable prefill eviction for PP memory savings
+        scored_prefill_max_cache: int = 4096,  # Eviction trigger: evict when cache exceeds this
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -190,6 +192,12 @@ class TripleLayerKVCache(_BaseCache):
         else:
             self.primary_quantizer = None
 
+        # Chunked prefill eviction: score and evict during PP to bound memory
+        self._scored_prefill_chunk_evict = scored_prefill_chunk_evict
+        self._scored_prefill_max_cache = scored_prefill_max_cache
+        self._prefill_tokens_seen = 0
+        self._prefill_eviction_count = 0
+
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
         import pickle
@@ -223,6 +231,9 @@ class TripleLayerKVCache(_BaseCache):
         if self._flat_mode:
             # Use original offset for correct RoPE, even if AM compressed the buffer
             return self._true_offset
+        # Chunked prefill with eviction: physical cache < total tokens seen
+        if self._prefill_tokens_seen > 0:
+            return self._prefill_tokens_seen
         cold_size = 0
         if self.cold_compressed_keys is not None:
             cold_size += self.cold_compressed_keys.shape[2]
@@ -285,11 +296,22 @@ class TripleLayerKVCache(_BaseCache):
             self.recent_keys = mx.concatenate([self.recent_keys, keys], axis=2)
             self.recent_values = mx.concatenate([self.recent_values, values], axis=2)
 
+        # Track total tokens for RoPE positioning (chunked prefill eviction)
+        if self._scored_prefill_chunk_evict:
+            self._prefill_tokens_seen += keys.shape[2]
+
         # 2. LAZY PREFILL: during prefill (multi-token), skip Q4_0 quantization
         #    when context is small enough. Tokens stay in bf16 Recent for PP speed.
         #    Aging + quantization is deferred to promotion (first TG token).
         #    For long contexts (> threshold), do incremental aging to avoid TTFT spike.
         if keys.shape[2] > 1:
+            # Scored chunked prefill eviction: bound PP memory by evicting cold tokens
+            if self.scored_mode and self._scored_prefill_chunk_evict:
+                total = self.recent_keys.shape[2]
+                if total > self._scored_prefill_max_cache:
+                    self._scored_prefill_evict()
+                return self.recent_keys, self.recent_values
+
             if self.recent_keys.shape[2] <= self.lazy_prefill_threshold:
                 return self.recent_keys, self.recent_values
             # Long context: do incremental aging during prefill
@@ -305,16 +327,22 @@ class TripleLayerKVCache(_BaseCache):
         no_warm_cold = self.warm_keys is None and self.cold_pending_keys is None
 
         if self.scored_mode and has_am and no_warm_cold and self.recent_keys.shape[2] > self.recent_size:
-            full_keys = self.recent_keys
-            full_values = self.recent_values
-            B, n_heads, cache_len, head_dim = full_keys.shape
-            self._true_offset = cache_len
-            recent_len = self.recent_size  # Last recent_size tokens are "recent"
-            mx.eval(full_keys, full_values)
-            self.recent_keys = None
-            self.recent_values = None
-            self._scored_compress_prefix(full_keys, full_values, recent_len)
-            del full_keys, full_values
+            if self._prefill_tokens_seen > 0:
+                # Chunked prefill eviction: already scored during PP, just promote to flat
+                self._true_offset = self._prefill_tokens_seen
+                self._promote_to_flat_buffer(self.recent_keys, self.recent_values)
+            else:
+                # Full scored compression (original path: single-pass prefill)
+                full_keys = self.recent_keys
+                full_values = self.recent_values
+                B, n_heads, cache_len, head_dim = full_keys.shape
+                self._true_offset = cache_len
+                recent_len = self.recent_size
+                mx.eval(full_keys, full_values)
+                self.recent_keys = None
+                self.recent_values = None
+                self._scored_compress_prefix(full_keys, full_values, recent_len)
+                del full_keys, full_values
             self._scored_active = True
             return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
 
@@ -926,6 +954,81 @@ class TripleLayerKVCache(_BaseCache):
         importance_mask = np.zeros(chunk_len, dtype=bool)
         importance_mask[clipped_indices] = True
         return importance_mask
+
+    def _scored_prefill_evict(self):
+        """Score and evict during prefill to bound KV cache memory.
+
+        When KV cache exceeds scored_prefill_max_cache during chunked prefill,
+        AM-score accumulated tokens and keep only hot ones. This bounds PP peak
+        memory to ~max_cache tokens instead of growing to full context length.
+        """
+        keys = self.recent_keys
+        values = self.recent_values
+        B, n_heads, total_len, head_dim = keys.shape
+
+        # Split: [old_prefix | recent_window]
+        recent_window = min(self.recent_size, total_len)
+        old_len = total_len - recent_window
+
+        if old_len <= 0:
+            return
+
+        old_k = keys[:, :, :old_len, :]
+        old_v = values[:, :, :old_len, :]
+        recent_k = keys[:, :, old_len:, :]
+        recent_v = values[:, :, old_len:, :]
+
+        # AM scoring on old tokens (reuse _get_importance_mask)
+        effective_ratio = self._get_effective_ratio(self._prefill_tokens_seen)
+        chunk_size = self.cold_batch_threshold  # 512
+        budget = int(chunk_size / effective_ratio)
+
+        global_indices = []
+        for offset in range(0, old_len, chunk_size):
+            chunk_end = min(offset + chunk_size, old_len)
+            chunk_len = chunk_end - offset
+            if chunk_len == chunk_size:
+                imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
+                global_indices.append(np.where(imp_mask)[0] + offset)
+            else:
+                # Partial chunk: keep all tokens
+                global_indices.append(np.arange(offset, chunk_end))
+
+        all_indices = np.concatenate(global_indices)
+        idx = mx.array(all_indices, dtype=mx.int32)
+
+        hot_k = old_k[:, :, idx, :]
+        hot_v = old_v[:, :, idx, :]
+
+        # Replace recent with [hot | recent_window]
+        self.recent_keys = mx.concatenate([hot_k, recent_k], axis=2)
+        self.recent_values = mx.concatenate([hot_v, recent_v], axis=2)
+        mx.eval(self.recent_keys, self.recent_values)
+
+        self._prefill_eviction_count += 1
+        if self.layer_idx == 0:
+            print(f"[Scored Prefill Evict #{self._prefill_eviction_count}] "
+                  f"{total_len} → {self.recent_keys.shape[2]} tokens "
+                  f"(kept {len(all_indices)} hot + {recent_window} recent, "
+                  f"ratio={effective_ratio}x)")
+
+    def _promote_to_flat_buffer(self, keys, values):
+        """Copy bf16 buffer to pre-allocated flat buffer (no AM scoring).
+
+        Used after chunked prefill eviction: cache is already scored/pruned,
+        just needs to transition to flat mode for O(1) TG appends.
+        """
+        B, n_heads, cache_len, head_dim = keys.shape
+        alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
+        self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+        self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+        self._flat_keys[..., :cache_len, :] = keys
+        self._flat_values[..., :cache_len, :] = values
+        self._flat_offset = cache_len
+        self._flat_mode = True
+        self.recent_keys = None
+        self.recent_values = None
+        mx.eval(self._flat_keys, self._flat_values)
 
     def _scored_compress_prefix(
         self,
