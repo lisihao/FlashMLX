@@ -1,0 +1,130 @@
+Loading model...
+Model params memory: 8300 MB
+
+==========================================================================================
+  Context: 16K
+==========================================================================================
+
+  --- standard (standard, chunk=no) ---
+    PP:     330.6 tok/s  (48351ms)
+    TG:      21.0 tok/s  (47.7ms/tok)
+    TTOT:   48419 ms  (PP + 1st decode 68ms)
+    MEM PP peak:        8399 MB
+    MEM PP active:      7026 MB
+    MEM TG active:      2268 MB
+    MEM TG final:       2268 MB
+    QUAL: PASS    
+
+  --- std_chunked (standard, chunk=yes) ---
+    PP:     299.9 tok/s  (53305ms)
+    TG:      19.7 tok/s  (50.8ms/tok)
+    TTOT:   53356 ms  (PP + 1st decode 51ms)
+    MEM PP peak:        2785 MB
+    MEM PP active:      2301 MB
+    MEM TG active:      2268 MB
+    MEM TG final:       2268 MB
+    QUAL: PASS    
+
+  --- scored_chunked (scored_pq, chunk=yes) ---
+[TripleLayerKVCache] AM calibration loaded: /Users/lisihao/FlashMLX/calibrations/am_calibration_qwen3-8b_2.0x_onpolicy.pkl
+  Prefix: 512 → Budget: 256 (2.0x)
+[Scored Prefill Evict #1] 4608 → 1872 tokens (kept 1360 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #2] 4432 → 2038 tokens (kept 1526 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #3] 4598 → 2204 tokens (kept 1692 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #4] 4252 → 1858 tokens (kept 1346 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #5] 4418 → 2024 tokens (kept 1512 hot + 512 recent, ratio=3.0x)
+    PP:     367.5 tok/s  (43504ms)
+    TG:      26.9 tok/s  (37.2ms/tok)
+    TTOT:   43559 ms  (PP + 1st decode 56ms)
+    MEM PP peak:        1131 MB
+    MEM PP active:       576 MB
+    MEM TG active:       602 MB
+    MEM TG final:        602 MB
+    QUAL: PASS  flat=3694  evicts=5
+
+==========================================================================================
+  Context: 32K
+==========================================================================================
+
+  --- standard (standard, chunk=no) ---
+    PP:     264.6 tok/s  (122353ms)
+    TG:      16.3 tok/s  (61.5ms/tok)
+    TTOT:  122456 ms  (PP + 1st decode 103ms)
+    MEM PP peak:       16990 MB
+    MEM PP active:     14207 MB
+    MEM TG active:      4572 MB
+    MEM TG final:       4572 MB
+    QUAL: PASS    
+
+  --- std_chunked (standard, chunk=yes) ---
+    PP:     248.6 tok/s  (130214ms)
+    TG:      16.1 tok/s  (62.2ms/tok)
+    TTOT:  130280 ms  (PP + 1st decode 66ms)
+    MEM PP peak:        5079 MB
+    MEM PP active:      4608 MB
+    MEM TG active:      4572 MB
+    MEM TG final:       4572 MB
+    QUAL: PASS    
+
+  --- scored_chunked (scored_pq, chunk=yes) ---
+[TripleLayerKVCache] AM calibration loaded: /Users/lisihao/FlashMLX/calibrations/am_calibration_qwen3-8b_2.0x_onpolicy.pkl
+  Prefix: 512 → Budget: 256 (2.0x)
+[Scored Prefill Evict #1] 4608 → 1872 tokens (kept 1360 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #2] 4432 → 2038 tokens (kept 1526 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #3] 4598 → 2204 tokens (kept 1692 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #4] 4252 → 1858 tokens (kept 1346 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #5] 4418 → 2024 tokens (kept 1512 hot + 512 recent, ratio=3.0x)
+[Scored Prefill Evict #6] 4584 → 3387 tokens (kept 2875 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #7] 4411 → 3214 tokens (kept 2702 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #8] 4238 → 3041 tokens (kept 2529 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #9] 4577 → 3380 tokens (kept 2868 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #10] 4404 → 3207 tokens (kept 2695 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #11] 4231 → 3034 tokens (kept 2522 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #12] 4570 → 3373 tokens (kept 2861 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #13] 4397 → 3200 tokens (kept 2688 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #14] 4224 → 3027 tokens (kept 2515 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #15] 4563 → 3366 tokens (kept 2854 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #16] 4390 → 3193 tokens (kept 2681 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #17] 4217 → 3020 tokens (kept 2508 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #18] 4556 → 3359 tokens (kept 2847 hot + 512 recent, ratio=1.5x)
+[Scored Prefill Evict #19] 4383 → 3186 tokens (kept 2674 hot + 512 recent, ratio=1.5x)
+    PP:     369.1 tok/s  (87707ms)
+    TG:      27.0 tok/s  (37.0ms/tok)
+    TTOT:   87761 ms  (PP + 1st decode 54ms)
+    MEM PP peak:        1131 MB
+    MEM PP active:       526 MB
+    MEM TG active:       530 MB
+    MEM TG final:        530 MB
+    QUAL: PASS  flat=3326  evicts=19
+
+==============================================================================================================
+  CHUNKED PREFILL BENCHMARK (chunk=512, memory = total GPU - model params)
+  Model params: 8300 MB
+==============================================================================================================
+  Display          |  Ctx |  PP tok/s |  TG tok/s |  TTOT ms |  PP Peak |   TG Mem |  Qual
+  -----------------+------+-----------+-----------+----------+----------+----------+------
+  standard         |  16K |     330.6 |      21.0 |    48419 |    8399M |    2268M |  PASS
+  std_chunked      |  16K |     299.9 |      19.7 |    53356 |    2785M |    2268M |  PASS
+  scored_chunked   |  16K |     367.5 |      26.9 |    43559 |    1131M |     602M |  PASS
+  standard         |  32K |     264.6 |      16.3 |   122456 |   16990M |    4572M |  PASS
+  std_chunked      |  32K |     248.6 |      16.1 |   130280 |    5079M |    4572M |  PASS
+  scored_chunked   |  32K |     369.1 |      27.0 |    87761 |    1131M |     530M |  PASS
+
+==============================================================================================================
+  DELTA vs STANDARD (single-pass PP)
+==============================================================================================================
+
+  --- 16K (Standard: PP peak 8399MB, TG 2268MB) ---
+  Display          |    PP Δ |    TG Δ |   TTOT Δ |  PP Mem Δ |  TG Mem Δ | Qual
+  -----------------+---------+---------+----------+-----------+-----------+------
+  std_chunked      |   -9.3% |   -6.1% |   +10.2% |    -66.8% |     -0.0% | PASS
+  scored_chunked   |  +11.1% |  +28.4% |   -10.0% |    -86.5% |    -73.5% | PASS
+
+  --- 32K (Standard: PP peak 16990MB, TG 4572MB) ---
+  Display          |    PP Δ |    TG Δ |   TTOT Δ |  PP Mem Δ |  TG Mem Δ | Qual
+  -----------------+---------+---------+----------+-----------+-----------+------
+  std_chunked      |   -6.0% |   -1.1% |    +6.4% |    -70.1% |     +0.0% | PASS
+  scored_chunked   |  +39.5% |  +66.2% |   -28.3% |    -93.3% |    -88.4% | PASS
+
+==============================================================================================================
+Done!
