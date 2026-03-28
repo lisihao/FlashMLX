@@ -7,6 +7,8 @@ Strategies:
     - "standard": Default KVCache (unbounded bf16)
     - "triple": TripleLayerKVCache with Q4_0 quantization (~40% memory savings)
     - "triple_am": Triple + AM compression (~50% memory savings, faster TG at long contexts)
+    - "triple_pq": Triple + PolarQuant warm quantization (data-oblivious, no calibration)
+    - "triple_pq_am": Triple + PolarQuant warm + AM cold compression
     - "auto": Auto-select based on calibration availability
 
 Usage:
@@ -20,9 +22,22 @@ Usage:
     # Triple with Q4_0 quantization
     text = generate(model, tokenizer, prompt, kv_cache="triple")
 
+    # Triple + PolarQuant warm quantization (no calibration needed)
+    text = generate(model, tokenizer, prompt, kv_cache="triple_pq")
+
+    # Triple + PolarQuant 3-bit (more aggressive compression)
+    text = generate(model, tokenizer, prompt,
+                    kv_cache="triple_pq",
+                    kv_warm_bits=3)
+
     # Triple + AM compression (needs calibration file)
     text = generate(model, tokenizer, prompt,
                     kv_cache="triple_am",
+                    kv_calibration="/path/to/am_calibration.pkl")
+
+    # Triple + PolarQuant warm + AM cold (best combo, needs calibration)
+    text = generate(model, tokenizer, prompt,
+                    kv_cache="triple_pq_am",
                     kv_calibration="/path/to/am_calibration.pkl")
 
     # Auto-detect best strategy
@@ -41,6 +56,8 @@ Performance characteristics (Qwen3-8B, measured):
     | triple     | ~100%    | ~2% (TG), ~42% (prefill) | lossless |
     | triple_am  | 104-119% | 43-53% (TG)      | key facts preserved |
     | adaptive   | 105-123% | 53-66% (TG)      | key facts preserved |
+    | triple_pq  | TBD      | TBD              | cos_sim > 0.95 (4b) |
+    | triple_pq_am | TBD    | TBD              | cos_sim > 0.95 (4b) |
 """
 
 from typing import Optional, Dict, List, Any
@@ -54,7 +71,7 @@ DEFAULT_COMPRESSION_RATIO = 2.0
 DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
-VALID_STRATEGIES = ("standard", "triple", "triple_am", "auto")
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "auto")
 
 # Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
 # Data-driven mapping (Qwen3-8B benchmarks):
@@ -71,18 +88,24 @@ def make_optimized_cache(
     recent_size: int = DEFAULT_RECENT_SIZE,
     warm_size: int = DEFAULT_WARM_SIZE,
     max_kv_size: Optional[int] = None,
+    warm_quantizer: Optional[str] = None,
+    warm_bits: int = 4,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
 
     Args:
         model: The language model.
-        strategy: Cache strategy ("standard", "triple", "triple_am", "auto").
-        calibration_file: Path to AM calibration .pkl file (for triple_am).
+        strategy: Cache strategy ("standard", "triple", "triple_am",
+                  "triple_pq", "triple_pq_am", "auto").
+        calibration_file: Path to AM calibration .pkl file (for triple_am/triple_pq_am).
         compression_ratio: AM compression ratio (default: 2.0).
         recent_size: Recent layer size in tokens (default: 512).
         warm_size: Warm layer size in tokens (default: 2048).
         max_kv_size: If set, use RotatingKVCache (overrides strategy).
+        warm_quantizer: Warm layer quantizer name ("q4_0", "polarquant", "noop").
+                       None = strategy default. Overrides strategy-implied quantizer.
+        warm_bits: Bits for PolarQuant (2, 3, or 4). Default: 4.
 
     Returns:
         List of cache objects, one per layer.
@@ -111,33 +134,52 @@ def make_optimized_cache(
     if strategy == "standard":
         return [KVCache() for _ in range(num_layers)]
 
-    # Triple or Triple+AM
+    # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM
     from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
 
-    enable_am = (strategy == "triple_am")
+    enable_am = strategy in ("triple_am", "triple_pq_am")
 
     # Validate calibration for AM
     if enable_am and calibration_file is None:
-        print("[CacheFactory] Warning: triple_am requires calibration_file. "
-              "Falling back to triple (Q4_0 only).")
+        print("[CacheFactory] Warning: AM strategies require calibration_file. "
+              "Falling back to triple (no AM).")
         enable_am = False
 
     if enable_am and not os.path.exists(calibration_file):
         print(f"[CacheFactory] Warning: calibration file not found: {calibration_file}. "
-              "Falling back to triple (Q4_0 only).")
+              "Falling back to triple (no AM).")
         enable_am = False
+
+    # Resolve warm quantizer
+    quantizer_obj = None
+    if warm_quantizer is not None:
+        from mlx_lm.models.quantization_strategies import get_quantizer
+        if warm_quantizer == "polarquant":
+            quantizer_obj = get_quantizer("polarquant", bits=warm_bits)
+        else:
+            quantizer_obj = get_quantizer(warm_quantizer)
+    elif strategy in ("triple_pq", "triple_pq_am"):
+        from mlx_lm.models.quantization_strategies import PolarQuantizer
+        quantizer_obj = PolarQuantizer(bits=warm_bits)
+
+    # Build cache list
+    cache_kwargs = dict(
+        memory_budget_mb=100.0,
+        recent_size=recent_size,
+        warm_size=warm_size,
+        enable_warm_quant=True,
+        enable_cold_am=enable_am,
+        enable_cold_quant=True,
+        calibration_file=calibration_file if enable_am else None,
+        compression_ratio=compression_ratio,
+        warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
+    )
+    if quantizer_obj is not None:
+        cache_kwargs["warm_quantizer"] = quantizer_obj
 
     return [
         TripleLayerKVCache(
-            memory_budget_mb=100.0,
-            recent_size=recent_size,
-            warm_size=warm_size,
-            enable_warm_quant=True,
-            enable_cold_am=enable_am,
-            enable_cold_quant=True,
-            calibration_file=calibration_file if enable_am else None,
-            compression_ratio=compression_ratio,
-            warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
+            **cache_kwargs,
             layer_idx=i,
         )
         for i in range(num_layers)

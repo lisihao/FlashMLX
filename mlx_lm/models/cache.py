@@ -27,6 +27,8 @@ def make_prompt_cache(
     kv_cache: Optional[str] = None,
     kv_calibration: Optional[str] = None,
     kv_compression_ratio: Optional[float] = None,
+    kv_warm_quantizer: Optional[str] = None,
+    kv_warm_bits: int = 4,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -44,11 +46,16 @@ def make_prompt_cache(
             - ``"standard"``: Explicit default KVCache.
             - ``"triple"``: TripleLayerKVCache with Q4_0 (~40% memory savings).
             - ``"triple_am"``: Triple + AM compression (~50% savings, faster TG).
+            - ``"triple_pq"``: Triple + PolarQuant warm (data-oblivious).
+            - ``"triple_pq_am"``: Triple + PolarQuant warm + AM cold.
             - ``"auto"``: Auto-select based on calibration availability.
         kv_calibration (Optional[str]): Path to AM calibration .pkl file.
-            Required for ``"triple_am"`` strategy.
+            Required for ``"triple_am"`` and ``"triple_pq_am"`` strategies.
         kv_compression_ratio (Optional[float]): AM compression ratio.
             Default: 2.0. Use 3.0 for more aggressive compression (~66% savings).
+        kv_warm_quantizer (Optional[str]): Warm layer quantizer override.
+            One of "q4_0", "polarquant", "noop". Overrides strategy default.
+        kv_warm_bits (int): Bits for PolarQuant (2, 3, or 4). Default: 4.
     """
     if hasattr(model, "make_cache"):
         return model.make_cache()
@@ -63,6 +70,10 @@ def make_prompt_cache(
         )
         if kv_compression_ratio is not None:
             kwargs["compression_ratio"] = kv_compression_ratio
+        if kv_warm_quantizer is not None:
+            kwargs["warm_quantizer"] = kv_warm_quantizer
+        if kv_warm_bits != 4:
+            kwargs["warm_bits"] = kv_warm_bits
         return make_optimized_cache(model, **kwargs)
 
     num_layers = len(model.layers)

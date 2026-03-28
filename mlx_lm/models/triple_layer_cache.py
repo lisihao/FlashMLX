@@ -819,8 +819,38 @@ class TripleLayerKVCache(_BaseCache):
                    * merged_scales.reshape(n_groups, 1))
         return dequant.reshape(data.shape).astype(mx.bfloat16)
 
+    def _generic_dequant_kv(self, keys, values, metadata_list):
+        """Dequant keys and values using pluggable quantizer.
+
+        Uses merged vectorized path for Q4_0, per-chunk for other quantizers.
+        """
+        # Fast path: Q4_0 with merged scales (vectorized, no Python loop)
+        if metadata_list and 'group_size' in metadata_list[0]:
+            return self._merged_dequant_kv(keys, values, metadata_list)
+
+        # Generic path: per-chunk dequantization via quantizer interface
+        dequant_keys_list = []
+        dequant_values_list = []
+        offset = 0
+
+        for meta in metadata_list:
+            seq_len = meta['seq_len']
+            chunk_keys = keys[:, :, offset:offset+seq_len, :]
+            chunk_values = values[:, :, offset:offset+seq_len, :]
+            dk, dv = self.warm_quantizer.dequantize(
+                chunk_keys, chunk_values, meta
+            )
+            dequant_keys_list.append(dk)
+            dequant_values_list.append(dv)
+            offset += seq_len
+
+        if len(dequant_keys_list) == 1:
+            return dequant_keys_list[0], dequant_values_list[0]
+        return (mx.concatenate(dequant_keys_list, axis=2),
+                mx.concatenate(dequant_values_list, axis=2))
+
     def _merged_dequant_kv(self, keys, values, metadata_list):
-        """Dequant both keys and values using merged scales."""
+        """Dequant both keys and values using merged scales (Q4_0 fast path)."""
         B, n_heads, total_seq, head_dim = keys.shape
         group_size = metadata_list[0]['group_size']
         groups_per_token = head_dim // group_size
@@ -862,7 +892,7 @@ class TripleLayerKVCache(_BaseCache):
             layers_v.append(self.cold_compressed_values.astype(mx.bfloat16))
         if self.cold_pending_keys is not None:
             if self.enable_cold_quant and len(self.cold_pending_metadata) > 0:
-                dk, dv = self._merged_dequant_kv(
+                dk, dv = self._generic_dequant_kv(
                     self.cold_pending_keys, self.cold_pending_values,
                     self.cold_pending_metadata
                 )
@@ -872,10 +902,10 @@ class TripleLayerKVCache(_BaseCache):
                 layers_k.append(self.cold_pending_keys.astype(mx.bfloat16))
                 layers_v.append(self.cold_pending_values.astype(mx.bfloat16))
 
-        # L1 (Warm) - merged vectorized dequant
+        # L1 (Warm) - pluggable dequant (vectorized for Q4_0, per-chunk for others)
         if self.warm_keys is not None:
             if self.enable_warm_quant and len(self.warm_metadata) > 0:
-                dk, dv = self._merged_dequant_kv(
+                dk, dv = self._generic_dequant_kv(
                     self.warm_keys, self.warm_values, self.warm_metadata
                 )
                 layers_k.append(dk)
