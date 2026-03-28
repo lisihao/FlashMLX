@@ -184,11 +184,14 @@ def make_optimized_cache(
         warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
         scored_mode=is_scored,
     )
-    # P2 Scored: skip all warm quantization during prefill.
-    # Everything stays bf16 in Recent → faster prefill (matches standard speed).
-    # Higher memory during prefill is acceptable since promotion frees it immediately.
     if is_scored:
+        # P2 Scored: skip all warm quantization during prefill.
+        # Everything stays bf16 in Recent → faster prefill (matches standard speed).
         cache_kwargs["lazy_prefill_threshold"] = 65536
+        # Adaptive ratio: 3.0x at <=16K (better TG + quality), 2.0x at >16K (safe).
+        # Data: 3.0x gives +30% TG, -65% memory, AND +25% quality vs 2.0x at 16K.
+        if compression_ratio == DEFAULT_COMPRESSION_RATIO:
+            cache_kwargs["compression_ratio"] = ADAPTIVE_RATIO  # 0 = adaptive
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
 
