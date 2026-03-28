@@ -964,10 +964,9 @@ class TripleLayerKVCache(_BaseCache):
         n_hot_tokens = len(all_indices)
         n_dropped_tokens = old_len - n_hot_tokens
 
-        # Phase 2: Single vectorized gather (1 op instead of 30)
+        # Phase 2: Allocate flat buffer and write directly (no intermediate tensors)
         global_idx = mx.array(all_indices, dtype=mx.int32)
-        hot_k = old_keys[:, :, global_idx, :]
-        hot_v = old_values[:, :, global_idx, :]
+        cache_len = n_hot_tokens + recent_len
 
         if self.layer_idx == 0:
             ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
@@ -975,18 +974,14 @@ class TripleLayerKVCache(_BaseCache):
                   f"{n_hot_tokens} hot(bf16) + {n_dropped_tokens} dropped + {recent_len} recent "
                   f"({n_full_chunks} chunks scored)")
 
-        # Phase 3: Build flat buffer [hot | recent] with single concat + copy
-        full_k = mx.concatenate([hot_k, recent_k], axis=2)
-        full_v = mx.concatenate([hot_v, recent_v], axis=2)
-        del hot_k, hot_v
-        cache_len = full_k.shape[2]
-
         alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
         self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
         self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-        self._flat_keys[..., :cache_len, :] = full_k
-        self._flat_values[..., :cache_len, :] = full_v
-        del full_k, full_v
+        # Direct gather into flat buffer: [hot_important | recent]
+        self._flat_keys[..., :n_hot_tokens, :] = old_keys[:, :, global_idx, :]
+        self._flat_values[..., :n_hot_tokens, :] = old_values[:, :, global_idx, :]
+        self._flat_keys[..., n_hot_tokens:cache_len, :] = recent_k
+        self._flat_values[..., n_hot_tokens:cache_len, :] = recent_v
         self._flat_offset = cache_len
         self._flat_mode = True
         mx.eval(self._flat_keys, self._flat_values)
