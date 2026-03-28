@@ -182,13 +182,13 @@ class TripleLayerKVCache(_BaseCache):
         self.num_cold_compressions = 0
         self._total_offset = 0
 
-        # Architecture D: Scored Differential Compression
-        # AM scores on clean bf16 → important(PQ4) + unimportant(PQ2)
+        # Architecture D P2: Scored-as-Warm-tier
+        # AM scores on clean bf16 → important(bf16 flat) + unimportant(PQ2 cold)
         self.scored_mode = scored_mode
         self._scored_active = False
         if scored_mode:
             from mlx_lm.models.quantization_strategies import PolarQuantizer
-            self.primary_quantizer = warm_quantizer if warm_quantizer is not None else PolarQuantizer(bits=4)
+            self.primary_quantizer = None  # P2: important tokens go bf16 directly, no PQ4
             self.secondary_quantizer = secondary_quantizer if secondary_quantizer is not None else PolarQuantizer(bits=2)
         else:
             self.primary_quantizer = None
@@ -308,8 +308,28 @@ class TripleLayerKVCache(_BaseCache):
                 self._manage_aging()
             return self._concat_all_layers()
 
-        # 3. First TG token: reorganize accumulated tokens into layers
-        #    This handles both lazy prefill (all in Recent) and normal aging
+        # 3. First TG token — SCORED FAST PROMOTION:
+        #    When scored mode has all data in bf16 Recent (lazy prefill),
+        #    skip aging entirely. Go directly from bf16 to AM scoring.
+        #    Avoids pointless Q4_0 quantize → immediate dequant roundtrip.
+        has_am = self.enable_cold_am and (self._am_calibration is not None or self.calibration_registry is not None)
+        no_warm_cold = self.warm_keys is None and self.cold_pending_keys is None
+
+        if self.scored_mode and has_am and no_warm_cold and self.recent_keys.shape[2] > self.recent_size:
+            full_keys = self.recent_keys
+            full_values = self.recent_values
+            B, n_heads, cache_len, head_dim = full_keys.shape
+            self._true_offset = cache_len
+            recent_len = self.recent_size  # Last recent_size tokens are "recent"
+            mx.eval(full_keys, full_values)
+            self.recent_keys = None
+            self.recent_values = None
+            self._scored_compress_prefix(full_keys, full_values, recent_len)
+            del full_keys, full_values
+            self._scored_active = True
+            return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+
+        # 3b. First TG token (non-scored): reorganize accumulated tokens into layers
         if self.recent_keys.shape[2] > self.recent_size:
             self._manage_aging()
 
@@ -334,14 +354,11 @@ class TripleLayerKVCache(_BaseCache):
             self._cleanup_quantized()
 
             # Stage 2: Branch based on architecture mode
-            has_am = self.enable_cold_am and (self._am_calibration is not None or self.calibration_registry is not None)
-
             if self.scored_mode and has_am:
-                # Architecture D: Score on clean bf16 → differential PQ4/PQ2 → flat buffer
+                # Architecture D: Score on clean bf16 → hot/cold split → flat buffer
                 self._scored_compress_prefix(full_keys, full_values, recent_len)
                 del full_keys, full_values
                 self._scored_active = True
-                # _scored_compress_prefix transitions to flat mode — return flat slice
                 return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
 
             # Pipeline mode (original): AM prune → flat buffer

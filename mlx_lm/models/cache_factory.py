@@ -158,10 +158,10 @@ def make_optimized_cache(
     quantizer_obj = None
     secondary_quantizer_obj = None
     if is_scored:
-        # Architecture D: PQ4 primary (for important tokens + warm aging)
-        # PQ2 secondary (for unimportant tokens)
+        # P2 Scored: warm aging uses default Q4_0 (cheaper than PQ4, same effect
+        # since everything dequants at promotion anyway). PQ2 for cold storage only.
         from mlx_lm.models.quantization_strategies import PolarQuantizer
-        quantizer_obj = PolarQuantizer(bits=warm_bits)
+        # quantizer_obj stays None → default Q4_0 for warm aging
         secondary_quantizer_obj = PolarQuantizer(bits=2)
     elif warm_quantizer is not None:
         from mlx_lm.models.quantization_strategies import get_quantizer
@@ -189,6 +189,11 @@ def make_optimized_cache(
         warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
         scored_mode=is_scored,
     )
+    # P2 Scored: skip all warm quantization during prefill.
+    # Everything stays bf16 in Recent → faster prefill (matches standard speed).
+    # Higher memory during prefill is acceptable since promotion frees it immediately.
+    if is_scored:
+        cache_kwargs["lazy_prefill_threshold"] = 65536
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
     if secondary_quantizer_obj is not None:
