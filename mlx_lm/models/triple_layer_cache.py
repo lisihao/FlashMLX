@@ -375,14 +375,15 @@ class TripleLayerKVCache(_BaseCache):
         """Select optimal compression ratio based on context length.
 
         Data-driven mapping (Qwen3-8B benchmarks):
-            <= 16K: 3.0x — better TG (+5-23%), +59-66% memory savings
-            > 16K:  2.0x — stable TG, avoids 32K regression
+            <= 16K: 3.0x — best TG (+27%) and quality, proven at 16K
+            16K-32K: 1.5x — gentle compression, preserves numerical details
+            > 32K:  1.5x — same gentle ratio, calibration limited
         """
         if not self.adaptive_ratio:
             return self.compression_ratio
         if context_len <= 16384:
             return 3.0
-        return 2.0
+        return 1.5
 
     def _am_compress_prefix(
         self,
@@ -894,14 +895,33 @@ class TripleLayerKVCache(_BaseCache):
         if layer_calib is None:
             return np.ones(chunk_len, dtype=bool)
 
-        selected_indices = layer_calib['selected_indices']
-        if isinstance(selected_indices, mx.array):
-            selected_indices = np.array(selected_indices)
+        # Use ranked_indices (full ranking) if available, else selected_indices
+        if 'ranked_indices' in layer_calib:
+            ranked = layer_calib['ranked_indices']
+            if isinstance(ranked, mx.array):
+                ranked = np.array(ranked)
+            valid = ranked[ranked < chunk_len]
+            clipped_indices = valid[:budget]
+        else:
+            selected_indices = layer_calib['selected_indices']
+            if isinstance(selected_indices, mx.array):
+                selected_indices = np.array(selected_indices)
 
-        valid_mask = selected_indices < chunk_len
-        clipped_indices = selected_indices[valid_mask]
-        if len(clipped_indices) > budget:
-            clipped_indices = clipped_indices[:budget]
+            valid_mask = selected_indices < chunk_len
+            clipped_indices = selected_indices[valid_mask]
+            if len(clipped_indices) > budget:
+                clipped_indices = clipped_indices[:budget]
+            elif len(clipped_indices) < budget:
+                # Budget exceeds calibration capacity (ratio < calibration ratio).
+                # Fill remaining slots with evenly-spaced unselected indices.
+                all_indices = np.arange(chunk_len)
+                unselected = np.setdiff1d(all_indices, clipped_indices)
+                extra_needed = budget - len(clipped_indices)
+                if extra_needed <= len(unselected):
+                    # Evenly spaced: picks from across the chunk, not random
+                    step = max(1, len(unselected) // extra_needed)
+                    extra = unselected[::step][:extra_needed]
+                    clipped_indices = np.sort(np.concatenate([clipped_indices, extra]))
 
         importance_mask = np.zeros(chunk_len, dtype=bool)
         importance_mask[clipped_indices] = True
