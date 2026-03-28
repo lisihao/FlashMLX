@@ -711,6 +711,17 @@ def stream_generate(
 
     kwargs["max_tokens"] = max_tokens
 
+    # Auto-calibrate AM if scored_pq requested without explicit calibration
+    kv_cache_strategy = kwargs.get("kv_cache")
+    if (
+        kv_cache_strategy in ("scored_pq", "triple_am", "triple_pq_am", "triple_tq_am")
+        and not kwargs.get("kv_calibration")
+    ):
+        from mlx_lm.models.am_calibrator import auto_calibrate
+        cal_path = auto_calibrate(model, tokenizer)
+        if cal_path:
+            kwargs["kv_calibration"] = cal_path
+
     if draft_model is None:
         kwargs.pop("num_draft_tokens", None)
         token_generator = generate_step(prompt, model, **kwargs)
