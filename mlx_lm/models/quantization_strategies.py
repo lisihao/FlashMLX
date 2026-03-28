@@ -96,6 +96,33 @@ class QuantizationStrategy(ABC):
         """
         pass
 
+    @property
+    def requires_chunk_eviction(self) -> bool:
+        """
+        Whether this quantizer requires chunk-aware eviction during warm overflow.
+
+        When True, warm overflow pops WHOLE quantized chunks instead of
+        dequant→split→re-quantize. This avoids re-quantization error
+        amplification for quantizers like TurboQuant where re-quantization
+        causes geometric quality degradation.
+
+        Default: False (re-quantize path is fine for Q4_0/PolarQuant).
+        """
+        return False
+
+    def requantize(
+        self,
+        keys: mx.array,
+        values: mx.array
+    ) -> Tuple[mx.array, mx.array, Dict[str, Any]]:
+        """
+        Re-quantize already-dequantized data (e.g. during warm overflow).
+
+        Default: same as quantize(). Override for quantizers where
+        re-quantization causes error amplification (e.g. TurboQuant).
+        """
+        return self.quantize(keys, values)
+
     @abstractmethod
     def get_compression_ratio(self) -> float:
         """
@@ -563,19 +590,63 @@ class TurboQuantizer(QuantizationStrategy):
 
     Total: b bits per coordinate with unbiased inner product estimation.
 
+    Uses chunk-aware eviction (requires_chunk_eviction=True) in
+    TripleLayerKVCache to avoid re-quantization entirely. Each chunk is
+    quantized ONCE when entering warm, and dequantized ONCE when evicted
+    to cold. This preserves QJL residual correction quality.
+
     Parameters
     ----------
     bits : int
-        Total bits per coordinate (must be >= 2). Default: 4.
+        Total bits per coordinate (must be >= 3). Default: 4.
         Uses (bits-1) for PolarQuant + 1 for QJL.
+    qjl_alpha : float or None
+        Damping factor for QJL residual correction.
+        - None (default): auto-calibrate from head_dim using formula
+          alpha = d / (d + 1152), calibrated at d=128 → alpha=0.1.
+          Larger head_dim → larger alpha (QJL more accurate at higher d).
+        - float: fixed alpha for all head_dims.
+
+        QJL variance ∝ 1/d, so optimal alpha increases with head_dim:
+          d=64:   alpha≈0.05  (very conservative)
+          d=128:  alpha≈0.10  (verified on Qwen3-8B @ 16K)
+          d=256:  alpha≈0.18
+          d=512:  alpha≈0.31
+          d=1024: alpha≈0.47  (approaching paper's 1.0)
+
+        Empirical validation at d=128 (Qwen3-8B):
+          alpha=0.0 (PQ-only): correct answer, minor artifacts
+          alpha=0.1 (optimal): correct answer, fluent output
+          alpha=0.5:           answer lost, text degraded
+          alpha=1.0 (paper):   complete garbage output
     """
 
-    def __init__(self, bits: int = 4):
+    @property
+    def requires_chunk_eviction(self) -> bool:
+        """TQ requires chunk-aware eviction to avoid re-quantization."""
+        return True
+
+    # Calibration constant for adaptive alpha: alpha = d / (d + QJL_D0).
+    # Derived from: optimal alpha=0.1 at d=128 → d0 = 128/0.1 - 128 = 1152.
+    QJL_D0 = 1152
+
+    def __init__(self, bits: int = 4, qjl_alpha: float = None):
         if bits < 3:
             raise ValueError("TurboQuant requires bits >= 3 (PQ needs >= 2 bit)")
         self.bits = bits
+        self._qjl_alpha_override = qjl_alpha  # None = auto from head_dim
         self._pq = PolarQuantizer(bits=bits - 1)
         self._qjl = QJLProjector(seed=137)
+
+    def _get_alpha(self, head_dim: int) -> float:
+        """Compute QJL damping factor, adaptive to head_dim.
+
+        QJL variance ∝ 1/d, so larger d tolerates more correction.
+        Formula: alpha = d / (d + 1152), calibrated at d=128 → 0.1.
+        """
+        if self._qjl_alpha_override is not None:
+            return self._qjl_alpha_override
+        return head_dim / (head_dim + self.QJL_D0)
 
     def _pack_signs(self, signs: mx.array) -> mx.array:
         """Pack int8 signs (-1/+1) into uint32 bitfields."""
@@ -645,13 +716,31 @@ class TurboQuantizer(QuantizationStrategy):
 
         return pq_packed_k, pq_packed_v, metadata
 
+    def requantize(
+        self,
+        keys: mx.array,
+        values: mx.array
+    ) -> Tuple[mx.array, mx.array, Dict[str, Any]]:
+        """Re-quantize using PQ-only to avoid QJL noise amplification.
+
+        QJL residual correction is designed for *original* data residuals.
+        When applied to already-degraded data, the residual is noise →
+        QJL amplifies it → geometric error accumulation across overflow cycles.
+        """
+        return self._pq.quantize(keys, values)
+
     def dequantize(
         self,
         quant_keys: mx.array,
         quant_values: mx.array,
         metadata: Dict[str, Any]
     ) -> Tuple[mx.array, mx.array]:
-        """Two-stage dequantization: PolarQuant + QJL residual correction."""
+        """Dequantize: full TQ (PQ + QJL) or PQ-only (from requantize)."""
+        # PQ-only path: metadata from requantize() has no QJL fields
+        if 'k_signs' not in metadata:
+            return self._pq.dequantize(quant_keys, quant_values, metadata)
+
+        # Full TQ path: PolarQuant + QJL residual correction
         head_dim = metadata['head_dim']
         self._qjl._ensure_init(head_dim)
 
@@ -665,9 +754,11 @@ class TurboQuantizer(QuantizationStrategy):
         k_correction = self._qjl.dequantize(k_signs, metadata['k_rnorms'])
         v_correction = self._qjl.dequantize(v_signs, metadata['v_rnorms'])
 
-        # Combine: x_hat = x_pq + x_qjl
-        keys_out = k_pq.astype(mx.float32) + k_correction.astype(mx.float32)
-        values_out = v_pq.astype(mx.float32) + v_correction.astype(mx.float32)
+        # Combine: x_hat = x_pq + alpha * x_qjl
+        # Damped correction: QJL variance ∝ 1/d, adaptive alpha reduces noise.
+        alpha = self._get_alpha(head_dim)
+        keys_out = k_pq.astype(mx.float32) + alpha * k_correction.astype(mx.float32)
+        values_out = v_pq.astype(mx.float32) + alpha * v_correction.astype(mx.float32)
 
         return keys_out.astype(mx.bfloat16), values_out.astype(mx.bfloat16)
 

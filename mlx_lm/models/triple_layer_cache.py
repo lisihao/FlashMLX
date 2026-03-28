@@ -436,7 +436,14 @@ class TripleLayerKVCache(_BaseCache):
         # Warm layer (quantized) - use quantizer's estimate
         if self.warm_keys is not None:
             if self.enable_warm_quant:
-                B, n_heads, seq_len, head_dim = self.warm_keys.shape
+                B, n_heads, seq_len, _ = self.warm_keys.shape
+                # Get real head_dim from recent (packed quantizers change last dim)
+                if self.recent_keys is not None:
+                    head_dim = self.recent_keys.shape[-1]
+                elif self.warm_metadata and 'head_dim' in self.warm_metadata[0]:
+                    head_dim = self.warm_metadata[0]['head_dim']
+                else:
+                    head_dim = self.warm_keys.shape[-1]  # fallback (Q4_0 keeps original dim)
                 warm_bytes = self.warm_quantizer.estimate_memory(
                     num_tokens=seq_len,
                     head_dim=head_dim,
@@ -495,121 +502,203 @@ class TripleLayerKVCache(_BaseCache):
             if warm_len > self.warm_size + self.warm_overflow_threshold:
                 overflow = warm_len - self.warm_size
 
-                # Extract overflow tokens (oldest from Warm)
-                overflow_keys = self.warm_keys[:, :, :overflow, :]
-                overflow_values = self.warm_values[:, :, :overflow, :]
+                # Choose eviction strategy based on quantizer capability
+                if self.enable_warm_quant and len(self.warm_metadata) > 0 \
+                        and self.warm_quantizer.requires_chunk_eviction:
+                    # CHUNK-AWARE EVICTION: Pop whole quantized chunks.
+                    # Zero re-quantization — each chunk quantized once (entering warm),
+                    # dequantized once (leaving warm to cold). Preserves QJL quality.
+                    overflow_keys_dequant, overflow_values_dequant = \
+                        self._evict_warm_chunks(overflow)
 
-                # Dequantize before moving to Cold using pluggable quantizer
-                if self.enable_warm_quant and len(self.warm_metadata) > 0:
-                    # 🔧 FIX: Dequantize each chunk individually using its original metadata
-                    # then extract overflow. This is the CORRECT way to handle multi-chunk quantization.
-                    # (The old approach of merging scales was WRONG - it broke the group structure)
+                elif self.enable_warm_quant and len(self.warm_metadata) > 0:
+                    # DEQUANT-SPLIT-REQUANTIZE: Dequantize all, split, re-quantize
+                    # remaining. Works well for Q4_0/PolarQuant (cos stays >0.995).
+                    overflow_keys_dequant, overflow_values_dequant = \
+                        self._evict_warm_requantize(overflow)
 
-                    B, n_heads, _, head_dim = self.warm_keys.shape
-
-                    # Get sequence length for each chunk from metadata
-                    chunk_seq_lens = []
-                    for meta in self.warm_metadata:
-                        if 'seq_len' in meta:
-                            chunk_seq_lens.append(meta['seq_len'])
-                        else:
-                            # Fallback: infer from scales shape
-                            group_size = meta['group_size']
-                            num_groups = meta['scales_k'].shape[0]
-                            total_elements = num_groups * group_size
-                            chunk_tokens = total_elements // (B * n_heads * head_dim)
-                            chunk_seq_lens.append(chunk_tokens)
-
-                    # Dequantize each chunk separately
-                    dequant_keys_list = []
-                    dequant_values_list = []
-                    offset = 0
-
-                    for seq_len, meta in zip(chunk_seq_lens, self.warm_metadata):
-                        # Extract this chunk from concatenated quantized data
-                        chunk_keys = self.warm_keys[:, :, offset:offset+seq_len, :]
-                        chunk_values = self.warm_values[:, :, offset:offset+seq_len, :]
-
-                        # Dequantize using original metadata
-                        dequant_k, dequant_v = self.warm_quantizer.dequantize(
-                            chunk_keys, chunk_values, meta
-                        )
-
-                        dequant_keys_list.append(dequant_k)
-                        dequant_values_list.append(dequant_v)
-                        offset += seq_len
-
-                    # Concatenate all dequantized chunks
-                    full_warm_keys = mx.concatenate(dequant_keys_list, axis=2)
-                    full_warm_values = mx.concatenate(dequant_values_list, axis=2)
-
-                    # Extract overflow from dequantized
-                    overflow_keys_dequant = full_warm_keys[:, :, :overflow, :]
-                    overflow_values_dequant = full_warm_values[:, :, :overflow, :]
-
-                    # Keep remaining in Warm (need to re-quantize as a SINGLE chunk)
-                    remaining_keys = full_warm_keys[:, :, overflow:, :]
-                    remaining_values = full_warm_values[:, :, overflow:, :]
-
-                    # Re-quantize remaining tokens as a single chunk
-                    if remaining_keys.shape[2] > 0:
-                        quant_remaining_k, quant_remaining_v, new_metadata = self.warm_quantizer.quantize(
-                            remaining_keys, remaining_values
-                        )
-                        self.warm_keys = quant_remaining_k
-                        self.warm_values = quant_remaining_v
-                        self.warm_metadata = [new_metadata]  # Single chunk now
-                    else:
-                        self.warm_keys = None
-                        self.warm_values = None
-                        self.warm_metadata = []
                 else:
-                    # Not quantized
-                    overflow_keys_dequant = overflow_keys
-                    overflow_values_dequant = overflow_values
-
-                    # Remove from Warm
+                    # Not quantized — simple slice
+                    overflow_keys_dequant = self.warm_keys[:, :, :overflow, :]
+                    overflow_values_dequant = self.warm_values[:, :, :overflow, :]
                     self.warm_keys = self.warm_keys[:, :, overflow:, :]
                     self.warm_values = self.warm_values[:, :, overflow:, :]
 
                 # Add to Cold (with AM compression or direct storage)
-                # 🔧 CHUNKED OVERFLOW: Split large overflow into batch-sized chunks
-                # to prevent accumulating more tokens than calibration can handle
                 overflow_len = overflow_keys_dequant.shape[2]
                 if self.enable_cold_am and overflow_len > self.cold_batch_threshold:
-                    # Split into chunks
-                    for offset in range(0, overflow_len, self.cold_batch_threshold):
-                        chunk_end = min(offset + self.cold_batch_threshold, overflow_len)
-                        chunk_keys = overflow_keys_dequant[:, :, offset:chunk_end, :]
-                        chunk_values = overflow_values_dequant[:, :, offset:chunk_end, :]
+                    for off in range(0, overflow_len, self.cold_batch_threshold):
+                        chunk_end = min(off + self.cold_batch_threshold, overflow_len)
+                        chunk_keys = overflow_keys_dequant[:, :, off:chunk_end, :]
+                        chunk_values = overflow_values_dequant[:, :, off:chunk_end, :]
                         self._append_cold_with_am(chunk_keys, chunk_values)
                 else:
-                    # Small overflow, append directly
                     self._append_cold_with_am(overflow_keys_dequant, overflow_values_dequant)
+
+    def _evict_warm_chunks(self, overflow: int):
+        """
+        Chunk-aware eviction: pop whole quantized chunks from warm.
+
+        Zero re-quantization path for TurboQuant and similar quantizers
+        where re-quantization causes error amplification.
+
+        Each chunk was quantized ONCE when entering warm. Here we dequantize
+        only the evicted chunks and leave remaining chunks untouched.
+
+        If overflow doesn't align to chunk boundaries, we evict the minimum
+        number of whole chunks that cover >= overflow tokens.
+
+        Returns (overflow_keys_dequant, overflow_values_dequant) in bf16.
+        """
+        # Get sequence length for each chunk from metadata
+        chunk_seq_lens = self._get_chunk_seq_lens()
+
+        # Find minimum number of whole chunks to cover >= overflow tokens
+        evict_tokens = 0
+        evict_count = 0
+        for seq_len in chunk_seq_lens:
+            evict_tokens += seq_len
+            evict_count += 1
+            if evict_tokens >= overflow:
+                break
+
+        # Dequantize only the evicted chunks
+        dequant_keys_list = []
+        dequant_values_list = []
+        offset = 0
+
+        for i in range(evict_count):
+            seq_len = chunk_seq_lens[i]
+            meta = self.warm_metadata[i]
+            chunk_keys = self.warm_keys[:, :, offset:offset+seq_len, :]
+            chunk_values = self.warm_values[:, :, offset:offset+seq_len, :]
+
+            dequant_k, dequant_v = self.warm_quantizer.dequantize(
+                chunk_keys, chunk_values, meta
+            )
+            dequant_keys_list.append(dequant_k)
+            dequant_values_list.append(dequant_v)
+            offset += seq_len
+
+        # Concatenate evicted chunks
+        overflow_keys = mx.concatenate(dequant_keys_list, axis=2)
+        overflow_values = mx.concatenate(dequant_values_list, axis=2)
+
+        # Keep remaining chunks in warm UNTOUCHED (no re-quantization!)
+        if evict_count < len(self.warm_metadata):
+            self.warm_keys = self.warm_keys[:, :, offset:, :]
+            self.warm_values = self.warm_values[:, :, offset:, :]
+            self.warm_metadata = self.warm_metadata[evict_count:]
+        else:
+            self.warm_keys = None
+            self.warm_values = None
+            self.warm_metadata = []
+
+        return overflow_keys, overflow_values
+
+    def _evict_warm_requantize(self, overflow: int):
+        """
+        Dequant-split-requantize eviction for Q4_0/PolarQuant.
+
+        Dequantizes all warm chunks, extracts overflow tokens,
+        and re-quantizes remaining as a single chunk.
+        Works well for quantizers where re-quantization is stable
+        (cos stays >0.995 after multiple cycles).
+
+        Returns (overflow_keys_dequant, overflow_values_dequant) in bf16.
+        """
+        chunk_seq_lens = self._get_chunk_seq_lens()
+
+        # Dequantize each chunk separately
+        dequant_keys_list = []
+        dequant_values_list = []
+        offset = 0
+
+        for seq_len, meta in zip(chunk_seq_lens, self.warm_metadata):
+            chunk_keys = self.warm_keys[:, :, offset:offset+seq_len, :]
+            chunk_values = self.warm_values[:, :, offset:offset+seq_len, :]
+
+            dequant_k, dequant_v = self.warm_quantizer.dequantize(
+                chunk_keys, chunk_values, meta
+            )
+            dequant_keys_list.append(dequant_k)
+            dequant_values_list.append(dequant_v)
+            offset += seq_len
+
+        # Concatenate all dequantized chunks
+        full_warm_keys = mx.concatenate(dequant_keys_list, axis=2)
+        full_warm_values = mx.concatenate(dequant_values_list, axis=2)
+
+        # Extract overflow from dequantized
+        overflow_keys_dequant = full_warm_keys[:, :, :overflow, :]
+        overflow_values_dequant = full_warm_values[:, :, :overflow, :]
+
+        # Re-quantize remaining tokens as a single chunk
+        remaining_keys = full_warm_keys[:, :, overflow:, :]
+        remaining_values = full_warm_values[:, :, overflow:, :]
+
+        if remaining_keys.shape[2] > 0:
+            quant_k, quant_v, new_meta = self.warm_quantizer.requantize(
+                remaining_keys, remaining_values
+            )
+            self.warm_keys = quant_k
+            self.warm_values = quant_v
+            self.warm_metadata = [new_meta]
+        else:
+            self.warm_keys = None
+            self.warm_values = None
+            self.warm_metadata = []
+
+        return overflow_keys_dequant, overflow_values_dequant
+
+    def _get_chunk_seq_lens(self):
+        """Get sequence length for each quantized chunk in warm."""
+        B, n_heads, _, _ = self.warm_keys.shape
+        chunk_seq_lens = []
+        for meta in self.warm_metadata:
+            if 'seq_len' in meta:
+                chunk_seq_lens.append(meta['seq_len'])
+            else:
+                group_size = meta['group_size']
+                num_groups = meta['scales_k'].shape[0]
+                total_elements = num_groups * group_size
+                # Get real head_dim from recent_keys or metadata
+                if self.recent_keys is not None:
+                    head_dim = self.recent_keys.shape[-1]
+                elif 'head_dim' in meta:
+                    head_dim = meta['head_dim']
+                else:
+                    head_dim = self.warm_keys.shape[-1]
+                chunk_tokens = total_elements // (B * n_heads * head_dim)
+                chunk_seq_lens.append(chunk_tokens)
+        return chunk_seq_lens
+
+    # Max tokens per quantization chunk for chunk-aware eviction.
+    # Smaller = finer eviction granularity, but more metadata overhead.
+    # 256 tokens balances granularity vs overhead (at 8 heads * 128 dim = 128KB/chunk bf16).
+    CHUNK_EVICT_SIZE = 256
 
     def _append_warm_with_quant(self, keys: mx.array, values: mx.array):
         """
         Append tokens to Warm layer with pluggable quantization.
 
-        Uses the configured warm_quantizer strategy (default: Q4_0).
-        Supports multiple quantization algorithms:
-        - Q4_0: 4-bit symmetric quantization (~2x)
-        - TurboQuant: Adaptive bitwidth (~3x, TODO)
-        - Custom: User-provided QuantizationStrategy
+        For quantizers that require chunk-aware eviction (e.g. TurboQuant),
+        splits large inputs into fixed-size chunks so that eviction has
+        fine-grained control. Each chunk is independently quantized.
         """
         if self.enable_warm_quant:
-            # Use pluggable quantization strategy
-            quant_keys, quant_values, metadata = self.warm_quantizer.quantize(keys, values)
+            seq_len = keys.shape[2]
 
-            # Append quantized
-            if self.warm_keys is None:
-                self.warm_keys = quant_keys
-                self.warm_values = quant_values
-                self.warm_metadata = [metadata]  # List of metadata dicts
+            # Split into smaller chunks for chunk-aware eviction quantizers
+            if self.warm_quantizer.requires_chunk_eviction and seq_len > self.CHUNK_EVICT_SIZE:
+                for off in range(0, seq_len, self.CHUNK_EVICT_SIZE):
+                    end = min(off + self.CHUNK_EVICT_SIZE, seq_len)
+                    self._append_warm_single_chunk(
+                        keys[:, :, off:end, :],
+                        values[:, :, off:end, :]
+                    )
             else:
-                self.warm_keys = mx.concatenate([self.warm_keys, quant_keys], axis=2)
-                self.warm_values = mx.concatenate([self.warm_values, quant_values], axis=2)
-                self.warm_metadata.append(metadata)  # Track metadata per chunk
+                self._append_warm_single_chunk(keys, values)
 
             self.num_warm_compressions += 1
         else:
@@ -621,6 +710,19 @@ class TripleLayerKVCache(_BaseCache):
             else:
                 self.warm_keys = mx.concatenate([self.warm_keys, keys], axis=2)
                 self.warm_values = mx.concatenate([self.warm_values, values], axis=2)
+
+    def _append_warm_single_chunk(self, keys: mx.array, values: mx.array):
+        """Quantize and append a single chunk to warm."""
+        quant_keys, quant_values, metadata = self.warm_quantizer.quantize(keys, values)
+
+        if self.warm_keys is None:
+            self.warm_keys = quant_keys
+            self.warm_values = quant_values
+            self.warm_metadata = [metadata]
+        else:
+            self.warm_keys = mx.concatenate([self.warm_keys, quant_keys], axis=2)
+            self.warm_values = mx.concatenate([self.warm_values, quant_values], axis=2)
+            self.warm_metadata.append(metadata)
 
     def _append_cold_with_am(self, keys: mx.array, values: mx.array):
         """
@@ -636,10 +738,12 @@ class TripleLayerKVCache(_BaseCache):
         if True:
             # No AM compression
             if self.enable_cold_quant:
-                # Quantize Cold for memory savings (Q4_0, same as Warm)
+                # Quantize Cold for memory savings.
+                # Use requantize() instead of quantize() so that TQ falls back
+                # to PQ-only (avoids double QJL noise on already-dequantized data).
                 keys_bf16 = keys.astype(mx.bfloat16) if keys.dtype == mx.float32 else keys
                 values_bf16 = values.astype(mx.bfloat16) if values.dtype == mx.float32 else values
-                quant_keys, quant_values, metadata = self.warm_quantizer.quantize(keys_bf16, values_bf16)
+                quant_keys, quant_values, metadata = self.warm_quantizer.requantize(keys_bf16, values_bf16)
 
                 if self.cold_pending_keys is None:
                     self.cold_pending_keys = quant_keys

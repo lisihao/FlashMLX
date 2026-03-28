@@ -5,10 +5,12 @@ Provides automatic cache strategy selection and parameter optimization.
 
 Strategies:
     - "standard": Default KVCache (unbounded bf16)
-    - "triple": TripleLayerKVCache with Q4_0 quantization (~40% memory savings)
+    - "triple": TripleLayerKVCache with Q4_0 quantization (~48% memory savings at 16K)
     - "triple_am": Triple + AM compression (~50% memory savings, faster TG at long contexts)
-    - "triple_pq": Triple + PolarQuant warm quantization (data-oblivious, no calibration)
+    - "triple_pq": Triple + PolarQuant warm quantization (~72% savings, data-oblivious)
     - "triple_pq_am": Triple + PolarQuant warm + AM cold compression
+    - "triple_tq": Triple + TurboQuant (PQ3 + damped QJL). ~73% savings, correct output.
+    - "triple_tq_am": Triple + TurboQuant + AM
     - "auto": Auto-select based on calibration availability
 
 Usage:
@@ -49,15 +51,14 @@ Usage:
                     kv_calibration="/path/to/am_calibration.pkl",
                     kv_compression_ratio=0)  # 0 = adaptive
 
-Performance characteristics (Qwen3-8B, measured):
-    | Strategy   | TG Speed | TG Memory Savings | Quality     |
-    |------------|----------|-------------------|-------------|
-    | standard   | baseline | 0%                | baseline    |
-    | triple     | ~100%    | ~2% (TG), ~42% (prefill) | lossless |
-    | triple_am  | 104-119% | 43-53% (TG)      | key facts preserved |
-    | adaptive   | 105-123% | 53-66% (TG)      | key facts preserved |
-    | triple_pq  | TBD      | TBD              | cos_sim > 0.95 (4b) |
-    | triple_pq_am | TBD    | TBD              | cos_sim > 0.95 (4b) |
+Performance characteristics (Qwen3-8B, measured at 16K context):
+    | Strategy     | TG Speed | Prefill Mem Savings | Quality           |
+    |--------------|----------|---------------------|-------------------|
+    | standard     | baseline | 0%                  | baseline          |
+    | triple       | -7%      | ~48%                | lossless          |
+    | triple_am    | +4-19%   | ~50%                | key facts OK      |
+    | triple_pq    | -14%     | ~72% (4b), ~76% (3b)| 4b: perfect, 3b: degrades |
+    | triple_tq    | -15%     | ~73%                | correct (damped QJL α=0.1)  |
 """
 
 from typing import Optional, Dict, List, Any
