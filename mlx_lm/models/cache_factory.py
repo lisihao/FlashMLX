@@ -71,7 +71,7 @@ DEFAULT_COMPRESSION_RATIO = 2.0
 DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
-VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "auto")
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "auto")
 
 # Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
 # Data-driven mapping (Qwen3-8B benchmarks):
@@ -137,7 +137,7 @@ def make_optimized_cache(
     # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM
     from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
 
-    enable_am = strategy in ("triple_am", "triple_pq_am")
+    enable_am = strategy in ("triple_am", "triple_pq_am", "triple_tq_am")
 
     # Validate calibration for AM
     if enable_am and calibration_file is None:
@@ -154,13 +154,16 @@ def make_optimized_cache(
     quantizer_obj = None
     if warm_quantizer is not None:
         from mlx_lm.models.quantization_strategies import get_quantizer
-        if warm_quantizer == "polarquant":
-            quantizer_obj = get_quantizer("polarquant", bits=warm_bits)
+        if warm_quantizer in ("polarquant", "turboquant"):
+            quantizer_obj = get_quantizer(warm_quantizer, bits=warm_bits)
         else:
             quantizer_obj = get_quantizer(warm_quantizer)
     elif strategy in ("triple_pq", "triple_pq_am"):
         from mlx_lm.models.quantization_strategies import PolarQuantizer
         quantizer_obj = PolarQuantizer(bits=warm_bits)
+    elif strategy in ("triple_tq", "triple_tq_am"):
+        from mlx_lm.models.quantization_strategies import TurboQuantizer
+        quantizer_obj = TurboQuantizer(bits=warm_bits)
 
     # Build cache list
     cache_kwargs = dict(

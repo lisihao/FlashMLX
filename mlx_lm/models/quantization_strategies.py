@@ -484,8 +484,211 @@ class PolarQuantizer(QuantizationStrategy):
         return int(packed_size + norms_size)
 
 
-# Backward-compatible alias
-TurboQuantizer = PolarQuantizer
+# ====================================================================
+# QJL Projector (1-bit Quantized Johnson-Lindenstrauss)
+# ====================================================================
+
+class QJLProjector:
+    """
+    1-bit Quantized Johnson-Lindenstrauss transform.
+
+    From Definition 1 in Zandieh et al., ICLR 2026:
+        Q_qjl(x) = sign(S · x)
+        Q_qjl^{-1}(z) = sqrt(π/2) / d · ||r|| · S^T · z
+
+    Provides unbiased inner product estimates. All ops are standard MLX
+    (matmul + sign), no custom Metal kernels needed.
+    """
+
+    def __init__(self, seed: int = 137):
+        self._S = None
+        self._seed = seed
+        self._head_dim = None
+
+    def _ensure_init(self, head_dim: int):
+        if self._head_dim == head_dim:
+            return
+        self._head_dim = head_dim
+        key = mx.random.key(self._seed)
+        self._S = mx.random.normal(shape=(head_dim, head_dim), key=key)
+
+    def quantize(self, residual: mx.array):
+        """Project and sign-quantize residual vectors.
+
+        Args:
+            residual: (..., head_dim) residual vectors
+
+        Returns:
+            signs: (..., head_dim) int8 signs (-1/+1)
+            norms: (..., 1) L2 norms
+        """
+        self._ensure_init(residual.shape[-1])
+        norms = mx.linalg.norm(residual, axis=-1, keepdims=True)
+        normalized = residual / mx.maximum(norms, 1e-8)
+        projected = normalized @ self._S.T
+        signs = mx.sign(projected).astype(mx.int8)
+        signs = mx.where(signs == 0, mx.array(1, dtype=mx.int8), signs)
+        return signs, norms
+
+    def dequantize(self, signs: mx.array, norms: mx.array):
+        """Reconstruct: sqrt(π/2) / d · ||r|| · S^T · z.
+
+        Args:
+            signs: (..., head_dim) int8 signs
+            norms: (..., 1) original norms
+
+        Returns:
+            reconstructed: (..., head_dim) float vectors
+        """
+        d = self._head_dim
+        scale = math.sqrt(math.pi / 2.0) / d
+        reconstructed = signs.astype(mx.float32) @ self._S
+        return (scale * norms * reconstructed).astype(mx.bfloat16)
+
+
+# ====================================================================
+# TurboQuant: PolarQuant (b-1 bit) + QJL residual (1 bit)
+# ====================================================================
+
+class TurboQuantizer(QuantizationStrategy):
+    """
+    Full TurboQuant: PolarQuant + QJL residual correction.
+
+    Algorithm 2 from "TurboQuant: Online Vector Quantization with
+    Near-optimal Distortion Rate" (Zandieh et al., ICLR 2026).
+
+    Two-stage approach:
+      Stage 1: PolarQuant at (b-1) bits → coarse quantization
+      Stage 2: QJL 1-bit on the residual → unbiased correction
+
+    Total: b bits per coordinate with unbiased inner product estimation.
+
+    Parameters
+    ----------
+    bits : int
+        Total bits per coordinate (must be >= 2). Default: 4.
+        Uses (bits-1) for PolarQuant + 1 for QJL.
+    """
+
+    def __init__(self, bits: int = 4):
+        if bits < 3:
+            raise ValueError("TurboQuant requires bits >= 3 (PQ needs >= 2 bit)")
+        self.bits = bits
+        self._pq = PolarQuantizer(bits=bits - 1)
+        self._qjl = QJLProjector(seed=137)
+
+    def _pack_signs(self, signs: mx.array) -> mx.array:
+        """Pack int8 signs (-1/+1) into uint32 bitfields."""
+        bits = ((signs.astype(mx.int32) + 1) // 2).astype(mx.uint32)
+        shape = signs.shape
+        d = shape[-1]
+        n_packed = (d + 31) // 32
+        pad_size = n_packed * 32 - d
+        if pad_size > 0:
+            bits = mx.concatenate(
+                [bits, mx.zeros((*shape[:-1], pad_size), dtype=mx.uint32)],
+                axis=-1,
+            )
+        reshaped = bits.reshape(*shape[:-1], n_packed, 32)
+        shifts = mx.arange(32, dtype=mx.uint32)
+        shifted = reshaped << shifts
+        packed = shifted[..., 0]
+        for i in range(1, 32):
+            packed = packed | shifted[..., i]
+        return packed
+
+    def _unpack_signs(self, packed: mx.array, head_dim: int) -> mx.array:
+        """Unpack uint32 bitfields to int8 signs (-1/+1)."""
+        shape = packed.shape
+        shifts = mx.arange(32, dtype=mx.uint32)
+        extracted = (packed[..., None] >> shifts) & 1
+        flat = extracted.reshape(*shape[:-1], shape[-1] * 32)[..., :head_dim]
+        return (flat.astype(mx.int8) * 2 - 1)
+
+    def quantize(
+        self,
+        keys: mx.array,
+        values: mx.array
+    ) -> Tuple[mx.array, mx.array, Dict[str, Any]]:
+        """Two-stage quantization: PolarQuant (b-1 bit) + QJL residual (1 bit)."""
+        B, n_heads, seq_len, head_dim = keys.shape
+        self._qjl._ensure_init(head_dim)
+
+        # Stage 1: PolarQuant at (b-1) bits
+        pq_packed_k, pq_packed_v, pq_meta = self._pq.quantize(keys, values)
+
+        # Reconstruct to compute residual
+        k_approx, v_approx = self._pq.dequantize(pq_packed_k, pq_packed_v, pq_meta)
+
+        # Compute residuals
+        k_residual = keys.astype(mx.float32) - k_approx.astype(mx.float32)
+        v_residual = values.astype(mx.float32) - v_approx.astype(mx.float32)
+
+        # Stage 2: QJL on residuals
+        k_signs, k_rnorms = self._qjl.quantize(k_residual)
+        v_signs, v_rnorms = self._qjl.quantize(v_residual)
+
+        # Pack signs into uint32
+        k_signs_packed = self._pack_signs(k_signs)
+        v_signs_packed = self._pack_signs(v_signs)
+
+        metadata = {
+            'pq_meta': pq_meta,
+            'k_signs': k_signs_packed,
+            'v_signs': v_signs_packed,
+            'k_rnorms': k_rnorms,
+            'v_rnorms': v_rnorms,
+            'head_dim': head_dim,
+            'bits': self.bits,
+            'seq_len': seq_len,
+        }
+
+        return pq_packed_k, pq_packed_v, metadata
+
+    def dequantize(
+        self,
+        quant_keys: mx.array,
+        quant_values: mx.array,
+        metadata: Dict[str, Any]
+    ) -> Tuple[mx.array, mx.array]:
+        """Two-stage dequantization: PolarQuant + QJL residual correction."""
+        head_dim = metadata['head_dim']
+        self._qjl._ensure_init(head_dim)
+
+        # Stage 1: PolarQuant reconstruction
+        k_pq, v_pq = self._pq.dequantize(quant_keys, quant_values, metadata['pq_meta'])
+
+        # Stage 2: QJL residual correction
+        k_signs = self._unpack_signs(metadata['k_signs'], head_dim)
+        v_signs = self._unpack_signs(metadata['v_signs'], head_dim)
+
+        k_correction = self._qjl.dequantize(k_signs, metadata['k_rnorms'])
+        v_correction = self._qjl.dequantize(v_signs, metadata['v_rnorms'])
+
+        # Combine: x_hat = x_pq + x_qjl
+        keys_out = k_pq.astype(mx.float32) + k_correction.astype(mx.float32)
+        values_out = v_pq.astype(mx.float32) + v_correction.astype(mx.float32)
+
+        return keys_out.astype(mx.bfloat16), values_out.astype(mx.bfloat16)
+
+    def get_compression_ratio(self) -> float:
+        """Compression ratio vs fp16 (16 bits)."""
+        return 16.0 / (self.bits + 0.5)
+
+    def estimate_memory(self, num_tokens: int, head_dim: int, num_heads: int) -> int:
+        """Estimate memory in bytes."""
+        total_elements = num_tokens * head_dim * num_heads
+
+        # PQ packed indices: (bits-1) per element
+        pq_size = (total_elements * (self.bits - 1) + 31) // 32 * 4 * 2
+
+        # QJL signs: 1 bit per element
+        qjl_size = (total_elements + 31) // 32 * 4 * 2
+
+        # Norms: PQ norms + QJL residual norms, fp32
+        norms_size = num_tokens * num_heads * 4 * 4  # k_norms + v_norms + k_rnorms + v_rnorms
+
+        return int(pq_size + qjl_size + norms_size)
 
 
 # ====================================================================
@@ -542,7 +745,7 @@ class NoOpQuantizer(QuantizationStrategy):
 QUANTIZER_REGISTRY = {
     'q4_0': Q4_0Quantizer,
     'polarquant': PolarQuantizer,
-    'turboquant': PolarQuantizer,  # backward-compatible alias
+    'turboquant': TurboQuantizer,  # full TurboQuant: PolarQuant + QJL
     'noop': NoOpQuantizer,
 }
 
