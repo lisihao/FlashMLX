@@ -938,58 +938,49 @@ class TripleLayerKVCache(_BaseCache):
         recent_k = keys[:, :, old_len:, :]
         recent_v = values[:, :, old_len:, :]
 
-        # Process old prefix in chunks (same chunk size as pipeline AM)
+        # Process old prefix: build global importance index (vectorized)
         effective_ratio = self._get_effective_ratio(total_len)
         chunk_size = self.cold_batch_threshold  # 512
         budget = int(chunk_size / effective_ratio)
 
-        # Hot path: important tokens go directly into flat buffer (bf16)
-        hot_parts_k, hot_parts_v = [], []
+        # Phase 1: Build global index array (numpy, cheap)
+        # Instead of 30 per-chunk gathers, build one global index and do 1 gather
+        global_indices = []
         n_full_chunks = 0
-        n_hot_tokens = 0
-        n_dropped_tokens = 0
 
         for offset in range(0, old_len, chunk_size):
             chunk_end = min(offset + chunk_size, old_len)
-            chunk_k = old_keys[:, :, offset:chunk_end, :]
-            chunk_v = old_values[:, :, offset:chunk_end, :]
             chunk_len = chunk_end - offset
 
             if chunk_len == chunk_size:
-                # Full chunk: AM-scored selection
                 imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
-                imp_indices = np.where(imp_mask)[0]
-
-                # Important → bf16 directly into hot path (no quantization!)
-                if len(imp_indices) > 0:
-                    imp_idx = mx.array(imp_indices, dtype=mx.int32)
-                    hot_parts_k.append(chunk_k[:, :, imp_idx, :])
-                    hot_parts_v.append(chunk_v[:, :, imp_idx, :])
-                    n_hot_tokens += len(imp_indices)
-
-                n_dropped_tokens += chunk_len - len(imp_indices)
+                global_indices.append(np.where(imp_mask)[0] + offset)
                 n_full_chunks += 1
             else:
-                # Partial chunk: all → hot path (conservative, bf16)
-                hot_parts_k.append(chunk_k)
-                hot_parts_v.append(chunk_v)
-                n_hot_tokens += chunk_len
+                # Partial chunk: keep all tokens
+                global_indices.append(np.arange(offset, chunk_end))
 
-        # Log
+        all_indices = np.concatenate(global_indices)
+        n_hot_tokens = len(all_indices)
+        n_dropped_tokens = old_len - n_hot_tokens
+
+        # Phase 2: Single vectorized gather (1 op instead of 30)
+        global_idx = mx.array(all_indices, dtype=mx.int32)
+        hot_k = old_keys[:, :, global_idx, :]
+        hot_v = old_values[:, :, global_idx, :]
+
         if self.layer_idx == 0:
             ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
             print(f"[Scored P2{ratio_info}] {old_len} old + {recent_len} recent → "
                   f"{n_hot_tokens} hot(bf16) + {n_dropped_tokens} dropped + {recent_len} recent "
                   f"({n_full_chunks} chunks scored)")
 
-        # Build flat buffer: [hot_important | recent] — only what attention needs
-        hot_parts_k.append(recent_k)
-        hot_parts_v.append(recent_v)
-        full_k = mx.concatenate(hot_parts_k, axis=2) if len(hot_parts_k) > 1 else hot_parts_k[0]
-        full_v = mx.concatenate(hot_parts_v, axis=2) if len(hot_parts_v) > 1 else hot_parts_v[0]
+        # Phase 3: Build flat buffer [hot | recent] with single concat + copy
+        full_k = mx.concatenate([hot_k, recent_k], axis=2)
+        full_v = mx.concatenate([hot_v, recent_v], axis=2)
+        del hot_k, hot_v
         cache_len = full_k.shape[2]
 
-        # Allocate flat buffer with padding for TG tokens
         alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
         self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
         self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
