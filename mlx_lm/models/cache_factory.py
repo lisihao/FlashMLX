@@ -156,13 +156,8 @@ def make_optimized_cache(
 
     # Resolve warm quantizer
     quantizer_obj = None
-    secondary_quantizer_obj = None
     if is_scored:
-        # P2 Scored: warm aging uses default Q4_0 (cheaper than PQ4, same effect
-        # since everything dequants at promotion anyway). PQ2 for cold storage only.
-        from mlx_lm.models.quantization_strategies import PolarQuantizer
-        # quantizer_obj stays None → default Q4_0 for warm aging
-        secondary_quantizer_obj = PolarQuantizer(bits=2)
+        pass  # P2 Scored: no custom quantizer needed, uses default Q4_0 for warm aging
     elif warm_quantizer is not None:
         from mlx_lm.models.quantization_strategies import get_quantizer
         if warm_quantizer in ("polarquant", "turboquant"):
@@ -196,8 +191,6 @@ def make_optimized_cache(
         cache_kwargs["lazy_prefill_threshold"] = 65536
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
-    if secondary_quantizer_obj is not None:
-        cache_kwargs["secondary_quantizer"] = secondary_quantizer_obj
 
     return [
         TripleLayerKVCache(

@@ -94,8 +94,7 @@ class TripleLayerKVCache(_BaseCache):
         enable_cold_quant: bool = True,  # Quantize Cold layer (when AM disabled)
         warm_overflow_threshold: int = 64,  # Batch Warm→Cold migration
         lazy_prefill_threshold: int = 8192,  # Skip Q4_0 during prefill for contexts below this
-        scored_mode: bool = False,  # Architecture D: AM-scored differential bit allocation
-        secondary_quantizer: Optional[QuantizationStrategy] = None,  # PQ2 for unimportant tokens
+        scored_mode: bool = False,  # Architecture D: AM-scored on clean bf16
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -183,23 +182,13 @@ class TripleLayerKVCache(_BaseCache):
         self._total_offset = 0
 
         # Architecture D P2: Scored-as-Warm-tier
-        # AM scores on clean bf16 → important(bf16 flat) + unimportant(PQ2 cold)
+        # AM scores on clean bf16 → important(bf16 flat) + unimportant(dropped)
         self.scored_mode = scored_mode
         self._scored_active = False
         if scored_mode:
-            from mlx_lm.models.quantization_strategies import PolarQuantizer
-            self.primary_quantizer = None  # P2: important tokens go bf16 directly, no PQ4
-            self.secondary_quantizer = secondary_quantizer if secondary_quantizer is not None else PolarQuantizer(bits=2)
+            self.primary_quantizer = None  # P2: important tokens go bf16 directly
         else:
             self.primary_quantizer = None
-            self.secondary_quantizer = None
-        # Scored buffers (temporary during promotion, freed after → flat buffer)
-        self._scored_imp_k = None
-        self._scored_imp_v = None
-        self._scored_imp_meta = []
-        self._scored_unimp_k = None
-        self._scored_unimp_v = None
-        self._scored_unimp_meta = []
 
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
@@ -483,13 +472,6 @@ class TripleLayerKVCache(_BaseCache):
         if self._flat_mode and self._flat_keys is not None:
             B, H, _, D = self._flat_keys.shape
             total_bytes += self._flat_offset * H * D * 2 * 2  # K+V, bf16 (used portion)
-            # P2 scored mode: add cold PQ2 storage (not in attention, but still in memory)
-            if self._scored_unimp_k is not None:
-                n_cold = sum(m['seq_len'] for m in self._scored_unimp_meta)
-                cold_bytes = self.secondary_quantizer.estimate_memory(
-                    num_tokens=n_cold, head_dim=D, num_heads=H
-                )
-                total_bytes += cold_bytes
             return total_bytes
 
         # Recent layer (fp32/fp16)
@@ -932,17 +914,17 @@ class TripleLayerKVCache(_BaseCache):
         recent_len: int
     ):
         """
-        Architecture D (P2): AM score on clean bf16 → Warm/Cold split.
+        Architecture D (P2): AM score on clean bf16 → hot/drop split.
 
-        Scored as Warm tier architecture:
+        Scored-as-Warm-tier architecture:
         - Important tokens (AM selected) → flat buffer bf16 (HOT attention path)
-        - Unimportant tokens (AM unselected) → PQ2 cold storage (NOT in attention)
+        - Unimportant tokens → dropped (same as Pipeline)
         - Recent tokens → flat buffer bf16 (exact)
 
         Key insight: flat buffer only has ~50% of old tokens (important + recent).
-        This gives pipeline-equivalent TG speed (~8K tokens → ~23.5 tok/s)
-        while preserving unimportant tokens in cold PQ2 for potential retrieval.
+        This gives pipeline-equivalent TG speed (~8K tokens → ~23.5 tok/s).
 
+        Advantage over Pipeline: AM scores on clean bf16 data (not degraded PQ4).
         NO PQ roundtrip — important tokens go bf16→flat directly.
         """
         B, n_heads, total_len, head_dim = keys.shape
@@ -963,12 +945,9 @@ class TripleLayerKVCache(_BaseCache):
 
         # Hot path: important tokens go directly into flat buffer (bf16)
         hot_parts_k, hot_parts_v = [], []
-        # Cold path: unimportant tokens → PQ2 compressed storage
-        cold_parts_k, cold_parts_v = [], []
-        cold_meta_list = []
         n_full_chunks = 0
         n_hot_tokens = 0
-        n_cold_tokens = 0
+        n_dropped_tokens = 0
 
         for offset in range(0, old_len, chunk_size):
             chunk_end = min(offset + chunk_size, old_len)
@@ -977,10 +956,9 @@ class TripleLayerKVCache(_BaseCache):
             chunk_len = chunk_end - offset
 
             if chunk_len == chunk_size:
-                # Full chunk: AM-scored split
+                # Full chunk: AM-scored selection
                 imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
                 imp_indices = np.where(imp_mask)[0]
-                unimp_indices = np.where(~imp_mask)[0]
 
                 # Important → bf16 directly into hot path (no quantization!)
                 if len(imp_indices) > 0:
@@ -989,18 +967,7 @@ class TripleLayerKVCache(_BaseCache):
                     hot_parts_v.append(chunk_v[:, :, imp_idx, :])
                     n_hot_tokens += len(imp_indices)
 
-                # Unimportant → PQ2 cold storage (not in attention path)
-                if len(unimp_indices) > 0:
-                    unimp_idx = mx.array(unimp_indices, dtype=mx.int32)
-                    unimp_k = chunk_k[:, :, unimp_idx, :]
-                    unimp_v = chunk_v[:, :, unimp_idx, :]
-                    q_k, q_v, meta = self.secondary_quantizer.quantize(unimp_k, unimp_v)
-                    meta['seq_len'] = len(unimp_indices)
-                    cold_parts_k.append(q_k)
-                    cold_parts_v.append(q_v)
-                    cold_meta_list.append(meta)
-                    n_cold_tokens += len(unimp_indices)
-
+                n_dropped_tokens += chunk_len - len(imp_indices)
                 n_full_chunks += 1
             else:
                 # Partial chunk: all → hot path (conservative, bf16)
@@ -1012,7 +979,7 @@ class TripleLayerKVCache(_BaseCache):
         if self.layer_idx == 0:
             ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
             print(f"[Scored P2{ratio_info}] {old_len} old + {recent_len} recent → "
-                  f"{n_hot_tokens} hot(bf16) + {n_cold_tokens} cold(PQ2) + {recent_len} recent "
+                  f"{n_hot_tokens} hot(bf16) + {n_dropped_tokens} dropped + {recent_len} recent "
                   f"({n_full_chunks} chunks scored)")
 
         # Build flat buffer: [hot_important | recent] — only what attention needs
@@ -1032,20 +999,6 @@ class TripleLayerKVCache(_BaseCache):
         self._flat_offset = cache_len
         self._flat_mode = True
         mx.eval(self._flat_keys, self._flat_values)
-
-        # Store cold PQ2 buffers (preserved for potential P3 retrieval)
-        if cold_parts_k:
-            self._scored_unimp_k = mx.concatenate(cold_parts_k, axis=2)
-            self._scored_unimp_v = mx.concatenate(cold_parts_v, axis=2)
-            self._scored_unimp_meta = cold_meta_list
-            mx.eval(self._scored_unimp_k, self._scored_unimp_v)
-        else:
-            self._scored_unimp_k = self._scored_unimp_v = None
-            self._scored_unimp_meta = []
-
-        # No imp PQ buffers in P2 (important tokens are directly in flat buffer)
-        self._scored_imp_k = self._scored_imp_v = None
-        self._scored_imp_meta = []
 
     def _dequant_scored_chunks(
         self,
