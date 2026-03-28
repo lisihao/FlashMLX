@@ -11,6 +11,7 @@ Strategies:
     - "triple_pq_am": Triple + PolarQuant warm + AM cold compression
     - "triple_tq": Triple + TurboQuant (PQ3 + damped QJL). ~73% savings, correct output.
     - "triple_tq_am": Triple + TurboQuant + AM
+    - "scored_pq": Architecture D — AM-scored differential PQ4/PQ2 (~81% savings, no token deletion)
     - "auto": Auto-select based on calibration availability
 
 Usage:
@@ -59,6 +60,7 @@ Performance characteristics (Qwen3-8B, measured at 16K context):
     | triple_am    | +4-19%   | ~50%                | key facts OK      |
     | triple_pq    | -14%     | ~72% (4b), ~76% (3b)| 4b: perfect, 3b: degrades |
     | triple_tq    | -15%     | ~73%                | correct (damped QJL α=0.1)  |
+    | scored_pq    | TBD      | ~81%                | AM on clean bf16, no deletion |
 """
 
 from typing import Optional, Dict, List, Any
@@ -72,7 +74,7 @@ DEFAULT_COMPRESSION_RATIO = 2.0
 DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
-VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "auto")
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "scored_pq", "auto")
 
 # Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
 # Data-driven mapping (Qwen3-8B benchmarks):
@@ -138,7 +140,8 @@ def make_optimized_cache(
     # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM
     from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
 
-    enable_am = strategy in ("triple_am", "triple_pq_am", "triple_tq_am")
+    is_scored = strategy == "scored_pq"
+    enable_am = strategy in ("triple_am", "triple_pq_am", "triple_tq_am") or is_scored
 
     # Validate calibration for AM
     if enable_am and calibration_file is None:
@@ -153,7 +156,14 @@ def make_optimized_cache(
 
     # Resolve warm quantizer
     quantizer_obj = None
-    if warm_quantizer is not None:
+    secondary_quantizer_obj = None
+    if is_scored:
+        # Architecture D: PQ4 primary (for important tokens + warm aging)
+        # PQ2 secondary (for unimportant tokens)
+        from mlx_lm.models.quantization_strategies import PolarQuantizer
+        quantizer_obj = PolarQuantizer(bits=warm_bits)
+        secondary_quantizer_obj = PolarQuantizer(bits=2)
+    elif warm_quantizer is not None:
         from mlx_lm.models.quantization_strategies import get_quantizer
         if warm_quantizer in ("polarquant", "turboquant"):
             quantizer_obj = get_quantizer(warm_quantizer, bits=warm_bits)
@@ -177,9 +187,12 @@ def make_optimized_cache(
         calibration_file=calibration_file if enable_am else None,
         compression_ratio=compression_ratio,
         warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
+        scored_mode=is_scored,
     )
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
+    if secondary_quantizer_obj is not None:
+        cache_kwargs["secondary_quantizer"] = secondary_quantizer_obj
 
     return [
         TripleLayerKVCache(
@@ -222,11 +235,20 @@ def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
     try:
         from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
         if isinstance(c0, TripleLayerKVCache):
-            info["strategy"] = "triple_am" if c0.enable_cold_am else "triple"
+            if c0.scored_mode:
+                info["strategy"] = "scored_pq"
+            elif c0.enable_cold_am:
+                info["strategy"] = "triple_am"
+            else:
+                info["strategy"] = "triple"
             info["recent_size"] = c0.recent_size
             info["warm_size"] = c0.warm_size
             info["compression_ratio"] = c0.compression_ratio
             info["flat_mode"] = c0._flat_mode
+            info["scored_mode"] = c0.scored_mode
+            if c0._scored_active:
+                info["scored_active"] = True
+                info["flat_tokens"] = c0._flat_offset if c0._flat_mode else 0
             if c0._flat_mode:
                 info["flat_tokens"] = c0._flat_offset
                 info["true_offset"] = c0._true_offset

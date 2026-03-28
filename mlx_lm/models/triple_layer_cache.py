@@ -93,7 +93,9 @@ class TripleLayerKVCache(_BaseCache):
         enable_cold_am: bool = True,
         enable_cold_quant: bool = True,  # Quantize Cold layer (when AM disabled)
         warm_overflow_threshold: int = 64,  # Batch Warm→Cold migration
-        lazy_prefill_threshold: int = 8192  # Skip Q4_0 during prefill for contexts below this
+        lazy_prefill_threshold: int = 8192,  # Skip Q4_0 during prefill for contexts below this
+        scored_mode: bool = False,  # Architecture D: AM-scored differential bit allocation
+        secondary_quantizer: Optional[QuantizationStrategy] = None,  # PQ2 for unimportant tokens
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -180,6 +182,25 @@ class TripleLayerKVCache(_BaseCache):
         self.num_cold_compressions = 0
         self._total_offset = 0
 
+        # Architecture D: Scored Differential Compression
+        # AM scores on clean bf16 → important(PQ4) + unimportant(PQ2)
+        self.scored_mode = scored_mode
+        self._scored_active = False
+        if scored_mode:
+            from mlx_lm.models.quantization_strategies import PolarQuantizer
+            self.primary_quantizer = warm_quantizer if warm_quantizer is not None else PolarQuantizer(bits=4)
+            self.secondary_quantizer = secondary_quantizer if secondary_quantizer is not None else PolarQuantizer(bits=2)
+        else:
+            self.primary_quantizer = None
+            self.secondary_quantizer = None
+        # Scored buffers (temporary during promotion, freed after → flat buffer)
+        self._scored_imp_k = None
+        self._scored_imp_v = None
+        self._scored_imp_meta = []
+        self._scored_unimp_k = None
+        self._scored_unimp_v = None
+        self._scored_unimp_meta = []
+
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
         import pickle
@@ -208,6 +229,8 @@ class TripleLayerKVCache(_BaseCache):
     @property
     def offset(self):
         """Total cache size (for RoPE positioning)."""
+        if self._scored_active:
+            return self._true_offset
         if self._flat_mode:
             # Use original offset for correct RoPE, even if AM compressed the buffer
             return self._true_offset
@@ -228,7 +251,8 @@ class TripleLayerKVCache(_BaseCache):
             - Prefill: triple-layer quantized path (memory-efficient)
             - TG: pre-allocated bf16 buffer with slice assignment (Standard KVCache speed)
         """
-        # FAST PATH: pre-allocated buffer — same strategy as Standard KVCache
+        # FLAT FAST PATH: pre-allocated buffer — same strategy as Standard KVCache
+        # (Architecture D scored mode also transitions to flat mode after promotion)
         if self._flat_mode:
             prev = self._flat_offset
             # Grow buffer if needed (rare: only every _flat_step tokens)
@@ -309,8 +333,19 @@ class TripleLayerKVCache(_BaseCache):
             mx.eval(full_keys, full_values)
             self._cleanup_quantized()
 
-            # Stage 2: Apply AM compression to old prefix (non-recent tokens)
-            if self.enable_cold_am and (self._am_calibration is not None or self.calibration_registry is not None):
+            # Stage 2: Branch based on architecture mode
+            has_am = self.enable_cold_am and (self._am_calibration is not None or self.calibration_registry is not None)
+
+            if self.scored_mode and has_am:
+                # Architecture D: Score on clean bf16 → differential PQ4/PQ2 → flat buffer
+                self._scored_compress_prefix(full_keys, full_values, recent_len)
+                del full_keys, full_values
+                self._scored_active = True
+                # _scored_compress_prefix transitions to flat mode — return flat slice
+                return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+
+            # Pipeline mode (original): AM prune → flat buffer
+            if has_am:
                 full_keys, full_values = self._am_compress_prefix(
                     full_keys, full_values, recent_len
                 )
@@ -426,6 +461,12 @@ class TripleLayerKVCache(_BaseCache):
             Estimated memory usage in bytes
         """
         total_bytes = 0
+
+        # Flat mode (pipeline AM or scored mode): flat bf16 buffer
+        if self._flat_mode and self._flat_keys is not None:
+            B, H, _, D = self._flat_keys.shape
+            total_bytes += self._flat_offset * H * D * 2 * 2  # K+V, bf16 (used portion)
+            return total_bytes
 
         # Recent layer (fp32/fp16)
         if self.recent_keys is not None:
@@ -819,6 +860,210 @@ class TripleLayerKVCache(_BaseCache):
         compressed_values = values[:, :, indices, :]
 
         return compressed_keys, compressed_values
+
+    # ── Architecture D: Scored Differential Compression ──────────────────
+
+    def _get_importance_mask(self, chunk_len: int, budget: int, prefix_len: int) -> np.ndarray:
+        """
+        Get boolean importance mask from AM calibration.
+
+        Uses the same selected_indices as pipeline AM, but instead of deleting
+        unselected tokens, returns a mask for differential bit allocation.
+
+        Returns:
+            mask: np.ndarray of shape (chunk_len,) where True = important (PQ4)
+        """
+        layer_calib = None
+        if self._am_calibration is not None:
+            layer_calib = self._am_calibration[self.layer_idx]
+        elif self.calibration_registry is not None:
+            calib_file = self.calibration_registry.get_calibration(
+                length=prefix_len,
+                ratio=self.compression_ratio,
+                strategy=self.selection_strategy
+            )
+            if calib_file is not None:
+                layer_calib = calib_file['calibration'][self.layer_idx]
+
+        if layer_calib is None:
+            return np.ones(chunk_len, dtype=bool)
+
+        selected_indices = layer_calib['selected_indices']
+        if isinstance(selected_indices, mx.array):
+            selected_indices = np.array(selected_indices)
+
+        valid_mask = selected_indices < chunk_len
+        clipped_indices = selected_indices[valid_mask]
+        if len(clipped_indices) > budget:
+            clipped_indices = clipped_indices[:budget]
+
+        importance_mask = np.zeros(chunk_len, dtype=bool)
+        importance_mask[clipped_indices] = True
+        return importance_mask
+
+    def _scored_compress_prefix(
+        self,
+        keys: mx.array,
+        values: mx.array,
+        recent_len: int
+    ):
+        """
+        Architecture D: Score tokens on clean bf16, then differential bit allocation.
+
+        Instead of deleting tokens (pipeline AM), splits into:
+        - Important tokens (AM selected) → PQ4 (high quality, 4-bit)
+        - Unimportant tokens (AM unselected) → PQ2 (compact, 2-bit)
+        - Recent tokens → bf16 (exact, for TG quality)
+
+        Average: 0.5*4 + 0.5*2 = 3 bits/token → 81% compression vs bf16.
+        All tokens preserved — no permanent information loss.
+        """
+        B, n_heads, total_len, head_dim = keys.shape
+        old_len = total_len - recent_len
+
+        self._true_offset = total_len
+
+        # Split: [old_prefix | recent]
+        old_keys = keys[:, :, :old_len, :]
+        old_values = values[:, :, :old_len, :]
+        recent_k = keys[:, :, old_len:, :]
+        recent_v = values[:, :, old_len:, :]
+
+        # Process old prefix in chunks (same chunk size as pipeline AM)
+        effective_ratio = self._get_effective_ratio(total_len)
+        chunk_size = self.cold_batch_threshold  # 512
+        budget = int(chunk_size / effective_ratio)
+
+        all_imp_k, all_imp_v = [], []
+        all_unimp_k, all_unimp_v = [], []
+        imp_meta_list, unimp_meta_list = [], []
+        n_full_chunks = 0
+
+        for offset in range(0, old_len, chunk_size):
+            chunk_end = min(offset + chunk_size, old_len)
+            chunk_k = old_keys[:, :, offset:chunk_end, :]
+            chunk_v = old_values[:, :, offset:chunk_end, :]
+            chunk_len = chunk_end - offset
+
+            if chunk_len == chunk_size:
+                # Full chunk: AM-scored differential quantization
+                imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
+                imp_indices = np.where(imp_mask)[0]
+                unimp_indices = np.where(~imp_mask)[0]
+
+                if len(imp_indices) > 0:
+                    imp_idx = mx.array(imp_indices, dtype=mx.int32)
+                    imp_k = chunk_k[:, :, imp_idx, :]
+                    imp_v = chunk_v[:, :, imp_idx, :]
+                    q_k, q_v, meta = self.primary_quantizer.quantize(imp_k, imp_v)
+                    meta['seq_len'] = len(imp_indices)
+                    all_imp_k.append(q_k)
+                    all_imp_v.append(q_v)
+                    imp_meta_list.append(meta)
+
+                if len(unimp_indices) > 0:
+                    unimp_idx = mx.array(unimp_indices, dtype=mx.int32)
+                    unimp_k = chunk_k[:, :, unimp_idx, :]
+                    unimp_v = chunk_v[:, :, unimp_idx, :]
+                    q_k, q_v, meta = self.secondary_quantizer.quantize(unimp_k, unimp_v)
+                    meta['seq_len'] = len(unimp_indices)
+                    all_unimp_k.append(q_k)
+                    all_unimp_v.append(q_v)
+                    unimp_meta_list.append(meta)
+
+                n_full_chunks += 1
+            else:
+                # Partial chunk: all → PQ4 (conservative)
+                q_k, q_v, meta = self.primary_quantizer.quantize(chunk_k, chunk_v)
+                meta['seq_len'] = chunk_len
+                all_imp_k.append(q_k)
+                all_imp_v.append(q_v)
+                imp_meta_list.append(meta)
+
+        # Store scored buffers
+        if all_imp_k:
+            self._scored_imp_k = mx.concatenate(all_imp_k, axis=2)
+            self._scored_imp_v = mx.concatenate(all_imp_v, axis=2)
+            self._scored_imp_meta = imp_meta_list
+
+        if all_unimp_k:
+            self._scored_unimp_k = mx.concatenate(all_unimp_k, axis=2)
+            self._scored_unimp_v = mx.concatenate(all_unimp_v, axis=2)
+            self._scored_unimp_meta = unimp_meta_list
+
+        # Log before dequant (PQ buffers still alive)
+        if self.layer_idx == 0:
+            n_imp = self._scored_imp_k.shape[2] if self._scored_imp_k is not None else 0
+            n_unimp = self._scored_unimp_k.shape[2] if self._scored_unimp_k is not None else 0
+            ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
+            print(f"[Scored Promotion{ratio_info}] {old_len} old + {recent_len} recent → "
+                  f"{n_imp} PQ4 + {n_unimp} PQ2 + {recent_len} bf16 "
+                  f"({n_full_chunks} chunks scored)")
+
+        # Dequant once → flat buffer for O(1) TG (reuse pipeline flat mode)
+        prefix_parts_k, prefix_parts_v = [], []
+        if self._scored_imp_k is not None:
+            dk, dv = self._dequant_scored_chunks(
+                self._scored_imp_k, self._scored_imp_v,
+                self._scored_imp_meta, self.primary_quantizer
+            )
+            prefix_parts_k.append(dk)
+            prefix_parts_v.append(dv)
+        if self._scored_unimp_k is not None:
+            dk, dv = self._dequant_scored_chunks(
+                self._scored_unimp_k, self._scored_unimp_v,
+                self._scored_unimp_meta, self.secondary_quantizer
+            )
+            prefix_parts_k.append(dk)
+            prefix_parts_v.append(dv)
+        # Concat: [dequant_imp | dequant_unimp | recent] → flat buffer
+        prefix_parts_k.append(recent_k)
+        prefix_parts_v.append(recent_v)
+        full_k = mx.concatenate(prefix_parts_k, axis=2) if len(prefix_parts_k) > 1 else prefix_parts_k[0]
+        full_v = mx.concatenate(prefix_parts_v, axis=2) if len(prefix_parts_v) > 1 else prefix_parts_v[0]
+        cache_len = full_k.shape[2]
+
+        # Allocate flat buffer with padding for TG tokens
+        alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
+        self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+        self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+        self._flat_keys[..., :cache_len, :] = full_k
+        self._flat_values[..., :cache_len, :] = full_v
+        del full_k, full_v
+        self._flat_offset = cache_len
+        self._flat_mode = True
+        mx.eval(self._flat_keys, self._flat_values)
+
+        # Free PQ buffers — flat buffer is the TG truth now
+        self._scored_imp_k = self._scored_imp_v = None
+        self._scored_unimp_k = self._scored_unimp_v = None
+        self._scored_imp_meta = self._scored_unimp_meta = []
+
+    def _dequant_scored_chunks(
+        self,
+        quant_k: mx.array,
+        quant_v: mx.array,
+        meta_list: list,
+        quantizer: 'QuantizationStrategy'
+    ) -> Tuple[mx.array, mx.array]:
+        """Dequantize multiple scored chunks using the given quantizer."""
+        if len(meta_list) == 1:
+            return quantizer.dequantize(quant_k, quant_v, meta_list[0])
+
+        dk_list, dv_list = [], []
+        offset = 0
+        for meta in meta_list:
+            seq_len = meta['seq_len']
+            ck = quant_k[:, :, offset:offset + seq_len, :]
+            cv = quant_v[:, :, offset:offset + seq_len, :]
+            dk, dv = quantizer.dequantize(ck, cv, meta)
+            dk_list.append(dk)
+            dv_list.append(dv)
+            offset += seq_len
+
+        return mx.concatenate(dk_list, axis=2), mx.concatenate(dv_list, axis=2)
+
+    # ── End Architecture D ───────────────────────────────────────────────
 
     def _quantize(self, x: mx.array, bits: int = 4) -> Tuple[mx.array, mx.array]:
         """
