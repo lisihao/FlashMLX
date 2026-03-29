@@ -23,6 +23,7 @@ Qwen3-8B-MLX (Q8) on Apple M4 Pro 24GB，所有数据来自独立子进程串行
 | **PP Speed** | 213.6 tok/s | 372.8 tok/s | **+74.5%** |
 | **TG Speed** | 16.0 tok/s | 24.7 tok/s | **+54.4%** |
 | **TTOF** | 151.7s | 86.9s | **-42.7%** |
+| **KV Memory (PP Peak)** | 5,079 MB | 774 MB | **-84.8%** |
 | **KV Memory (TG)** | 4,572 MB | 147 MB | **-96.8%** |
 | **Quality** | PASS | PASS | lossless |
 
@@ -33,21 +34,22 @@ Qwen3-8B-MLX (Q8) on Apple M4 Pro 24GB，所有数据来自独立子进程串行
 | **PP Speed** | 275.2 tok/s | 361.8 tok/s | **+31.5%** |
 | **TG Speed** | 18.9 tok/s | 24.7 tok/s | **+30.7%** |
 | **TTOF** | 58.4s | 44.3s | **-24.1%** |
+| **KV Memory (PP Peak)** | 2,785 MB | 773 MB | **-72.2%** |
 | **KV Memory (TG)** | 2,268 MB | 129 MB | **-94.3%** |
 | **Quality** | PASS | PASS | lossless |
 
 ### All Configurations
 
-| Config | Ctx | PP tok/s | TG tok/s | TTOF | KV TG | Quality |
-|--------|-----|----------|----------|------|-------|---------|
-| standard | 16K | 275.2 | 18.9 | 58.4s | 2,268 MB | PASS |
-| scored_bf16 | 16K | 362.4 | 26.4 | 44.2s | 252 MB | PASS |
-| **scored_q8** | **16K** | **361.8** | **24.7** | **44.3s** | **129 MB** | **PASS** |
-| scored_q4 | 16K | 378.9 | 19.4 | 42.3s | 72 MB | PASS |
-| standard | 32K | 213.6 | 16.0 | 151.7s | 4,572 MB | PASS |
-| scored_bf16 | 32K | 369.5 | 26.2 | 87.7s | 288 MB | PASS |
-| **scored_q8** | **32K** | **372.8** | **24.7** | **86.9s** | **147 MB** | **PASS** |
-| scored_q4 | 32K | 376.9 | 16.1 | 86.0s | 81 MB | PASS |
+| Config | Ctx | PP tok/s | TG tok/s | TTOF | KV PP Peak | KV TG | Quality |
+|--------|-----|----------|----------|------|------------|-------|---------|
+| standard | 16K | 275.2 | 18.9 | 58.4s | 2,785 MB | 2,268 MB | PASS |
+| scored_bf16 | 16K | 362.4 | 26.4 | 44.2s | 773 MB | 252 MB | PASS |
+| **scored_q8** | **16K** | **361.8** | **24.7** | **44.3s** | **773 MB** | **129 MB** | **PASS** |
+| scored_q4 | 16K | 378.9 | 19.4 | 42.3s | 773 MB | 72 MB | PASS |
+| standard | 32K | 213.6 | 16.0 | 151.7s | 5,079 MB | 4,572 MB | PASS |
+| scored_bf16 | 32K | 369.5 | 26.2 | 87.7s | 774 MB | 288 MB | PASS |
+| **scored_q8** | **32K** | **372.8** | **24.7** | **86.9s** | **774 MB** | **147 MB** | **PASS** |
+| scored_q4 | 32K | 376.9 | 16.1 | 86.0s | 774 MB | 81 MB | PASS |
 
 ## Quick Start
 
