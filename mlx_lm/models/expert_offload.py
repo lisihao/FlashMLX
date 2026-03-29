@@ -1214,6 +1214,7 @@ class FlashMoeSwitchGLU(nn.Module):
         promotable = promotable[:max_promote]
 
         # Step 3: Evict cold experts to make room
+        to_evict = []
         if len(self._pool_expert_ids) + max_promote > self._pool_size:
             cold = self._telemetry.get_cold_experts(
                 self._layer_idx, self._pool_expert_ids, keep_min=8
@@ -1238,8 +1239,8 @@ class FlashMoeSwitchGLU(nn.Module):
                                 np_data[comp] = np.array(slice_data)
                         self._cpu_cache.put(self._layer_idx, eid, np_data)
 
-            # Remove evicted experts from pool tracking
-            new_pool_ids = [eid for eid in self._pool_expert_ids if eid not in evicted_set]
+            # Keep original layout for in-place slot swap
+            new_pool_ids = list(self._pool_expert_ids)
         else:
             new_pool_ids = list(self._pool_expert_ids)
 
@@ -1273,30 +1274,32 @@ class FlashMoeSwitchGLU(nn.Module):
         if not new_expert_data:
             return
 
-        # Step 5: Rebuild pool with new composition
-        for eid in new_expert_data:
-            new_pool_ids.append(eid)
+        # Step 5: In-place slot swap — O(promotions) instead of O(pool_size) rebuild
+        freed_slots = [self._pool_remap_np[eid] for eid in to_evict]
 
-        # Collect all expert data
-        comp_names = list(self._pool.keys())
-        new_pool = {}
-        for comp in comp_names:
-            slices = []
-            for eid in new_pool_ids:
-                if eid in new_expert_data:
+        for i, eid in enumerate(new_expert_data):
+            if i < len(freed_slots):
+                # Swap into evicted slot (common case: pool at capacity)
+                slot = int(freed_slots[i])
+                for comp in self._pool:
                     data = new_expert_data[eid][comp]
                     if data.ndim == len(self._pool[comp].shape) - 1:
                         data = data[np.newaxis]
-                    slices.append(data)
-                else:
-                    old_slot = self._pool_remap_np[eid]
-                    slices.append(self._pool[comp][old_slot:old_slot+1])
-            new_pool[comp] = mx.concatenate(slices, axis=0)
+                    self._pool[comp][slot:slot+1] = data
+                # Replace evicted expert ID at same slot position
+                new_pool_ids[slot] = eid
+            else:
+                # Append (pool not full — rare)
+                new_pool_ids.append(eid)
+                for comp in self._pool:
+                    data = new_expert_data[eid][comp]
+                    if data.ndim == len(self._pool[comp].shape) - 1:
+                        data = data[np.newaxis]
+                    self._pool[comp] = mx.concatenate([self._pool[comp], data], axis=0)
 
-        mx.eval(new_pool)
+        mx.eval(self._pool)
 
         # Update state (sentinel = len(new_pool_ids) for miss detection)
-        self._pool = new_pool
         self._pool_expert_ids = new_pool_ids
         K = len(new_pool_ids)
         self._pool_remap_np = np.full(self.num_experts, K, dtype=np.int32)  # sentinel
