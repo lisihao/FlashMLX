@@ -53,3 +53,5 @@ mlx-source/build/
 tmp/
 temp/
 profiling_data/*.json
+vendor/
+
