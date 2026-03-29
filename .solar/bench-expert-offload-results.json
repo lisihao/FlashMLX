@@ -1,0 +1,46 @@
+[
+  {
+    "label": "standard_short",
+    "pp_tps": 85.23105606660761,
+    "tg_tps": 90.89728120659143,
+    "ttof_ms": 347.42491599172354,
+    "total_ms": 906.0247499728575,
+    "peak_gb": 18.243231530301273,
+    "tokens": 50,
+    "text": "Let me think through this carefully.\n\nThe question asks: What is 2+2? Answer in one word\n\nThis is a basic arithmetic que"
+  },
+  {
+    "label": "offload_short",
+    "pp_tps": 2.6179082704614904,
+    "tg_tps": 5.329582373270927,
+    "ttof_ms": 8493.045749957673,
+    "total_ms": 17886.060790973715,
+    "peak_gb": 10.087665259838104,
+    "tokens": 50,
+    "text": "Let me think through this carefully.\n\nThe question asks: What is 2+2? Answer in one word\n\nThis is a basic arithmetic que",
+    "mem_before_gb": 18.168974170461297,
+    "mem_after_gb": 1.293974170461297
+  },
+  {
+    "label": "standard_medium",
+    "pp_tps": 36.80054953620887,
+    "tg_tps": 92.2737994195316,
+    "ttof_ms": 707.6229579979554,
+    "total_ms": 1257.6352499891073,
+    "peak_gb": 18.244382807984948,
+    "tokens": 50,
+    "text": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Difference between TCP (Transmission Control Protocol) an"
+  },
+  {
+    "label": "offload_medium",
+    "pp_tps": 2.666435034632273,
+    "tg_tps": 5.799420180538468,
+    "ttof_ms": 8737.493375083432,
+    "total_ms": 17370.17820798792,
+    "peak_gb": 10.232684794813395,
+    "tokens": 50,
+    "text": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Difference between TCP (Transmission Control Protocol) an",
+    "mem_before_gb": 18.168974170461297,
+    "mem_after_gb": 1.293974170461297
+  }
+]

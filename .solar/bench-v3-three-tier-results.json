@@ -1,0 +1,82 @@
+[
+  {
+    "label": "standard_short",
+    "pp_tps": 85.15692270783322,
+    "tg_tps": 91.6925867215672,
+    "ttof_ms": 345.0031660031527,
+    "total_ms": 1444.4280830211937,
+    "peak_gb": 18.243231530301273,
+    "tokens": 100,
+    "text": "Let me think through this carefully.\n\nThe question asks: What is 2+2? Answer in one word\n\nThis is a basic arithmetic que"
+  },
+  {
+    "label": "offload_short",
+    "pp_tps": 26.485847239116694,
+    "tg_tps": 89.89277480130058,
+    "ttof_ms": 923.3461659168825,
+    "total_ms": 2044.6402499219403,
+    "peak_gb": 18.24436769168824,
+    "tokens": 100,
+    "text": "Let me think through this carefully.\n\nThe question asks: What is 2+2? Answer in one word\n\nThis is a basic arithmetic que",
+    "mem_before_gb": 18.168974170461297,
+    "mem_after_gb": 18.169012317433953,
+    "regime": "C_full_gpu",
+    "telemetry": {
+      "total_tokens": 0,
+      "total_activations": 0,
+      "avg_unique_per_layer": 0.0,
+      "max_unique_per_layer": 0,
+      "overall_pool_hit_rate": 1.0,
+      "per_layer_hit_rate": {}
+    },
+    "cpu_cache": {
+      "capacity_gb": 2.0,
+      "used_gb": 0.0,
+      "utilization": 0.0,
+      "entries": 0,
+      "hit_rate": 0,
+      "hits": 0,
+      "misses": 0
+    }
+  },
+  {
+    "label": "standard_medium",
+    "pp_tps": 39.118493061853066,
+    "tg_tps": 90.36419138596928,
+    "ttof_ms": 676.1504999594763,
+    "total_ms": 1790.877667022869,
+    "peak_gb": 18.244394728913903,
+    "tokens": 100,
+    "text": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Difference between TCP (Transmission Control Protocol) an"
+  },
+  {
+    "label": "offload_medium",
+    "pp_tps": 95.64040865772694,
+    "tg_tps": 90.43372807043447,
+    "ttof_ms": 346.7626669444144,
+    "total_ms": 1460.8371669892222,
+    "peak_gb": 18.245518939569592,
+    "tokens": 100,
+    "text": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Topic: Difference between TCP (Transmission Control Protocol) an",
+    "mem_before_gb": 18.168974170461297,
+    "mem_after_gb": 18.169012317433953,
+    "regime": "C_full_gpu",
+    "telemetry": {
+      "total_tokens": 0,
+      "total_activations": 0,
+      "avg_unique_per_layer": 0.0,
+      "max_unique_per_layer": 0,
+      "overall_pool_hit_rate": 1.0,
+      "per_layer_hit_rate": {}
+    },
+    "cpu_cache": {
+      "capacity_gb": 2.0,
+      "used_gb": 0.0,
+      "utilization": 0.0,
+      "entries": 0,
+      "hit_rate": 0,
+      "hits": 0,
+      "misses": 0
+    }
+  }
+]

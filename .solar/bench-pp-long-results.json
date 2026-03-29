@@ -1,0 +1,114 @@
+[
+  {
+    "label": "standard_1K",
+    "prompt_tokens": 1149,
+    "pp_tps": 870.7986046395646,
+    "pp_time_ms": 1319.4784579100087,
+    "tg_tps": 96.51096738592405,
+    "tg_tokens": 10,
+    "peak_gb": 19.329258812591434,
+    "text": "Let me analyze this text carefully to identify the main"
+  },
+  {
+    "label": "standard_4K",
+    "prompt_tokens": 4285,
+    "pp_tps": 900.9084379716941,
+    "pp_time_ms": 4756.310208002105,
+    "tg_tps": 93.6317532942218,
+    "tg_tokens": 10,
+    "peak_gb": 20.136709613725543,
+    "text": "Let me analyze this text carefully.\n\nThe text"
+  },
+  {
+    "label": "standard_8K",
+    "prompt_tokens": 8317,
+    "pp_tps": 877.7794683969022,
+    "pp_time_ms": 9475.045041996054,
+    "tg_tps": 88.91269780900852,
+    "tg_tokens": 10,
+    "peak_gb": 20.48050539009273,
+    "text": "Let me analyze this text carefully.\n\nThe text"
+  },
+  {
+    "label": "standard_16K",
+    "prompt_tokens": 16605,
+    "pp_tps": 810.9373430153001,
+    "pp_time_ms": 20476.304541924037,
+    "tg_tps": 81.05046788097553,
+    "tg_tokens": 10,
+    "peak_gb": 21.105490131303668,
+    "text": "Let me analyze this text carefully.\n\nThe text"
+  },
+  {
+    "label": "standard_32K",
+    "prompt_tokens": 32957,
+    "pp_tps": 673.9291850148902,
+    "pp_time_ms": 48902.76416693814,
+    "tg_tps": 70.65113541211744,
+    "tg_tokens": 10,
+    "peak_gb": 22.41156618669629,
+    "text": "Let me analyze this text carefully.\n\nThe text"
+  },
+  {
+    "label": "offload_1K",
+    "prompt_tokens": 1149,
+    "pp_tps": 868.1378394555728,
+    "pp_time_ms": 1323.522541904822,
+    "tg_tps": 1.9655393453611472,
+    "tg_tokens": 10,
+    "peak_gb": 20.501297434791923,
+    "text": "Let me analyze this text carefully to identify the main",
+    "compact": {
+      "layers": 40,
+      "pool_size": 64,
+      "pp_coverage": 0.7145443162020904,
+      "memory_gb": 18.225636249408126,
+      "elapsed_ms": 121.26829207409173
+    },
+    "regime": "C_full_gpu"
+  },
+  {
+    "label": "offload_4K",
+    "prompt_tokens": 4285,
+    "pp_tps": 81.51179058718971,
+    "pp_time_ms": 52569.0819589654,
+    "tg_tps": 32.14348853574724,
+    "tg_tokens": 10,
+    "peak_gb": 35.397339129820466,
+    "text": "Let me analyze this text carefully.\n\nThe text",
+    "regime": "C_full_gpu"
+  },
+  {
+    "label": "offload_8K",
+    "prompt_tokens": 8317,
+    "pp_tps": 308.55911620407034,
+    "pp_time_ms": 26954.316250048578,
+    "tg_tps": 39.76413901421654,
+    "tg_tokens": 10,
+    "peak_gb": 36.16960170306265,
+    "text": "Let me analyze this text carefully.\n\nThe text",
+    "regime": "C_full_gpu"
+  },
+  {
+    "label": "offload_16K",
+    "prompt_tokens": 16605,
+    "pp_tps": 272.474957417316,
+    "pp_time_ms": 60941.38029194437,
+    "tg_tps": 37.596623371736,
+    "tg_tokens": 10,
+    "peak_gb": 37.07601954974234,
+    "text": "Let me analyze this text carefully.\n\nThe text",
+    "regime": "C_full_gpu"
+  },
+  {
+    "label": "offload_32K",
+    "prompt_tokens": 32957,
+    "pp_tps": 257.9172593901026,
+    "pp_time_ms": 127781.28954197746,
+    "tg_tps": 34.84778921089934,
+    "tg_tokens": 10,
+    "peak_gb": 38.58792140521109,
+    "text": "Let me analyze this text carefully.\n\nThe text",
+    "regime": "C_full_gpu"
+  }
+]

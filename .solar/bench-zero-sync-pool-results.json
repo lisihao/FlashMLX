@@ -1,0 +1,42 @@
+{
+  "architecture": "FlashMLX Zero-Sync Expert Pool",
+  "model": "Qwen3.5-35B-A3B (Q4)",
+  "platform": "Apple M4 Pro 24GB",
+  "date": "2026-03-29",
+  "versions": {
+    "v1_poc": {
+      "tg_tps": 3.2,
+      "peak_gb": 2.14,
+      "quality": "identical"
+    },
+    "v2_gather_qmm": {
+      "tg_tps": 5.5,
+      "peak_gb": 10.09,
+      "quality": "identical"
+    },
+    "v3_zero_sync_pool": {
+      "tg_tps": 92.6,
+      "peak_gb": 6.28,
+      "quality": "pass"
+    }
+  },
+  "standard_baseline": {
+    "tg_tps": 85.8,
+    "peak_gb": 18.24
+  },
+  "v3_vs_standard": {
+    "tg_delta_pct": 7.9,
+    "memory_saved_pct": 65.6
+  },
+  "v3_vs_v2": {
+    "tg_speedup": "16.8x",
+    "memory_reduction": "6.28 vs 10.09 GB (-38%)"
+  },
+  "key_innovation": "Two-phase: discovery (prefill .tolist()+SSD) -> pool (zero-sync mx.take+gather_qmm)",
+  "why_faster_than_standard": [
+    "Pool ~50 experts vs 256 = better GPU cache locality",
+    "gather_qmm touches same 8 experts but from smaller tensor",
+    "Zero Python sync in generation hot path"
+  ],
+  "tradeoff": "PP slower (2.6 vs 40 tok/s) due to SSD discovery phase"
+}
