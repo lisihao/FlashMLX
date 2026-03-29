@@ -177,7 +177,7 @@ class TripleLayerKVCache(_BaseCache):
         self._dq_values = None
         self._flat_mode = False
         self._flat_offset = 0
-        self._flat_step = 256  # Pre-allocation chunk size (same as KVCache.step)
+        self._flat_step = 2048  # Pre-allocate for typical generation length to avoid mid-TG expansion
         self._needs_cleanup = False  # Deferred cleanup of quantized data
         self._true_offset = 0  # Original token count (before AM), used for RoPE
 
