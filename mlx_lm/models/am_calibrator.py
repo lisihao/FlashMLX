@@ -137,12 +137,24 @@ def _softmax(x: np.ndarray, axis: int = 1) -> np.ndarray:
 
 
 def get_model_key(model) -> str:
-    """Derive unique model identity from architecture parameters."""
+    """Derive unique model identity from architecture parameters.
+
+    Handles both pure Transformer (args has hidden_size directly) and
+    multimodal/wrapper models (args has text_config dict with the real params).
+    """
     args = model.args
     model_type = getattr(args, 'model_type', 'unknown')
-    hidden_size = getattr(args, 'hidden_size', 0)
-    num_layers = getattr(args, 'num_hidden_layers', 0)
-    num_kv_heads = getattr(args, 'num_key_value_heads', 0)
+
+    # For wrapper models (Qwen3.5, etc.), architecture params are in text_config
+    text_config = getattr(args, 'text_config', None)
+    if text_config and isinstance(text_config, dict):
+        hidden_size = text_config.get('hidden_size', 0)
+        num_layers = text_config.get('num_hidden_layers', 0)
+        num_kv_heads = text_config.get('num_key_value_heads', 0)
+    else:
+        hidden_size = getattr(args, 'hidden_size', 0)
+        num_layers = getattr(args, 'num_hidden_layers', 0)
+        num_kv_heads = getattr(args, 'num_key_value_heads', 0)
     return f"{model_type}_h{hidden_size}_l{num_layers}_kv{num_kv_heads}"
 
 
@@ -251,41 +263,62 @@ class AMCalibrator:
         self.num_layers = len(self.inner.layers)
 
     def run(self, compression_ratio: float = 2.0) -> Dict[int, Dict]:
-        """Run full calibration pipeline. Returns calibration dict."""
-        from mlx_lm.models.cache import KVCache
-
+        """Run full calibration pipeline. Returns calibration dict keyed by layer index."""
         # Step 1: Generate queries via repeat-prefill + QA prefill
         print(f"  [1/3] Generating queries...", flush=True)
         queries_per_layer = self._generate_queries()
-        total_q = queries_per_layer[0].shape[2]
-        print(f"         {total_q} queries collected", flush=True)
+        attn_indices = sorted(queries_per_layer.keys())
+        first_key = attn_indices[0]
+        total_q = queries_per_layer[first_key].shape[2]
+        print(f"         {total_q} queries collected across "
+              f"{len(attn_indices)}/{self.num_layers} attention layers", flush=True)
 
         # Step 2: Generate reference KV cache (~512 tokens)
         print(f"  [2/3] Generating reference keys...", flush=True)
         ref_keys_per_layer = self._generate_reference_keys()
-        ref_len = ref_keys_per_layer[0].shape[2]
+        ref_len = ref_keys_per_layer[first_key].shape[2]
         print(f"         {ref_len} reference tokens", flush=True)
 
-        # Step 3: Fit AM parameters per layer
-        print(f"  [3/3] Fitting {self.num_layers} layers...", flush=True)
+        # Step 3: Fit AM parameters per attention layer only
+        num_attn = len(attn_indices)
+        print(f"  [3/3] Fitting {num_attn} attention layers "
+              f"(of {self.num_layers} total)...", flush=True)
         calibration = {}
-        for layer_idx in range(self.num_layers):
+        for idx, layer_idx in enumerate(attn_indices):
             calibration[layer_idx] = self._fit_layer(
                 layer_idx,
                 queries_per_layer[layer_idx],
                 ref_keys_per_layer[layer_idx],
                 compression_ratio,
             )
-            if (layer_idx + 1) % 10 == 0 or layer_idx == self.num_layers - 1:
-                print(f"         Layer {layer_idx + 1}/{self.num_layers} done", flush=True)
+            if (idx + 1) % 5 == 0 or idx == num_attn - 1:
+                print(f"         {idx + 1}/{num_attn} done "
+                      f"(layer {layer_idx})", flush=True)
 
         return calibration
+
+    def _make_native_cache(self):
+        """Create correct cache for model (handles hybrid SSM+Attention)."""
+        from mlx_lm.models.cache import KVCache
+        if hasattr(self.inner, "make_cache"):
+            return self.inner.make_cache()
+        return [KVCache() for _ in range(self.num_layers)]
+
+    def _get_attention_indices(self, cache) -> List[int]:
+        """Detect which layers are Attention (have KVCache, not ArraysCache)."""
+        from mlx_lm.models.cache import KVCache
+        return [i for i, c in enumerate(cache) if isinstance(c, KVCache)]
 
     def _generate_queries(self) -> List[mx.array]:
         """Generate Q tensors from diverse prompts (prefill-only, no decode)."""
         from mlx_lm.models.cache import KVCache
 
-        all_queries = [[] for _ in range(self.num_layers)]
+        # Detect attention layers from a probe cache
+        probe_cache = self._make_native_cache()
+        attn_indices = self._get_attention_indices(probe_cache)
+        del probe_cache
+
+        all_queries = {li: [] for li in attn_indices}
 
         # Part 1: Repeat-prefill (8 corpus × 5 repeats)
         for ci, corpus in enumerate(_CALIBRATION_CORPUS):
@@ -294,12 +327,12 @@ class AMCalibrator:
                 continue
 
             for rep in range(_NUM_REPEATS):
-                cache = [KVCache() for _ in range(self.num_layers)]
+                cache = self._make_native_cache()
                 y = mx.array([tokens])
                 _ = self.model(y[:, :-1], cache=cache)
-                mx.eval([c.state for c in cache])
+                mx.eval([cache[li].state for li in attn_indices])
 
-                for li in range(self.num_layers):
+                for li in attn_indices:
                     all_queries[li].append(cache[li].keys)
 
                 del cache
@@ -310,27 +343,25 @@ class AMCalibrator:
             prompt = f"{base_corpus}\n\nQuestion: {question}\nAnswer:"
             tokens = self.tokenizer.encode(prompt)
 
-            cache = [KVCache() for _ in range(self.num_layers)]
+            cache = self._make_native_cache()
             y = mx.array([tokens])
             _ = self.model(y[:, :-1], cache=cache)
-            mx.eval([c.state for c in cache])
+            mx.eval([cache[li].state for li in attn_indices])
 
-            for li in range(self.num_layers):
+            for li in attn_indices:
                 all_queries[li].append(cache[li].keys)
 
             del cache
 
-        # Merge along seq_len dimension
-        merged = []
-        for li in range(self.num_layers):
-            merged.append(mx.concatenate(all_queries[li], axis=2))
+        # Merge along seq_len dimension (only attention layers)
+        merged = {}
+        for li in attn_indices:
+            merged[li] = mx.concatenate(all_queries[li], axis=2)
 
         return merged
 
-    def _generate_reference_keys(self) -> List[mx.array]:
+    def _generate_reference_keys(self) -> Dict[int, mx.array]:
         """Generate reference KV cache (~512 tokens) for importance scoring."""
-        from mlx_lm.models.cache import KVCache
-
         # Concatenate first 2 corpus entries for ~512 tokens
         text = _CALIBRATION_CORPUS[0] + "\n\n" + _CALIBRATION_CORPUS[1]
         tokens = self.tokenizer.encode(text)
@@ -339,12 +370,14 @@ class AMCalibrator:
         if len(tokens) > 520:
             tokens = tokens[:512]
 
-        cache = [KVCache() for _ in range(self.num_layers)]
+        cache = self._make_native_cache()
+        attn_indices = self._get_attention_indices(cache)
+
         y = mx.array([tokens])
         _ = self.model(y[:, :-1], cache=cache)
-        mx.eval([c.state for c in cache])
+        mx.eval([cache[li].state for li in attn_indices])
 
-        ref_keys = [cache[li].keys for li in range(self.num_layers)]
+        ref_keys = {li: cache[li].keys for li in attn_indices}
         return ref_keys
 
     def _fit_layer(

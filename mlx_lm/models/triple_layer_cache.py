@@ -221,13 +221,15 @@ class TripleLayerKVCache(_BaseCache):
             self._am_calibration = data
 
         # Derive batch threshold from calibration metadata
-        layer0 = self._am_calibration[0]
-        budget = layer0['budget']
-        ratio = layer0['compression_ratio']
+        # Use first available layer (hybrid models only have attention layer indices)
+        first_key = min(self._am_calibration.keys())
+        first_layer = self._am_calibration[first_key]
+        budget = first_layer['budget']
+        ratio = first_layer['compression_ratio']
         self._am_prefix_len = int(budget * ratio)
         self.cold_batch_threshold = self._am_prefix_len
 
-        if self.layer_idx == 0:
+        if self.layer_idx == first_key:
             print(f"[TripleLayerKVCache] AM calibration loaded: {filepath}")
             print(f"  Prefix: {self._am_prefix_len} → Budget: {budget} ({ratio}x)")
 
@@ -1036,7 +1038,7 @@ class TripleLayerKVCache(_BaseCache):
         # Get layer calibration from either source
         layer_calib = None
         if self._am_calibration is not None:
-            layer_calib = self._am_calibration[self.layer_idx]
+            layer_calib = self._am_calibration.get(self.layer_idx)
         elif self.calibration_registry is not None:
             calib_file = self.calibration_registry.get_calibration(
                 length=prefix_len,
@@ -1088,7 +1090,7 @@ class TripleLayerKVCache(_BaseCache):
         """
         layer_calib = None
         if self._am_calibration is not None:
-            layer_calib = self._am_calibration[self.layer_idx]
+            layer_calib = self._am_calibration.get(self.layer_idx)
         elif self.calibration_registry is not None:
             calib_file = self.calibration_registry.get_calibration(
                 length=prefix_len,

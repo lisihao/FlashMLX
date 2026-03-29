@@ -63,10 +63,8 @@ def make_prompt_cache(
         kv_scored_max_cache (int): Maximum tokens in scored_pq flat buffer.
             Default: 2048.
     """
-    if hasattr(model, "make_cache"):
-        return model.make_cache()
-
-    # Use optimized cache factory when strategy is specified
+    # FlashMLX: kv_cache parameter takes priority over model.make_cache()
+    # This ensures scored_pq works on hybrid models (Qwen3.5, PLaMo2, etc.)
     if kv_cache is not None:
         from mlx_lm.models.cache_factory import make_optimized_cache
         kwargs = dict(
@@ -85,6 +83,10 @@ def make_prompt_cache(
         if kv_scored_max_cache != 2048:
             kwargs["scored_max_cache"] = kv_scored_max_cache
         return make_optimized_cache(model, **kwargs)
+
+    # Model-specific cache (hybrid models like Qwen3.5 define make_cache())
+    if hasattr(model, "make_cache"):
+        return model.make_cache()
 
     num_layers = len(model.layers)
     if max_kv_size is not None:

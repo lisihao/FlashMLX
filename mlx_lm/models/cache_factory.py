@@ -83,6 +83,45 @@ VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_a
 ADAPTIVE_RATIO = 0.0
 
 
+def _detect_architecture(model: nn.Module):
+    """
+    Detect model architecture type for cache routing.
+
+    Returns:
+        (is_hybrid, attention_layer_indices, native_caches):
+        is_hybrid=True for mixed SSM+Attention models (Qwen3.5, PLaMo2, Jamba, etc.).
+        attention_layer_indices contains indices of layers that use standard KV cache.
+        native_caches is the list from model.make_cache() (reused by hybrid branch to
+        avoid double allocation), or None for pure Transformers.
+    """
+    from mlx_lm.models.cache import KVCache
+
+    if not hasattr(model, "make_cache"):
+        # No custom cache → pure Transformer
+        num_layers = len(model.layers)
+        return False, list(range(num_layers)), None
+
+    try:
+        native_caches = model.make_cache()
+    except Exception as e:
+        print(f"[CacheFactory] Warning: model.make_cache() failed: {e}. "
+              "Treating as pure Transformer.")
+        num_layers = len(model.layers)
+        return False, list(range(num_layers)), None
+
+    attention_indices = []
+    for i, cache in enumerate(native_caches):
+        if isinstance(cache, KVCache):
+            attention_indices.append(i)
+
+    is_hybrid = len(attention_indices) < len(native_caches)
+    if is_hybrid:
+        print(f"[CacheFactory] Hybrid architecture detected: "
+              f"{len(attention_indices)}/{len(native_caches)} attention layers "
+              f"(indices: {attention_indices[:5]}{'...' if len(attention_indices) > 5 else ''})")
+    return is_hybrid, attention_indices, native_caches if is_hybrid else None
+
+
 def make_optimized_cache(
     model: nn.Module,
     strategy: str = "standard",
@@ -205,13 +244,29 @@ def make_optimized_cache(
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
 
-    return [
-        TripleLayerKVCache(
-            **cache_kwargs,
-            layer_idx=i,
-        )
-        for i in range(num_layers)
-    ]
+    # Detect hybrid architecture (SSM + Attention)
+    is_hybrid, attn_indices, native_caches = _detect_architecture(model)
+
+    if is_hybrid:
+        # Hybrid path: SSM layers keep native cache, Attention layers get scored_pq
+        # native_caches already allocated by _detect_architecture (no double allocation)
+        attn_set = set(attn_indices)
+        caches = []
+        for i in range(num_layers):
+            if i in attn_set:
+                caches.append(TripleLayerKVCache(**cache_kwargs, layer_idx=i))
+            else:
+                caches.append(native_caches[i])
+        return caches
+    else:
+        # Pure Transformer path (existing logic, unchanged)
+        return [
+            TripleLayerKVCache(
+                **cache_kwargs,
+                layer_idx=i,
+            )
+            for i in range(num_layers)
+        ]
 
 
 def _auto_detect_strategy(calibration_file: Optional[str]) -> str:
