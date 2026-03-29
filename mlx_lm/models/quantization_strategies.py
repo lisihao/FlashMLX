@@ -331,6 +331,137 @@ class Q4_0Quantizer(QuantizationStrategy):
 
 
 # ====================================================================
+# Q8_0 Quantizer (8-bit symmetric)
+# ====================================================================
+
+class Q8_0Quantizer(QuantizationStrategy):
+    """
+    8-bit symmetric quantization.
+
+    Features:
+    - Group-based quantization (group_size=32)
+    - Symmetric quantization: [-max, +max] -> [-128, +127]
+    - Per-group scaling factors (fp32)
+
+    Compression: fp16 -> int8 = ~1.78x (with group_size=32 scales overhead)
+
+    Parameters
+    ----------
+    group_size : int
+        Quantization group size (default: 32)
+
+    Example
+    -------
+    >>> quantizer = Q8_0Quantizer(group_size=32)
+    >>> quant_k, quant_v, meta = quantizer.quantize(keys, values)
+    >>> recovered_k, recovered_v = quantizer.dequantize(quant_k, quant_v, meta)
+    """
+
+    def __init__(self, group_size: int = 32):
+        self.group_size = group_size
+
+    def quantize(
+        self,
+        keys: mx.array,
+        values: mx.array
+    ) -> Tuple[mx.array, mx.array, Dict[str, Any]]:
+        """Quantize to 8-bit with per-group scaling."""
+        quant_keys, scales_k = self._quantize_symmetric(keys)
+        quant_values, scales_v = self._quantize_symmetric(values)
+
+        metadata = {
+            'scales_k': scales_k,
+            'scales_v': scales_v,
+            'quant_bits': 8,
+            'group_size': self.group_size,
+            'seq_len': keys.shape[2],
+        }
+
+        return quant_keys, quant_values, metadata
+
+    def dequantize(
+        self,
+        quant_keys: mx.array,
+        quant_values: mx.array,
+        metadata: Dict[str, Any]
+    ) -> Tuple[mx.array, mx.array]:
+        """Dequantize from 8-bit."""
+        keys = self._dequantize_symmetric(quant_keys, metadata['scales_k'])
+        values = self._dequantize_symmetric(quant_values, metadata['scales_v'])
+        return keys, values
+
+    def get_compression_ratio(self) -> float:
+        """fp16 -> int8 = ~1.78x compression (with group_size=32 scales)."""
+        return 16.0 / (8.0 + 32.0 / self.group_size)
+
+    def estimate_memory(self, num_tokens: int, head_dim: int, num_heads: int) -> int:
+        """Estimate memory usage."""
+        quant_size = num_tokens * head_dim * num_heads * 1 * 2  # int8, K+V
+        num_groups = (num_tokens * head_dim * num_heads + self.group_size - 1) // self.group_size
+        scales_size = num_groups * 4 * 2  # fp32 scales, K+V
+        return int(quant_size + scales_size)
+
+    def _quantize_symmetric(self, tensor: mx.array) -> Tuple[mx.array, mx.array]:
+        """Symmetric quantization: [-max, +max] -> [-128, +127]."""
+        B, n_heads, seq_len, head_dim = tensor.shape
+
+        total_elements = B * n_heads * seq_len * head_dim
+        num_groups = (total_elements + self.group_size - 1) // self.group_size
+
+        padded_size = num_groups * self.group_size
+        if total_elements < padded_size:
+            flat = mx.reshape(tensor, [-1])
+            padding = mx.zeros(padded_size - total_elements, dtype=tensor.dtype)
+            flat = mx.concatenate([flat, padding])
+        else:
+            flat = mx.reshape(tensor, [-1])
+
+        grouped = mx.reshape(flat, [num_groups, self.group_size])
+
+        max_vals = mx.max(mx.abs(grouped), axis=1, keepdims=True)
+        max_vals = mx.maximum(max_vals, 1e-8)
+
+        scales = max_vals / 127.0
+        quant_grouped = mx.round(grouped / scales)
+        quant_grouped = mx.clip(quant_grouped, -128, 127)
+
+        quant_flat = mx.reshape(quant_grouped, [-1])
+        if total_elements < padded_size:
+            quant_flat = quant_flat[:total_elements]
+
+        quant_tensor = mx.reshape(quant_flat, tensor.shape)
+        scales = mx.reshape(scales, [num_groups])
+
+        return quant_tensor.astype(mx.int8), scales
+
+    def _dequantize_symmetric(self, quant_tensor: mx.array, scales: mx.array) -> mx.array:
+        """Dequantize from int8 using per-group scales."""
+        B, n_heads, seq_len, head_dim = quant_tensor.shape
+
+        total_elements = B * n_heads * seq_len * head_dim
+        num_groups = scales.shape[0]
+
+        padded_size = num_groups * self.group_size
+        if total_elements < padded_size:
+            flat = mx.reshape(quant_tensor, [-1])
+            padding = mx.zeros(padded_size - total_elements, dtype=quant_tensor.dtype)
+            flat = mx.concatenate([flat, padding])
+        else:
+            flat = mx.reshape(quant_tensor, [-1])
+
+        grouped = mx.reshape(flat, [num_groups, self.group_size])
+
+        scales_expanded = mx.expand_dims(scales, axis=1)
+        dequant_grouped = grouped.astype(mx.float32) * scales_expanded
+
+        dequant_flat = mx.reshape(dequant_grouped, [-1])
+        if total_elements < padded_size:
+            dequant_flat = dequant_flat[:total_elements]
+
+        return mx.reshape(dequant_flat, quant_tensor.shape)
+
+
+# ====================================================================
 # PolarQuant (Google, AISTATS 2026 / TurboQuant ICLR 2026)
 # ====================================================================
 
@@ -835,6 +966,7 @@ class NoOpQuantizer(QuantizationStrategy):
 
 QUANTIZER_REGISTRY = {
     'q4_0': Q4_0Quantizer,
+    'q8_0': Q8_0Quantizer,
     'polarquant': PolarQuantizer,
     'turboquant': TurboQuantizer,  # full TurboQuant: PolarQuant + QJL
     'noop': NoOpQuantizer,

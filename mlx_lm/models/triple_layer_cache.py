@@ -97,6 +97,7 @@ class TripleLayerKVCache(_BaseCache):
         scored_mode: bool = False,  # Architecture D: AM-scored on clean bf16
         scored_prefill_chunk_evict: bool = False,  # Enable prefill eviction for PP memory savings
         scored_prefill_max_cache: int = 4096,  # Eviction trigger: evict when cache exceeds this
+        flat_quant: Optional[str] = None,  # Flat buffer quantization: None='bf16', 'q8_0'
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -198,6 +199,13 @@ class TripleLayerKVCache(_BaseCache):
         self._prefill_tokens_seen = 0
         self._prefill_eviction_count = 0
 
+        # Flat buffer quantization: None (bf16), 'q8_0' (int8 + per-token scales),
+        # or 'q4_0' (nibble-packed uint8 + per-group scales, group_size=32)
+        self._flat_quant = flat_quant
+        self._flat_keys_scales = None
+        self._flat_values_scales = None
+        self._q4_group_size = 32
+
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
         import pickle
@@ -263,13 +271,18 @@ class TripleLayerKVCache(_BaseCache):
                 new_v = mx.zeros((B, n_heads, n_steps * self._flat_step, head_dim), dtype=self._flat_values.dtype)
                 self._flat_keys = mx.concatenate([self._flat_keys, new_k], axis=2)
                 self._flat_values = mx.concatenate([self._flat_values, new_v], axis=2)
+                if self._flat_quant in ('q8_0', 'q4_0'):
+                    scale_dim = self._flat_keys_scales.shape[-1]  # 1 for q8_0, D//G for q4_0
+                    new_sk = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
+                    new_sv = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
+                    self._flat_keys_scales = mx.concatenate([self._flat_keys_scales, new_sk], axis=2)
+                    self._flat_values_scales = mx.concatenate([self._flat_values_scales, new_sv], axis=2)
 
-            # Slice assignment — O(1), no allocation, no copy
+            # Slice assignment — O(1) for bf16, quantize-on-write for Q8_0
             self._flat_offset += keys.shape[2]
             self._true_offset += keys.shape[2]
-            self._flat_keys[..., prev:self._flat_offset, :] = keys
-            self._flat_values[..., prev:self._flat_offset, :] = values
-            return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+            self._write_flat(prev, self._flat_offset, keys, values)
+            return self._fetch_flat(self._flat_offset)
 
         return self._update_slow_path(keys, values)
 
@@ -285,6 +298,160 @@ class TripleLayerKVCache(_BaseCache):
         self.warm_metadata = []
         self.recent_keys = None
         self.recent_values = None
+
+    # ── Q8_0 flat buffer helpers ─────────────────────────────────────────
+
+    def _q8_quantize(self, x: mx.array) -> Tuple[mx.array, mx.array]:
+        """Per-token absmax quantization to int8.
+
+        Args:
+            x: (B, H, S, D) bf16/float32 tensor
+        Returns:
+            quant: (B, H, S, D) int8 tensor
+            scales: (B, H, S, 1) bf16 tensor
+        """
+        max_val = mx.max(mx.abs(x), axis=-1, keepdims=True)
+        scales = (max_val / 127.0).astype(mx.bfloat16)
+        scales = mx.maximum(scales, mx.array(1e-8, dtype=mx.bfloat16))
+        quant = mx.round(x / scales).astype(mx.int8)
+        return quant, scales
+
+    def _q8_dequantize(self, quant: mx.array, scales: mx.array) -> mx.array:
+        """Dequantize int8 back to bf16.
+
+        Args:
+            quant: (B, H, S, D) int8
+            scales: (B, H, S, 1) bf16
+        Returns:
+            (B, H, S, D) bf16
+        """
+        return quant.astype(mx.bfloat16) * scales
+
+    # ── Q4_0 flat buffer helpers (nibble-packed, per-group scales) ──────
+
+    def _q4_quantize(self, x: mx.array) -> Tuple[mx.array, mx.array]:
+        """Per-group 4-bit symmetric quantization with nibble packing.
+
+        Args:
+            x: (B, H, S, D) bf16 tensor, D must be divisible by group_size
+        Returns:
+            packed: (B, H, S, D//2) uint8 (two 4-bit values per byte)
+            scales: (B, H, S, D//group_size) bf16 (per-group scales)
+        """
+        B, H, S, D = x.shape
+        G = self._q4_group_size
+        num_groups = D // G
+
+        # Reshape into groups: (B, H, S, num_groups, G)
+        grouped = x.reshape(B, H, S, num_groups, G)
+
+        # Per-group absmax → scale
+        max_val = mx.max(mx.abs(grouped), axis=-1, keepdims=True)
+        scales = (max_val / 7.0).astype(mx.bfloat16)
+        scales = mx.maximum(scales, mx.array(1e-8, dtype=mx.bfloat16))
+
+        # Quantize to [-7, 7], shift to [1, 15] unsigned for packing
+        quant = mx.clip(mx.round(grouped / scales), -7, 7)
+        quant_u = (quant + 8).astype(mx.uint8)  # [1, 15]
+
+        # Flatten groups back to (B, H, S, D)
+        quant_flat = quant_u.reshape(B, H, S, D)
+
+        # Nibble pack: pair adjacent → one uint8
+        # Use multiply+add to avoid potential bitwise issues on uint8
+        high = quant_flat[..., 0::2].astype(mx.uint32)
+        low = quant_flat[..., 1::2].astype(mx.uint32)
+        packed = (high * 16 + low).astype(mx.uint8)  # (B, H, S, D//2)
+
+        return packed, scales.squeeze(-1)  # scales: (B, H, S, num_groups)
+
+    def _q4_dequantize(self, packed: mx.array, scales: mx.array) -> mx.array:
+        """Dequantize nibble-packed 4-bit data back to bf16.
+
+        Args:
+            packed: (B, H, S, D//2) uint8
+            scales: (B, H, S, num_groups) bf16
+        Returns:
+            (B, H, S, D) bf16
+        """
+        B, H, S, half_D = packed.shape
+        D = half_D * 2
+        G = self._q4_group_size
+        num_groups = D // G
+
+        # Unpack nibbles via integer division/modulo
+        p = packed.astype(mx.int32)
+        high = p // 16 - 8   # high nibble → signed [-8, 7]
+        low = (p % 16) - 8   # low nibble → signed [-8, 7]
+
+        # Interleave: (B, H, S, D//2, 2) → (B, H, S, D)
+        interleaved = mx.stack([high, low], axis=-1)
+        unpacked = interleaved.reshape(B, H, S, D).astype(mx.bfloat16)
+
+        # Expand scales: (B, H, S, num_groups) → (B, H, S, num_groups, G) → (B, H, S, D)
+        scales_expanded = scales[..., :, None]  # (B, H, S, num_groups, 1)
+        # Reshape unpacked into groups, multiply, reshape back
+        grouped = unpacked.reshape(B, H, S, num_groups, G)
+        result = (grouped * scales_expanded).reshape(B, H, S, D)
+
+        return result
+
+    def _alloc_flat_buffer(self, B: int, n_heads: int, alloc_len: int, head_dim: int):
+        """Allocate flat buffer (bf16, Q8_0, or Q4_0 based on flat_quant)."""
+        if self._flat_quant == 'q8_0':
+            self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.int8)
+            self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.int8)
+            self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.bfloat16)
+            self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.bfloat16)
+        elif self._flat_quant == 'q4_0':
+            G = self._q4_group_size
+            self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim // 2), dtype=mx.uint8)
+            self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim // 2), dtype=mx.uint8)
+            self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
+            self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
+        else:
+            self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+            self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+
+    def _write_flat(self, start: int, end: int, keys: mx.array, values: mx.array):
+        """Write to flat buffer (handles quantize-on-write for Q8_0/Q4_0)."""
+        if self._flat_quant == 'q8_0':
+            qk, sk = self._q8_quantize(keys)
+            qv, sv = self._q8_quantize(values)
+            self._flat_keys[..., start:end, :] = qk
+            self._flat_values[..., start:end, :] = qv
+            self._flat_keys_scales[..., start:end, :] = sk
+            self._flat_values_scales[..., start:end, :] = sv
+        elif self._flat_quant == 'q4_0':
+            qk, sk = self._q4_quantize(keys)
+            qv, sv = self._q4_quantize(values)
+            self._flat_keys[..., start:end, :] = qk
+            self._flat_values[..., start:end, :] = qv
+            self._flat_keys_scales[..., start:end, :] = sk
+            self._flat_values_scales[..., start:end, :] = sv
+        else:
+            self._flat_keys[..., start:end, :] = keys
+            self._flat_values[..., start:end, :] = values
+
+    def _fetch_flat(self, end: int) -> Tuple[mx.array, mx.array]:
+        """Fetch from flat buffer (handles dequant-on-fetch for Q8_0/Q4_0)."""
+        if self._flat_quant == 'q8_0':
+            return (self._q8_dequantize(self._flat_keys[..., :end, :],
+                                        self._flat_keys_scales[..., :end, :]),
+                    self._q8_dequantize(self._flat_values[..., :end, :],
+                                        self._flat_values_scales[..., :end, :]))
+        elif self._flat_quant == 'q4_0':
+            return (self._q4_dequantize(self._flat_keys[..., :end, :],
+                                        self._flat_keys_scales[..., :end, :]),
+                    self._q4_dequantize(self._flat_values[..., :end, :],
+                                        self._flat_values_scales[..., :end, :]))
+        return self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
+
+    def _eval_flat_buffer(self):
+        """Evaluate flat buffer arrays (includes scales for Q8_0/Q4_0)."""
+        mx.eval(self._flat_keys, self._flat_values)
+        if self._flat_quant in ('q8_0', 'q4_0'):
+            mx.eval(self._flat_keys_scales, self._flat_values_scales)
 
     def _update_slow_path(self, keys: mx.array, values: mx.array) -> Tuple[mx.array, mx.array]:
         """Triple-layer path: prefill + first TG token promotion."""
@@ -344,7 +511,7 @@ class TripleLayerKVCache(_BaseCache):
                 self._scored_compress_prefix(full_keys, full_values, recent_len)
                 del full_keys, full_values
             self._scored_active = True
-            return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+            return self._fetch_flat(self._flat_offset)
 
         # 3b. First TG token (non-scored): reorganize accumulated tokens into layers
         if self.recent_keys.shape[2] > self.recent_size:
@@ -376,7 +543,7 @@ class TripleLayerKVCache(_BaseCache):
                 self._scored_compress_prefix(full_keys, full_values, recent_len)
                 del full_keys, full_values
                 self._scored_active = True
-                return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+                return self._fetch_flat(self._flat_offset)
 
             # Pipeline mode (original): AM prune → flat buffer
             if has_am:
@@ -388,14 +555,12 @@ class TripleLayerKVCache(_BaseCache):
 
             # Stage 3: Allocate flat buffer and copy (quantized data already freed)
             alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
-            self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-            self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-            self._flat_keys[..., :cache_len, :] = full_keys
-            self._flat_values[..., :cache_len, :] = full_values
+            self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
+            self._write_flat(0, cache_len, full_keys, full_values)
             del full_keys, full_values  # Free intermediate bf16 (flat buffer owns the data now)
             self._flat_offset = cache_len
             self._flat_mode = True
-            return self._flat_keys[..., :self._flat_offset, :], self._flat_values[..., :self._flat_offset, :]
+            return self._fetch_flat(self._flat_offset)
 
         return full_keys, full_values
 
@@ -497,10 +662,23 @@ class TripleLayerKVCache(_BaseCache):
         """
         total_bytes = 0
 
-        # Flat mode (pipeline AM or scored mode): flat bf16 buffer
+        # Flat mode (pipeline AM or scored mode): flat bf16 / Q8_0 / Q4_0 buffer
         if self._flat_mode and self._flat_keys is not None:
             B, H, _, D = self._flat_keys.shape
-            total_bytes += self._flat_offset * H * D * 2 * 2  # K+V, bf16 (used portion)
+            if self._flat_quant == 'q8_0':
+                # int8 data (1 byte) + bf16 scales per token (2 bytes), K+V
+                head_dim = D  # D is head_dim for Q8_0
+                total_bytes += self._flat_offset * H * (head_dim * 1 + 1 * 2) * 2
+            elif self._flat_quant == 'q4_0':
+                # D is head_dim//2 for Q4_0 (nibble-packed)
+                half_dim = D
+                head_dim = half_dim * 2
+                G = self._q4_group_size
+                # uint8 packed (0.5 byte/val) + bf16 scales per group (2 bytes * head_dim/G), K+V
+                total_bytes += self._flat_offset * H * (half_dim * 1 + (head_dim // G) * 2) * 2
+            else:
+                head_dim = D
+                total_bytes += self._flat_offset * H * head_dim * 2 * 2  # K+V, bf16
             return total_bytes
 
         # Recent layer (fp32/fp16)
@@ -1020,15 +1198,13 @@ class TripleLayerKVCache(_BaseCache):
         """
         B, n_heads, cache_len, head_dim = keys.shape
         alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
-        self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-        self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-        self._flat_keys[..., :cache_len, :] = keys
-        self._flat_values[..., :cache_len, :] = values
+        self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
+        self._write_flat(0, cache_len, keys, values)
         self._flat_offset = cache_len
         self._flat_mode = True
         self.recent_keys = None
         self.recent_values = None
-        mx.eval(self._flat_keys, self._flat_values)
+        self._eval_flat_buffer()
 
     def _scored_compress_prefix(
         self,
@@ -1098,16 +1274,13 @@ class TripleLayerKVCache(_BaseCache):
                   f"({n_full_chunks} chunks scored)")
 
         alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
-        self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-        self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
+        self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
         # Direct gather into flat buffer: [hot_important | recent]
-        self._flat_keys[..., :n_hot_tokens, :] = old_keys[:, :, global_idx, :]
-        self._flat_values[..., :n_hot_tokens, :] = old_values[:, :, global_idx, :]
-        self._flat_keys[..., n_hot_tokens:cache_len, :] = recent_k
-        self._flat_values[..., n_hot_tokens:cache_len, :] = recent_v
+        self._write_flat(0, n_hot_tokens, old_keys[:, :, global_idx, :], old_values[:, :, global_idx, :])
+        self._write_flat(n_hot_tokens, cache_len, recent_k, recent_v)
         self._flat_offset = cache_len
         self._flat_mode = True
-        mx.eval(self._flat_keys, self._flat_values)
+        self._eval_flat_buffer()
 
     def _dequant_scored_chunks(
         self,

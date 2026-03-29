@@ -29,6 +29,8 @@ def make_prompt_cache(
     kv_compression_ratio: Optional[float] = None,
     kv_warm_quantizer: Optional[str] = None,
     kv_warm_bits: int = 4,
+    kv_flat_quant: Optional[str] = None,
+    kv_scored_max_cache: int = 2048,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -56,6 +58,10 @@ def make_prompt_cache(
         kv_warm_quantizer (Optional[str]): Warm layer quantizer override.
             One of "q4_0", "polarquant", "noop". Overrides strategy default.
         kv_warm_bits (int): Bits for PolarQuant (2, 3, or 4). Default: 4.
+        kv_flat_quant (Optional[str]): Flat buffer quantization. None for bf16,
+            "q8_0" for int8+scales (~50% KV memory savings). Default: None.
+        kv_scored_max_cache (int): Maximum tokens in scored_pq flat buffer.
+            Default: 2048.
     """
     if hasattr(model, "make_cache"):
         return model.make_cache()
@@ -74,6 +80,10 @@ def make_prompt_cache(
             kwargs["warm_quantizer"] = kv_warm_quantizer
         if kv_warm_bits != 4:
             kwargs["warm_bits"] = kv_warm_bits
+        if kv_flat_quant is not None:
+            kwargs["flat_quant"] = kv_flat_quant
+        if kv_scored_max_cache != 2048:
+            kwargs["scored_max_cache"] = kv_scored_max_cache
         return make_optimized_cache(model, **kwargs)
 
     num_layers = len(model.layers)

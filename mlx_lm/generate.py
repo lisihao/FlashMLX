@@ -322,6 +322,8 @@ def generate_step(
     kv_compression_ratio: Optional[float] = None,
     kv_warm_quantizer: Optional[str] = None,
     kv_warm_bits: int = 4,
+    kv_flat_quant: Optional[str] = None,
+    kv_scored_max_cache: int = 2048,
 ) -> Generator[Tuple[mx.array, mx.array], None, None]:
     """
     A generator producing token ids based on the given prompt from the model.
@@ -388,6 +390,8 @@ def generate_step(
             kv_compression_ratio=kv_compression_ratio,
             kv_warm_quantizer=kv_warm_quantizer,
             kv_warm_bits=kv_warm_bits,
+            kv_flat_quant=kv_flat_quant,
+            kv_scored_max_cache=kv_scored_max_cache,
         )
     else:
         prompt_cache = materialize_prompt_cache(prompt_cache)

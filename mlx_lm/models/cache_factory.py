@@ -93,6 +93,8 @@ def make_optimized_cache(
     max_kv_size: Optional[int] = None,
     warm_quantizer: Optional[str] = None,
     warm_bits: int = 4,
+    flat_quant: Optional[str] = None,
+    scored_max_cache: int = 2048,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -109,6 +111,10 @@ def make_optimized_cache(
         warm_quantizer: Warm layer quantizer name ("q4_0", "polarquant", "noop").
                        None = strategy default. Overrides strategy-implied quantizer.
         warm_bits: Bits for PolarQuant (2, 3, or 4). Default: 4.
+        flat_quant: Flat buffer quantization: None (bf16) or "q8_0" (int8 + scales).
+                   Reduces steady-state KV memory by ~50%. Dequantizes on every TG step.
+        scored_max_cache: Maximum tokens retained in flat buffer during scored_pq
+                         chunked prefill eviction. Default: 2048.
 
     Returns:
         List of cache objects, one per layer.
@@ -183,6 +189,7 @@ def make_optimized_cache(
         compression_ratio=compression_ratio,
         warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
         scored_mode=is_scored,
+        flat_quant=flat_quant,
     )
     if is_scored:
         # P2 Scored: skip all warm quantization during prefill.
@@ -194,7 +201,7 @@ def make_optimized_cache(
             cache_kwargs["compression_ratio"] = ADAPTIVE_RATIO  # 0 = adaptive
         # Chunked prefill eviction: bound PP memory by AM scoring during prefill
         cache_kwargs["scored_prefill_chunk_evict"] = True
-        cache_kwargs["scored_prefill_max_cache"] = 4096
+        cache_kwargs["scored_prefill_max_cache"] = scored_max_cache
     if quantizer_obj is not None:
         cache_kwargs["warm_quantizer"] = quantizer_obj
 
