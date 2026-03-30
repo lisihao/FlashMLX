@@ -2710,3 +2710,86 @@ class OffloadContext:
             self.prefetch_engine.stop()
         if self.loader:
             self.loader.close()
+
+
+# ============================================================================
+# FlashBatchGenerator — BatchGenerator + Expert Offloading Integration (A2)
+# ============================================================================
+
+
+class FlashBatchGenerator:
+    """Wrapper around mlx_lm.generate.BatchGenerator with expert offloading.
+
+    Integrates:
+      - Auto-compact after first prefill (PP→TG transition)
+      - A4 dynamic pruning (k-reduction based on entropy)
+      - Pool maintenance between decode steps (A3 pipeline)
+      - Memory-adaptive pool management (A5)
+
+    Usage:
+        ctx = patch_model_for_offload(model, path, ...)
+        gen = FlashBatchGenerator(model, ctx, max_tokens=128, completion_batch_size=4)
+        uids = gen.insert([prompt1, prompt2, ...])
+        while True:
+            responses = gen.next()
+            if not responses:
+                break
+            for r in responses:
+                print(r.token, r.finish_reason)
+    """
+
+    def __init__(self, model, ctx: OffloadContext, **batch_kwargs):
+        from mlx_lm.generate import BatchGenerator
+        self._gen = BatchGenerator(model, **batch_kwargs)
+        self._ctx = ctx
+        self._model = model
+        self._compacted = False
+        self._step_count = 0
+        self._maintenance_interval = 8
+        self._k_adjust_interval = 64
+
+    def insert(self, prompts, **kwargs):
+        """Insert prompts for generation. Returns list of UIDs."""
+        return self._gen.insert(prompts, **kwargs)
+
+    def remove(self, uids, **kwargs):
+        """Remove active requests by UID."""
+        return self._gen.remove(uids, **kwargs)
+
+    def next(self):
+        """Process one step. Auto-compacts after first prefill."""
+        responses = self._gen.next()
+
+        # Auto-compact after first prefill creates the active batch
+        if not self._compacted and self._gen.active_batch is not None:
+            self._ctx.compact()
+            self._ctx.enable_dynamic_pruning(self._model)
+            self._ctx.adjust_effective_k(self._model)
+            self._compacted = True
+            gc.collect()
+            mx.clear_cache()
+
+        # Periodic maintenance (CPU-side, runs between decode steps)
+        self._step_count += 1
+        if self._step_count % self._maintenance_interval == 0:
+            self._ctx.run_maintenance(self._model)
+        if self._step_count % self._k_adjust_interval == 0:
+            self._ctx.adjust_effective_k(self._model)
+
+        return responses
+
+    def stats(self):
+        """Get batch generation statistics."""
+        return self._gen.stats()
+
+    def close(self):
+        """Clean shutdown."""
+        self._gen.close()
+
+    @property
+    def active_batch(self):
+        return self._gen.active_batch
+
+    @property
+    def unprocessed_prompts(self):
+        return self._gen.unprocessed_prompts
