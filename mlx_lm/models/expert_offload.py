@@ -1351,6 +1351,71 @@ class FlashMoeSwitchGLU(nn.Module):
         return swapped
 
     # ------------------------------------------------------------------
+    # A5: Memory-adaptive pool shrinking
+    # ------------------------------------------------------------------
+
+    def shrink_pool(self, evict_count: int) -> int:
+        """Shrink pool by evicting coldest experts to CPU cache.
+
+        Used for memory-adaptive pool management: when GPU memory is tight
+        (e.g., KV cache growing during long generation), shrink pool to free
+        GPU memory while keeping evicted experts accessible via CPU cache.
+
+        Returns number of experts actually evicted.
+        """
+        if self._pool is None or not self._pool_expert_ids:
+            return 0
+        pool_size = len(self._pool_expert_ids)
+        min_pool = max(32, pool_size // 4)  # Never shrink below 25% or 32
+        max_evict = pool_size - min_pool
+        evict_count = min(evict_count, max_evict)
+        if evict_count <= 0:
+            return 0
+
+        # Find coldest experts via telemetry
+        cold = self._telemetry.get_cold_experts(
+            self._layer_idx, self._pool_expert_ids,
+            keep_min=min_pool,
+        )
+        to_evict = cold[:evict_count]
+        if not to_evict:
+            return 0
+
+        evict_set = set(to_evict)
+
+        # Demote to CPU cache
+        if self._cpu_cache:
+            for eid in to_evict:
+                slot = int(self._pool_remap_np[eid])
+                np_data = {}
+                for comp, tensor in self._pool.items():
+                    slice_data = tensor[slot:slot + 1]
+                    if slice_data.dtype == mx.bfloat16:
+                        np_data[comp] = np.array(slice_data.view(mx.uint16))
+                    else:
+                        np_data[comp] = np.array(slice_data)
+                self._cpu_cache.put(self._layer_idx, eid, np_data)
+
+        # Rebuild pool without evicted experts
+        keep_ids = [eid for eid in self._pool_expert_ids if eid not in evict_set]
+        keep_slots = [int(self._pool_remap_np[eid]) for eid in keep_ids]
+        idx = mx.array(keep_slots)
+        new_pool = {}
+        for comp, tensor in self._pool.items():
+            new_pool[comp] = tensor[idx]
+
+        self._pool = new_pool
+        self._pool_expert_ids = keep_ids
+        K = len(keep_ids)
+        self._pool_remap_np = np.full(self.num_experts, K - 1, dtype=np.int32)
+        for i, eid in enumerate(keep_ids):
+            self._pool_remap_np[eid] = i
+        self._pool_remap = mx.array(self._pool_remap_np)
+        self._pool_is_identity = False
+
+        return len(to_evict)
+
+    # ------------------------------------------------------------------
     # Dynamic pool maintenance: promote/evict between tokens
     # ------------------------------------------------------------------
 
@@ -2340,6 +2405,76 @@ class OffloadContext:
                 self.request_prefetch_for_predictions(model)
 
         return _pipeline
+
+    def release_memory(self, target_mb: float, model=None) -> float:
+        """Release GPU memory by shrinking expert pools across all layers.
+
+        Evicts cold experts from GPU pool to CPU cache, freeing GPU memory
+        for KV cache or other uses. Experts remain accessible via CPU cache
+        (~6us UMA access) instead of GPU pool (~0us).
+
+        Args:
+            target_mb: Target MB to free. Will evict as many experts as needed.
+            model: Model instance. Uses self._model if not provided.
+
+        Returns:
+            Approximate MB actually freed.
+        """
+        model = model or self._model
+        if model is None:
+            return 0.0
+
+        inner = model
+        if hasattr(model, "model"):
+            inner = model.model
+        if hasattr(inner, "model"):
+            inner = inner.model
+        if hasattr(inner, "language_model"):
+            inner = inner.language_model
+        if hasattr(inner, "model"):
+            inner = inner.model
+
+        # Estimate expert size from first pool
+        expert_bytes = 1_700_000  # 1.69 MB fallback
+        for layer in inner.layers:
+            if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+                switch = layer.mlp.switch_mlp
+                if isinstance(switch, FlashMoeSwitchGLU) and switch._pool:
+                    expert_bytes = sum(
+                        t.nbytes // t.shape[0] for t in switch._pool.values()
+                    )
+                    break
+
+        # Calculate how many experts to evict per layer
+        target_bytes = target_mb * 1024 * 1024
+        num_moe_layers = sum(
+            1 for layer in inner.layers
+            if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
+            and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)
+        )
+        if num_moe_layers == 0:
+            return 0.0
+
+        evict_per_layer = max(1, int(target_bytes / expert_bytes / num_moe_layers))
+        total_evicted = 0
+
+        for layer in inner.layers:
+            if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+                switch = layer.mlp.switch_mlp
+                if isinstance(switch, FlashMoeSwitchGLU) and switch._pool is not None:
+                    evicted = switch.shrink_pool(evict_per_layer)
+                    total_evicted += evicted
+
+        freed_mb = total_evicted * expert_bytes / (1024 * 1024)
+        if total_evicted > 0:
+            mx.eval([switch._pool for layer in inner.layers
+                     if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
+                     and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)
+                     and (switch := layer.mlp.switch_mlp)._pool is not None])
+            gc.collect()
+            print(f"[A5] Released ~{freed_mb:.0f} MB: evicted {total_evicted} experts "
+                  f"({evict_per_layer}/layer × {num_moe_layers} layers)")
+        return freed_mb
 
     def request_prefetch_for_predictions(self, model):
         """Use telemetry to predict and prefetch experts across all layers."""
