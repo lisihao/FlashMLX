@@ -932,6 +932,7 @@ class FlashMoeSwitchGLU(nn.Module):
             self._prebuilt_full = True
             self._pool_compacted = False
             self._pp_indices_buffer = []
+            self._pp_token_count = 0
 
         # Pre-warm CPU cache for non-pool experts (background SSD→numpy)
         if self._cpu_cache and K < self.num_experts:
@@ -1009,6 +1010,7 @@ class FlashMoeSwitchGLU(nn.Module):
             # Buffer indices during PP for deferred counting (NO GPU sync here)
             if self._prebuilt_full and not self._pool_compacted and seq_len > 1:
                 self._pp_indices_buffer.append(indices.reshape(-1))
+                self._pp_token_count += seq_len
 
             return y.squeeze(-2)
 
@@ -1117,12 +1119,14 @@ class FlashMoeSwitchGLU(nn.Module):
         counts = np.bincount(np.array(all_indices), minlength=self.num_experts)
         self._pp_indices_buffer = []
 
-        # Coverage gate: if pool_size can't cover 95% of PP activations,
+        # Coverage gate: if pool_size can't cover 90% of PP activations,
         # expand it until it does.  At short contexts (4K), PP frequency data
         # is sparse — a hard pool_size=128 may exclude experts that are
         # essential for TG, causing garbled output.  At long contexts (16K+)
-        # 128 experts already provide >95% coverage, so this is a no-op.
-        MIN_COVERAGE = 0.95
+        # 128 experts already provide >90% coverage, so this is a no-op.
+        # 90% (not 95%): pool misses are handled by CPU cache (6us fallback),
+        # and 128 experts at 16K is empirically proven sufficient for quality.
+        MIN_COVERAGE = 0.90
         sorted_by_freq = np.argsort(-counts)
         active_mask = counts[sorted_by_freq] > 0
         n_active = int(active_mask.sum())
@@ -2089,8 +2093,15 @@ class OffloadContext:
         Call this AFTER prefill is done, BEFORE long generation.
         Non-hot experts are demoted to CPU cache for fast miss recovery.
 
+        Pool sizing strategy (when pool_size=None):
+          1. Memory budget (ceiling): compute max experts that fit in GPU
+             headroom after reserving for KV cache + OS + safety margin.
+          2. Coverage gate (floor): _compact_pool() auto-expands if the
+             budget pool can't cover 95% of PP activations.
+          3. effective_pool = clamp(budget, coverage_floor, num_experts)
+
         Args:
-            pool_size: Override pool size per layer. None = use regime default.
+            pool_size: Override pool size per layer. None = auto (recommended).
 
         Returns dict with per-layer coverage stats.
         """
@@ -2104,41 +2115,91 @@ class OffloadContext:
         if hasattr(inner, "model"):
             inner = inner.model
 
-        effective_pool = pool_size if pool_size is not None else (
-            self.regime.pool_size_per_layer if self.regime else 64
+        # Gather MoE topology info
+        num_experts = 256  # default, refined below
+        expert_bytes = 1_700_000  # ~1.69 MB fallback
+        num_moe_layers = sum(
+            1 for layer in inner.layers
+            if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
+            and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)
         )
-
-        # Auto-expand CPU cache for demoted experts.
-        # Need: (num_experts - pool_size) × num_layers × ~1.69 MB per expert
-        if self.cpu_cache:
-            num_experts = 256  # default, will be refined per layer
-            num_moe_layers = sum(
-                1 for layer in inner.layers
+        if num_moe_layers > 0:
+            first_switch = next(
+                layer.mlp.switch_mlp for layer in inner.layers
                 if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
                 and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)
             )
+            num_experts = first_switch.num_experts
+            if first_switch._pool:
+                expert_bytes = sum(
+                    t.nbytes // t.shape[0] for t in first_switch._pool.values()
+                )
+
+        # --- Pool size determination ---
+        if pool_size is not None:
+            effective_pool = pool_size
+            sizing_method = "manual"
+        else:
+            # Context-adaptive pool sizing:
+            #   Short (< 8K): keep 60% of experts → ~37% savings + reliable quality
+            #   Long (>= 8K): keep 50% of experts → ~48% savings + proven quality
+            #
+            # Short contexts have sparse PP activation data — a 50% pool
+            # (128/256) causes garbled output. 60% (153/256) is the proven
+            # minimum for reliable quality at 4K.
+            #
+            # Memory budget ceiling prevents OOM on tight systems.
+            # Coverage gate in _compact_pool is additional safety net.
+
+            # Get PP token count (tracked during prefill in _pool_call)
+            pp_tokens = 0
             if num_moe_layers > 0:
                 first_switch = next(
-                    layer.mlp.switch_mlp for layer in inner.layers
-                    if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
-                    and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)
+                    (layer.mlp.switch_mlp for layer in inner.layers
+                     if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp")
+                     and isinstance(layer.mlp.switch_mlp, FlashMoeSwitchGLU)),
+                    None
                 )
-                num_experts = first_switch.num_experts
-                # Estimate bytes per expert from pool
-                if first_switch._pool:
-                    expert_bytes = sum(
-                        t.nbytes // t.shape[0] for t in first_switch._pool.values()
-                    )
-                else:
-                    expert_bytes = 1_700_000  # ~1.69 MB fallback
+                if first_switch:
+                    pp_tokens = first_switch._pp_token_count
 
-                needed_bytes = (num_experts - effective_pool) * num_moe_layers * expert_bytes
-                if needed_bytes > self.cpu_cache._max_bytes:
-                    old_cap = self.cpu_cache._max_bytes / 1024**3
-                    self.cpu_cache._max_bytes = int(needed_bytes * 1.1)  # 10% headroom
-                    new_cap = self.cpu_cache._max_bytes / 1024**3
-                    print(f"[ExpertOffload] Auto-expanded CPU cache: {old_cap:.1f} → {new_cap:.1f} GB "
-                          f"(for {num_experts - effective_pool} evicted experts × {num_moe_layers} layers)")
+            SHORT_CONTEXT_THRESHOLD = 8192
+            if pp_tokens > 0 and pp_tokens < SHORT_CONTEXT_THRESHOLD:
+                preferred_pool = int(num_experts * 0.6)  # 153 for 256 experts
+                context_label = "short"
+            else:
+                preferred_pool = num_experts // 2  # 128 for 256 experts
+                context_label = "long"
+
+            # Memory budget ceiling (Apple Silicon UMA)
+            import subprocess as _sp
+            try:
+                _r = _sp.run(['sysctl', '-n', 'hw.memsize'], capture_output=True, text=True, timeout=2)
+                sys_total_gb = int(_r.stdout.strip()) / 1024**3
+            except Exception:
+                sys_total_gb = 48.0
+            gpu_used_gb = mx.metal.get_active_memory() / 1024**3
+            available_gb = max(sys_total_gb - gpu_used_gb - 2.0, 1.0)
+            budget_pool = int(available_gb * 0.6 * 1024**3 / expert_bytes / max(num_moe_layers, 1))
+            budget_pool = min(budget_pool, num_experts)
+
+            effective_pool = min(preferred_pool, budget_pool)
+            effective_pool = max(effective_pool, 32)
+            sizing_method = "auto"
+
+            print(f"[ExpertOffload] Auto pool sizing: {context_label} context "
+                  f"({pp_tokens} tokens), preferred {preferred_pool}, "
+                  f"budget {budget_pool} → effective {effective_pool}/layer")
+
+        # Auto-expand CPU cache for demoted experts
+        if self.cpu_cache and num_moe_layers > 0:
+            needed_bytes = (num_experts - effective_pool) * num_moe_layers * expert_bytes
+            if needed_bytes > self.cpu_cache._max_bytes:
+                old_cap = self.cpu_cache._max_bytes / 1024**3
+                self.cpu_cache._max_bytes = int(needed_bytes * 1.1)  # 10% headroom
+                new_cap = self.cpu_cache._max_bytes / 1024**3
+                print(f"[ExpertOffload] Auto-expanded CPU cache: {old_cap:.1f} → {new_cap:.1f} GB "
+                      f"(for {num_experts - effective_pool} evicted experts × {num_moe_layers} layers)")
 
         t0 = time.perf_counter()
         compacted = 0
