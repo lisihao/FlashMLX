@@ -316,6 +316,11 @@ class Qwen3NextSparseMoeBlock(nn.Module):
         self.num_experts = num_experts = args.num_experts
         self.top_k = args.num_experts_per_tok
 
+        # Dynamic pruning (A4): effective_top_k can be reduced during stable generation
+        self._gate_pruning_enabled = False
+        self._effective_top_k = args.num_experts_per_tok
+        self._min_top_k = max(args.num_experts_per_tok // 2, 2)
+
         self.gate = nn.Linear(dim, num_experts, bias=False)
         self.switch_mlp = SwitchGLU(dim, intermediate_size, num_experts)
 
@@ -334,7 +339,7 @@ class Qwen3NextSparseMoeBlock(nn.Module):
         gates = self.gate(x)
         gates = mx.softmax(gates, axis=-1, precise=True)
 
-        k = self.top_k
+        k = self._effective_top_k if self._gate_pruning_enabled else self.top_k
         inds = mx.argpartition(gates, kth=-k, axis=-1)[..., -k:]
         scores = mx.take_along_axis(gates, inds, axis=-1)
         if self.norm_topk_prob:

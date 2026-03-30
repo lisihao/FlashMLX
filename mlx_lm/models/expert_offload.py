@@ -417,6 +417,39 @@ class ExpertTelemetry:
         total = self._pool_hits[layer_idx] + self._pool_misses[layer_idx]
         return float(self._pool_hits[layer_idx]) / total if total > 0 else 1.0
 
+    def compute_activation_drift(self, layer_idx: int, pool_expert_ids: List[int]) -> float:
+        """Compute how much recent activations diverge from pool composition.
+
+        Returns 0.0 (perfect alignment) to 1.0 (complete mismatch).
+        Uses window_freq (recent window) vs pool expert set.
+        """
+        recent = self._window_freq[layer_idx].astype(np.float32)
+        total = recent.sum()
+        if total == 0:
+            return 0.0
+        recent_norm = recent / total
+        pool_set = set(pool_expert_ids)
+        outside_mass = 0.0
+        for eid in range(self.num_experts):
+            if eid not in pool_set and recent_norm[eid] > 0:
+                outside_mass += recent_norm[eid]
+        return float(outside_mass)
+
+    def get_activation_entropy(self, layer_idx: int) -> float:
+        """Normalized entropy of recent activation distribution (0=single expert, 1=uniform).
+
+        Low entropy = stable pattern (few experts dominate) → candidate for pool shrinking.
+        High entropy = diverse pattern (many experts active) → keep pool large.
+        """
+        w = self._window_freq[layer_idx]
+        nonzero = w[w > 0]
+        if len(nonzero) == 0:
+            return 0.0
+        p = nonzero.astype(np.float64) / nonzero.sum()
+        entropy = float(-np.sum(p * np.log2(p)))
+        max_entropy = np.log2(self.num_experts)
+        return entropy / max_entropy if max_entropy > 0 else 0.0
+
     def get_overall_hit_rate(self) -> float:
         """Get overall pool hit rate across all layers."""
         total_hits = int(self._pool_hits.sum())
@@ -750,6 +783,13 @@ class FlashMoeSwitchGLU(nn.Module):
         self._prebuilt_full: bool = False  # True = full pool prebuilt for PP
         self._pool_compacted: bool = False  # True = pool already compacted for TG
         self._pp_indices_buffer: List[mx.array] = []  # buffered indices during PP (no GPU sync)
+
+        # === Dynamic pruning state (A4) ===
+        self._enable_recompaction: bool = False
+        self._recompact_interval: int = 256  # tokens between re-compaction checks
+        self._last_recompact_token: int = 0
+        self._recompact_count: int = 0
+        self._max_recompactions: int = 5  # max per generation run
 
     # ------------------------------------------------------------------
     # Discovery phase: slow path with .tolist() + tiered loading
@@ -1198,6 +1238,119 @@ class FlashMoeSwitchGLU(nn.Module):
         return coverage, effective_pool
 
     # ------------------------------------------------------------------
+    # Dynamic re-compaction: bulk pool reshuffling during long TG runs
+    # ------------------------------------------------------------------
+
+    def recompact_pool(self) -> int:
+        """Re-compact pool during TG using accumulated telemetry.
+
+        Unlike _compact_pool() which uses PP indices, this uses TG telemetry
+        (frequency + recency scores) to identify the optimal hot set.
+
+        Returns number of experts swapped.
+        """
+        if self._pool is None or not self._pool_expert_ids:
+            return 0
+
+        pool_size = len(self._pool_expert_ids)
+
+        # Use telemetry to predict the top pool_size hot experts
+        hot = self._telemetry.predict_hot_experts(
+            self._layer_idx, top_k=pool_size, exclude=None
+        )
+        if len(hot) < pool_size:
+            hot = hot + [e for e in self._pool_expert_ids if e not in hot]
+            hot = hot[:pool_size]
+
+        current_set = set(self._pool_expert_ids)
+        new_set = set(hot[:pool_size])
+
+        to_evict = list(current_set - new_set)
+        to_promote = list(new_set - current_set)
+
+        if len(to_evict) < 4:
+            return 0  # Not worth the overhead
+
+        # Cap swaps per re-compaction to limit overhead
+        max_swaps = min(len(to_evict), len(to_promote), 16)
+        to_evict = to_evict[:max_swaps]
+        to_promote = to_promote[:max_swaps]
+
+        # Demote evicted experts to CPU cache
+        pool_set = set(self._pool_expert_ids)
+        if self._cpu_cache:
+            for eid in to_evict:
+                if eid in pool_set:
+                    slot = self._pool_remap_np[eid]
+                    np_data = {}
+                    for comp, tensor in self._pool.items():
+                        slice_data = tensor[slot:slot+1]
+                        if slice_data.dtype == mx.bfloat16:
+                            np_data[comp] = np.array(slice_data.view(mx.uint16))
+                        else:
+                            np_data[comp] = np.array(slice_data)
+                    self._cpu_cache.put(self._layer_idx, eid, np_data)
+
+        # Load promoted experts from CPU cache or SSD
+        new_expert_data = {}
+        for eid in to_promote:
+            if self._cpu_cache and self._cpu_cache.contains(self._layer_idx, eid):
+                np_data = self._cpu_cache.get(self._layer_idx, eid)
+                if np_data is not None:
+                    mx_data = {}
+                    for comp, arr in np_data.items():
+                        mx_arr = mx.array(arr)
+                        if self._dtype_map.get(comp) == "BF16":
+                            mx_arr = mx_arr.view(mx.bfloat16)
+                        mx_data[comp] = mx_arr
+                    new_expert_data[eid] = mx_data
+            else:
+                ssd_data = self._loader.load_experts(self._layer_idx, [eid])
+                new_expert_data[eid] = {comp: data[0:1] for comp, data in ssd_data.items()}
+                if self._cpu_cache:
+                    np_data = {}
+                    for comp, data in ssd_data.items():
+                        s = data[0:1]
+                        if s.dtype == mx.bfloat16:
+                            np_data[comp] = np.array(s.view(mx.uint16))
+                        else:
+                            np_data[comp] = np.array(s)
+                    self._cpu_cache.put(self._layer_idx, eid, np_data)
+
+        if not new_expert_data:
+            return 0
+
+        # In-place slot swap (same pattern as maintain_pool)
+        freed_slots = [self._pool_remap_np[eid] for eid in to_evict]
+        new_pool_ids = list(self._pool_expert_ids)
+
+        swapped = 0
+        for i, eid in enumerate(new_expert_data):
+            if i < len(freed_slots):
+                slot = int(freed_slots[i])
+                for comp in self._pool:
+                    data = new_expert_data[eid][comp]
+                    if data.ndim == len(self._pool[comp].shape) - 1:
+                        data = data[np.newaxis]
+                    self._pool[comp][slot:slot+1] = data
+                new_pool_ids[slot] = eid
+                swapped += 1
+
+        mx.eval(self._pool)
+
+        # Rebuild remap table
+        self._pool_expert_ids = new_pool_ids
+        K = len(new_pool_ids)
+        self._pool_remap_np = np.full(self.num_experts, K - 1, dtype=np.int32)
+        for i, eid in enumerate(new_pool_ids):
+            self._pool_remap_np[eid] = i
+        self._pool_remap = mx.array(self._pool_remap_np)
+        self._pool_is_identity = False
+
+        self._recompact_count += 1
+        return swapped
+
+    # ------------------------------------------------------------------
     # Dynamic pool maintenance: promote/evict between tokens
     # ------------------------------------------------------------------
 
@@ -1217,6 +1370,21 @@ class FlashMoeSwitchGLU(nn.Module):
             return
         if not force and self._generation_token_count % 8 != 0:
             return  # Only maintain every 8 tokens to amortize overhead
+
+        # === Re-compaction check (every _recompact_interval tokens) ===
+        if (self._enable_recompaction
+            and self._recompact_count < self._max_recompactions
+            and self._generation_token_count - self._last_recompact_token
+                >= self._recompact_interval):
+            drift = self._telemetry.compute_activation_drift(
+                self._layer_idx, self._pool_expert_ids
+            )
+            hit_rate = self._telemetry.get_pool_hit_rate(self._layer_idx)
+            if drift > 0.15 and hit_rate < 0.95:
+                swapped = self.recompact_pool()
+                self._last_recompact_token = self._generation_token_count
+                if swapped > 0:
+                    return  # Skip normal maintenance this cycle
 
         pool_set = set(self._pool_expert_ids)
 
@@ -2049,6 +2217,95 @@ class OffloadContext:
                 switch = layer.mlp.switch_mlp
                 if isinstance(switch, FlashMoeSwitchGLU):
                     switch.maintain_pool()
+
+    def enable_dynamic_pruning(self, model,
+                               recompact: bool = True,
+                               gate_prune: bool = True,
+                               recompact_interval: int = 256):
+        """Enable A4 dynamic pruning on all MoE layers.
+
+        Args:
+            model: The model to enable pruning on
+            recompact: Enable periodic re-compaction based on activation drift
+            gate_prune: Enable adaptive expert count reduction (k-reduction)
+            recompact_interval: Tokens between re-compaction drift checks
+        """
+        inner = model
+        if hasattr(model, "model"):
+            inner = model.model
+        if hasattr(inner, "model"):
+            inner = inner.model
+        if hasattr(inner, "language_model"):
+            inner = inner.language_model
+        if hasattr(inner, "model"):
+            inner = inner.model
+
+        enabled_recompact = 0
+        enabled_gate = 0
+
+        for layer in inner.layers:
+            if not hasattr(layer, "mlp"):
+                continue
+
+            # Enable re-compaction on FlashMoeSwitchGLU
+            if recompact and hasattr(layer.mlp, "switch_mlp"):
+                switch = layer.mlp.switch_mlp
+                if isinstance(switch, FlashMoeSwitchGLU):
+                    switch._enable_recompaction = True
+                    switch._recompact_interval = recompact_interval
+                    enabled_recompact += 1
+
+            # Enable gate pruning on MoE blocks
+            if gate_prune and hasattr(layer.mlp, "_gate_pruning_enabled"):
+                layer.mlp._gate_pruning_enabled = True
+                enabled_gate += 1
+
+        print(f"[A4] Dynamic pruning enabled: "
+              f"recompact={enabled_recompact} layers, "
+              f"gate_prune={enabled_gate} layers")
+
+    def adjust_effective_k(self, model):
+        """Adjust effective_top_k based on activation entropy.
+
+        Call periodically during long generation to adapt expert count.
+        Low entropy (stable) → reduce k; High entropy (diverse) → restore k.
+        """
+        if not self.telemetry:
+            return
+
+        inner = model
+        if hasattr(model, "model"):
+            inner = model.model
+        if hasattr(inner, "model"):
+            inner = inner.model
+        if hasattr(inner, "language_model"):
+            inner = inner.language_model
+        if hasattr(inner, "model"):
+            inner = inner.model
+
+        for layer in inner.layers:
+            if not hasattr(layer, "mlp") or not hasattr(layer.mlp, "_gate_pruning_enabled"):
+                continue
+            if not layer.mlp._gate_pruning_enabled:
+                continue
+
+            # Find corresponding layer_idx from switch_mlp
+            layer_idx = None
+            if hasattr(layer.mlp, "switch_mlp"):
+                switch = layer.mlp.switch_mlp
+                if isinstance(switch, FlashMoeSwitchGLU):
+                    layer_idx = switch._layer_idx
+            if layer_idx is None:
+                continue
+
+            entropy = self.telemetry.get_activation_entropy(layer_idx)
+
+            if entropy < 0.3:  # Very stable: reduce k
+                new_k = max(layer.mlp._min_top_k, layer.mlp.top_k - 2)
+                layer.mlp._effective_top_k = new_k
+            elif entropy > 0.7:  # Unstable: restore full k
+                layer.mlp._effective_top_k = layer.mlp.top_k
+            # Between 0.3-0.7: keep current k (no change)
 
     def request_prefetch_for_predictions(self, model):
         """Use telemetry to predict and prefetch experts across all layers."""
