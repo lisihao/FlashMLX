@@ -247,8 +247,19 @@ def make_optimized_cache(
     # Detect hybrid architecture (SSM + Attention)
     is_hybrid, attn_indices, native_caches = _detect_architecture(model)
 
+    if is_hybrid and is_scored:
+        # Auto-disable scored_pq for hybrid SSM+Attention models.
+        # Benchmark data (Qwen3.5-35B-A3B): scored_pq causes TG -22% to -64%
+        # because scoring overhead on few attention layers outweighs KV savings.
+        # Use expert offloading (Route 1) for MoE memory optimization instead.
+        attn_ratio = len(attn_indices) / num_layers
+        print(f"[CacheFactory] scored_pq auto-disabled for hybrid model "
+              f"({len(attn_indices)}/{num_layers} attention layers, {attn_ratio:.0%}). "
+              f"Use expert offloading for MoE memory optimization.")
+        return native_caches
+
     if is_hybrid:
-        # Hybrid path: SSM layers keep native cache, Attention layers get scored_pq
+        # Hybrid path: SSM layers keep native cache, Attention layers get triple cache
         # native_caches already allocated by _detect_architecture (no double allocation)
         attn_set = set(attn_indices)
         caches = []

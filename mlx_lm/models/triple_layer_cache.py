@@ -173,11 +173,9 @@ class TripleLayerKVCache(_BaseCache):
         # Uses same strategy as Standard KVCache: pre-alloc + slice assignment + view
         self._flat_keys = None
         self._flat_values = None
-        self._dq_keys = None      # Incremental dequant bf16 cache (Q8/Q4 only)
-        self._dq_values = None
         self._flat_mode = False
         self._flat_offset = 0
-        self._flat_step = 2048  # Pre-allocate for typical generation length to avoid mid-TG expansion
+        self._flat_step = 256
         self._needs_cleanup = False  # Deferred cleanup of quantized data
         self._true_offset = 0  # Original token count (before AM), used for RoPE
 
@@ -275,20 +273,14 @@ class TripleLayerKVCache(_BaseCache):
                 new_v = mx.zeros((B, n_heads, n_steps * self._flat_step, head_dim), dtype=self._flat_values.dtype)
                 self._flat_keys = mx.concatenate([self._flat_keys, new_k], axis=2)
                 self._flat_values = mx.concatenate([self._flat_values, new_v], axis=2)
-                if self._flat_quant in ('q8_0', 'q4_0'):
+                if self._flat_quant in ('q8_0', 'q4_0') and self._flat_keys_scales is not None:
                     scale_dim = self._flat_keys_scales.shape[-1]  # 1 for q8_0, D//G for q4_0
                     new_sk = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
                     new_sv = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
                     self._flat_keys_scales = mx.concatenate([self._flat_keys_scales, new_sk], axis=2)
                     self._flat_values_scales = mx.concatenate([self._flat_values_scales, new_sv], axis=2)
-                    # Sync-expand dequant cache
-                    dq_head_dim = self._dq_keys.shape[-1]
-                    new_dqk = mx.zeros((B, n_heads, n_steps * self._flat_step, dq_head_dim), dtype=mx.bfloat16)
-                    new_dqv = mx.zeros((B, n_heads, n_steps * self._flat_step, dq_head_dim), dtype=mx.bfloat16)
-                    self._dq_keys = mx.concatenate([self._dq_keys, new_dqk], axis=2)
-                    self._dq_values = mx.concatenate([self._dq_values, new_dqv], axis=2)
 
-            # Slice assignment — O(1) for bf16, quantize-on-write for Q8_0
+            # Slice assignment — O(1) for bf16, quantize-on-write for Q8_0 (PP only)
             self._flat_offset += keys.shape[2]
             self._true_offset += keys.shape[2]
             self._write_flat(prev, self._flat_offset, keys, values)
@@ -413,18 +405,12 @@ class TripleLayerKVCache(_BaseCache):
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.int8)
             self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.bfloat16)
             self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.bfloat16)
-            # Incremental dequant: pre-allocated bf16 cache (avoid re-dequant entire buffer per step)
-            self._dq_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-            self._dq_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
         elif self._flat_quant == 'q4_0':
             G = self._q4_group_size
             self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim // 2), dtype=mx.uint8)
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim // 2), dtype=mx.uint8)
             self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
             self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
-            # Incremental dequant: pre-allocated bf16 cache
-            self._dq_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
-            self._dq_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
         else:
             self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
@@ -438,9 +424,6 @@ class TripleLayerKVCache(_BaseCache):
             self._flat_values[..., start:end, :] = qv
             self._flat_keys_scales[..., start:end, :] = sk
             self._flat_values_scales[..., start:end, :] = sv
-            # Incremental dequant: cache bf16 directly (keys/values already bf16)
-            self._dq_keys[..., start:end, :] = keys
-            self._dq_values[..., start:end, :] = values
         elif self._flat_quant == 'q4_0':
             qk, sk = self._q4_quantize(keys)
             qv, sv = self._q4_quantize(values)
@@ -448,25 +431,27 @@ class TripleLayerKVCache(_BaseCache):
             self._flat_values[..., start:end, :] = qv
             self._flat_keys_scales[..., start:end, :] = sk
             self._flat_values_scales[..., start:end, :] = sv
-            # Incremental dequant: cache bf16 directly
-            self._dq_keys[..., start:end, :] = keys
-            self._dq_values[..., start:end, :] = values
         else:
             self._flat_keys[..., start:end, :] = keys
             self._flat_values[..., start:end, :] = values
 
     def _fetch_flat(self, end: int) -> Tuple[mx.array, mx.array]:
-        """Fetch from flat buffer. Q8/Q4: return pre-cached bf16 (incremental dequant)."""
-        if self._flat_quant in ('q8_0', 'q4_0'):
-            return self._dq_keys[..., :end, :], self._dq_values[..., :end, :]
+        """Fetch from flat buffer (dequant Q8/Q4 on every read — keeps TG memory minimal)."""
+        if self._flat_quant == 'q8_0':
+            k = self._flat_keys[..., :end, :].astype(mx.bfloat16) * self._flat_keys_scales[..., :end, :]
+            v = self._flat_values[..., :end, :].astype(mx.bfloat16) * self._flat_values_scales[..., :end, :]
+            return k, v
+        elif self._flat_quant == 'q4_0':
+            k = self._q4_dequantize(self._flat_keys[..., :end, :], self._flat_keys_scales[..., :end, :])
+            v = self._q4_dequantize(self._flat_values[..., :end, :], self._flat_values_scales[..., :end, :])
+            return k, v
         return self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
 
     def _eval_flat_buffer(self):
-        """Evaluate flat buffer arrays (includes scales + dequant cache for Q8_0/Q4_0)."""
+        """Evaluate flat buffer arrays (includes scales for Q8_0/Q4_0)."""
         mx.eval(self._flat_keys, self._flat_values)
         if self._flat_quant in ('q8_0', 'q4_0'):
             mx.eval(self._flat_keys_scales, self._flat_values_scales)
-            mx.eval(self._dq_keys, self._dq_values)
 
     def _update_slow_path(self, keys: mx.array, values: mx.array) -> Tuple[mx.array, mx.array]:
         """Triple-layer path: prefill + first TG token promotion."""
