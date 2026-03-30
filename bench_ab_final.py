@@ -211,8 +211,8 @@ def run_worker_offload(config):
 
     mem_pp = mx.metal.get_active_memory() / 1e6
 
-    # Compact
-    compact_info = ctx.compact(pool_size=COMPACT_POOL_SIZE)
+    # Compact (auto pool sizing: memory budget ceiling + 95% coverage floor)
+    compact_info = ctx.compact()
     gc.collect()
     mx.metal.clear_cache()
     mem_compact = mx.metal.get_active_memory() / 1e6
@@ -325,7 +325,7 @@ def main():
     print(f"  FlashMLX v1.0 Complete Benchmark — Baseline vs Three-Route Optimization")
     print(f"  Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"  Platform: Apple M4 Pro 48GB")
-    print(f"  Route 1: Expert Offloading (MoE: compact pool={COMPACT_POOL_SIZE})")
+    print(f"  Route 1: Expert Offloading (MoE: auto pool sizing)")
     print(f"  Route 2: Chunked Prefill Eviction (scored_pq, auto-enabled)")
     print(f"  Route 3: Scored P2 + Q8 flat buffer")
     print("=" * 120)
