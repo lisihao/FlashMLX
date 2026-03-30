@@ -1108,7 +1108,7 @@ class FlashMoeSwitchGLU(nn.Module):
         """
         if not self._pp_indices_buffer:
             self._pool_compacted = True
-            return 0.0  # no data, nothing compacted
+            return 0.0, 0  # no data, nothing compacted
 
         pool_size = target_pool_size if target_pool_size is not None else self._pool_size
 
@@ -1117,8 +1117,28 @@ class FlashMoeSwitchGLU(nn.Module):
         counts = np.bincount(np.array(all_indices), minlength=self.num_experts)
         self._pp_indices_buffer = []
 
-        # Select top pool_size experts by PP frequency
-        hot_ids = np.argsort(-counts)[:pool_size].tolist()
+        # Coverage gate: if pool_size can't cover 95% of PP activations,
+        # expand it until it does.  At short contexts (4K), PP frequency data
+        # is sparse — a hard pool_size=128 may exclude experts that are
+        # essential for TG, causing garbled output.  At long contexts (16K+)
+        # 128 experts already provide >95% coverage, so this is a no-op.
+        MIN_COVERAGE = 0.95
+        sorted_by_freq = np.argsort(-counts)
+        active_mask = counts[sorted_by_freq] > 0
+        n_active = int(active_mask.sum())
+        effective_pool = pool_size
+
+        if n_active > pool_size:
+            cumsum = np.cumsum(counts[sorted_by_freq[:n_active]])
+            total = cumsum[-1]
+            if total > 0:
+                threshold = int(total * MIN_COVERAGE)
+                min_k = int(np.searchsorted(cumsum, threshold)) + 1
+                if min_k > pool_size:
+                    effective_pool = min(min_k, n_active)
+
+        # Select top effective_pool experts by PP frequency
+        hot_ids = np.argsort(-counts)[:effective_pool].tolist()
         hot_ids.sort()
         hot_set = set(hot_ids)
         K = len(hot_ids)
@@ -1166,7 +1186,12 @@ class FlashMoeSwitchGLU(nn.Module):
         pool_acts = counts[hot_ids].sum()
         coverage = pool_acts / total_acts if total_acts > 0 else 0.0
 
-        return coverage
+        if effective_pool > pool_size:
+            print(f"[ExpertOffload] Layer {self._layer_idx}: coverage gate "
+                  f"expanded pool {pool_size}→{effective_pool} "
+                  f"(95% coverage needs {effective_pool} experts)")
+
+        return coverage, effective_pool
 
     # ------------------------------------------------------------------
     # Dynamic pool maintenance: promote/evict between tokens
@@ -2118,13 +2143,15 @@ class OffloadContext:
         t0 = time.perf_counter()
         compacted = 0
         total_coverage = 0.0
+        max_actual_pool = 0
 
         for layer in inner.layers:
             if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
                 switch = layer.mlp.switch_mlp
                 if isinstance(switch, FlashMoeSwitchGLU) and switch._prebuilt_full:
-                    cov = switch._compact_pool(target_pool_size=effective_pool)
+                    cov, actual_pool = switch._compact_pool(target_pool_size=effective_pool)
                     total_coverage += cov
+                    max_actual_pool = max(max_actual_pool, actual_pool)
                     compacted += 1
 
         # Force eval on compact pools to materialize them and break lazy refs
@@ -2175,12 +2202,15 @@ class OffloadContext:
             cpu_entries = len(self.cpu_cache._cache)
             cpu_info = f", CPU cache: {cpu_gb:.1f} GB ({cpu_entries} entries)"
 
-        print(f"[ExpertOffload] Compacted {compacted} layers to {effective_pool} experts/layer "
+        pool_info = str(effective_pool)
+        if max_actual_pool > effective_pool:
+            pool_info = f"{effective_pool}→{max_actual_pool} (coverage gate)"
+        print(f"[ExpertOffload] Compacted {compacted} layers to {pool_info} experts/layer "
               f"({elapsed_ms:.0f}ms, PP coverage: {avg_cov:.1%}, memory: {mem:.2f} GB{cpu_info})")
 
         return {
             "layers": compacted,
-            "pool_size": effective_pool,
+            "pool_size": max_actual_pool if max_actual_pool > 0 else effective_pool,
             "pp_coverage": avg_cov,
             "memory_gb": mem,
             "elapsed_ms": elapsed_ms,
