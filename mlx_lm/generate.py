@@ -324,6 +324,7 @@ def generate_step(
     kv_warm_bits: int = 4,
     kv_flat_quant: Optional[str] = None,
     kv_scored_max_cache: int = 2048,
+    between_token_fn: Optional[Callable[[int], None]] = None,
 ) -> Generator[Tuple[mx.array, mx.array], None, None]:
     """
     A generator producing token ids based on the given prompt from the model.
@@ -485,6 +486,9 @@ def generate_step(
             prompt_progress_callback(total_prompt_tokens, total_prompt_tokens)
         if n == max_tokens:
             break
+        # Pipeline callback: CPU maintenance while GPU computes next token
+        if between_token_fn is not None and n > 0:
+            between_token_fn(n)
         yield y.item(), logprobs
         if n % 256 == 0:
             mx.clear_cache()

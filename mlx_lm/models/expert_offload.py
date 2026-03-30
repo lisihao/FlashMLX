@@ -2307,6 +2307,40 @@ class OffloadContext:
                 layer.mlp._effective_top_k = layer.mlp.top_k
             # Between 0.3-0.7: keep current k (no change)
 
+    def create_pipeline_fn(
+        self,
+        model,
+        maintenance_interval: int = 8,
+        k_adjust_interval: int = 64,
+        prefetch_interval: int = 32,
+    ):
+        """Create a between-token callback for generate_step pipeline integration.
+
+        Returns a callable(n: int) that runs CPU-side maintenance while the GPU
+        computes the next token. This fills the CPU idle window between
+        async_eval(next_token) and yield(current_token).
+
+        Maintenance work (all CPU-side, no GPU stall):
+          - Pool maintenance: promote hot experts, evict cold (every maintenance_interval)
+          - k-adjustment: adapt effective_top_k via entropy (every k_adjust_interval)
+          - Prefetch scheduling: queue SSD→CPU loads for predicted experts (every prefetch_interval)
+
+        Args:
+            model: The model being used for generation
+            maintenance_interval: Run pool maintenance every N tokens (default 8)
+            k_adjust_interval: Adjust effective_k every N tokens (default 64)
+            prefetch_interval: Schedule prefetch every N tokens (default 32)
+        """
+        def _pipeline(n: int):
+            if n % maintenance_interval == 0:
+                self.run_maintenance(model)
+            if n % k_adjust_interval == 0:
+                self.adjust_effective_k(model)
+            if n % prefetch_interval == 0:
+                self.request_prefetch_for_predictions(model)
+
+        return _pipeline
+
     def request_prefetch_for_predictions(self, model):
         """Use telemetry to predict and prefetch experts across all layers."""
         if not self.prefetch_engine or not self.telemetry:
