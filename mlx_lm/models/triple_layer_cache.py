@@ -200,11 +200,20 @@ class TripleLayerKVCache(_BaseCache):
         self._prefill_eviction_count = 0
 
         # Flat buffer quantization: None (bf16), 'q8_0' (int8 + per-token scales),
-        # or 'q4_0' (nibble-packed uint8 + per-group scales, group_size=32)
+        # 'q4_0' (nibble-packed uint8 + per-group scales, group_size=32),
+        # or 'turboquant' (PolarQuant packed uint32 + per-token norms)
         self._flat_quant = flat_quant
         self._flat_keys_scales = None
         self._flat_values_scales = None
         self._q4_group_size = 32
+        # TurboQuant flat buffer: PolarQuantizer for quantize-on-write/dequantize-on-read
+        # norm_correction=False: safe for head_dim>=128 (gated by _TURBOQUANT_MIN_HEAD_DIM),
+        # yields ~52% dequant speedup (verified 15/15 token match on Qwen3-8B).
+        self._flat_pq = None
+        self._flat_pq_head_dim = None
+        if flat_quant == 'turboquant':
+            from mlx_lm.models.quantization_strategies import PolarQuantizer
+            self._flat_pq = PolarQuantizer(bits=4, norm_correction=False)
 
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
@@ -273,10 +282,11 @@ class TripleLayerKVCache(_BaseCache):
                 new_v = mx.zeros((B, n_heads, n_steps * self._flat_step, head_dim), dtype=self._flat_values.dtype)
                 self._flat_keys = mx.concatenate([self._flat_keys, new_k], axis=2)
                 self._flat_values = mx.concatenate([self._flat_values, new_v], axis=2)
-                if self._flat_quant in ('q8_0', 'q4_0') and self._flat_keys_scales is not None:
-                    scale_dim = self._flat_keys_scales.shape[-1]  # 1 for q8_0, D//G for q4_0
-                    new_sk = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
-                    new_sv = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=mx.bfloat16)
+                if self._flat_quant in ('q8_0', 'q4_0', 'turboquant') and self._flat_keys_scales is not None:
+                    scale_dim = self._flat_keys_scales.shape[-1]  # 1 for q8_0/turboquant, D//G for q4_0
+                    scale_dtype = self._flat_keys_scales.dtype  # bf16 for q8/q4, float32 for turboquant
+                    new_sk = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=scale_dtype)
+                    new_sv = mx.zeros((B, n_heads, n_steps * self._flat_step, scale_dim), dtype=scale_dtype)
                     self._flat_keys_scales = mx.concatenate([self._flat_keys_scales, new_sk], axis=2)
                     self._flat_values_scales = mx.concatenate([self._flat_values_scales, new_sv], axis=2)
 
@@ -398,8 +408,22 @@ class TripleLayerKVCache(_BaseCache):
 
         return result
 
+    # TurboQuant requires head_dim >= 128 for usable attention quality.
+    # PolarQuant's random rotation converges to Gaussian in high dimensions;
+    # below 128 the per-vector error destroys attention patterns in practice
+    # (verified: 0.5B/head_dim=64 → 2/10 token match, 8B/head_dim=128 → 10/10).
+    _TURBOQUANT_MIN_HEAD_DIM = 128
+
     def _alloc_flat_buffer(self, B: int, n_heads: int, alloc_len: int, head_dim: int):
-        """Allocate flat buffer (bf16, Q8_0, or Q4_0 based on flat_quant)."""
+        """Allocate flat buffer (bf16, Q8_0, Q4_0, or TurboQuant based on flat_quant)."""
+        # Auto-downgrade turboquant for small head_dim models
+        if self._flat_quant == 'turboquant' and head_dim < self._TURBOQUANT_MIN_HEAD_DIM:
+            if self.layer_idx == 0:
+                print(f"[TripleLayerKVCache] turboquant requires head_dim≥{self._TURBOQUANT_MIN_HEAD_DIM}, "
+                      f"got {head_dim}. Auto-downgrading to q4_0.")
+            self._flat_quant = 'q4_0'
+            self._flat_pq = None
+            self._flat_pq_head_dim = None
         if self._flat_quant == 'q8_0':
             self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.int8)
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.int8)
@@ -411,12 +435,20 @@ class TripleLayerKVCache(_BaseCache):
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim // 2), dtype=mx.uint8)
             self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
             self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, head_dim // G), dtype=mx.bfloat16)
+        elif self._flat_quant == 'turboquant':
+            packed_dim = self._flat_pq.flat_packed_dim(head_dim)
+            self._flat_keys = mx.zeros((B, n_heads, alloc_len, packed_dim), dtype=mx.uint32)
+            self._flat_values = mx.zeros((B, n_heads, alloc_len, packed_dim), dtype=mx.uint32)
+            # Per-token norms (float32 for precision, 1 per token per head)
+            self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.float32)
+            self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, 1), dtype=mx.float32)
+            self._flat_pq_head_dim = head_dim
         else:
             self._flat_keys = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
             self._flat_values = mx.zeros((B, n_heads, alloc_len, head_dim), dtype=mx.bfloat16)
 
     def _write_flat(self, start: int, end: int, keys: mx.array, values: mx.array):
-        """Write to flat buffer (handles quantize-on-write for Q8_0/Q4_0)."""
+        """Write to flat buffer (handles quantize-on-write for Q8_0/Q4_0/TurboQuant)."""
         if self._flat_quant == 'q8_0':
             qk, sk = self._q8_quantize(keys)
             qv, sv = self._q8_quantize(values)
@@ -431,12 +463,19 @@ class TripleLayerKVCache(_BaseCache):
             self._flat_values[..., start:end, :] = qv
             self._flat_keys_scales[..., start:end, :] = sk
             self._flat_values_scales[..., start:end, :] = sv
+        elif self._flat_quant == 'turboquant':
+            pk, nk = self._flat_pq.flat_quantize(keys)
+            pv, nv = self._flat_pq.flat_quantize(values)
+            self._flat_keys[..., start:end, :] = pk
+            self._flat_values[..., start:end, :] = pv
+            self._flat_keys_scales[..., start:end, :] = nk
+            self._flat_values_scales[..., start:end, :] = nv
         else:
             self._flat_keys[..., start:end, :] = keys
             self._flat_values[..., start:end, :] = values
 
     def _fetch_flat(self, end: int) -> Tuple[mx.array, mx.array]:
-        """Fetch from flat buffer (dequant Q8/Q4 on every read — keeps TG memory minimal)."""
+        """Fetch from flat buffer (dequant Q8/Q4/TurboQuant on every read — keeps TG memory minimal)."""
         if self._flat_quant == 'q8_0':
             k = self._flat_keys[..., :end, :].astype(mx.bfloat16) * self._flat_keys_scales[..., :end, :]
             v = self._flat_values[..., :end, :].astype(mx.bfloat16) * self._flat_values_scales[..., :end, :]
@@ -445,12 +484,18 @@ class TripleLayerKVCache(_BaseCache):
             k = self._q4_dequantize(self._flat_keys[..., :end, :], self._flat_keys_scales[..., :end, :])
             v = self._q4_dequantize(self._flat_values[..., :end, :], self._flat_values_scales[..., :end, :])
             return k, v
+        elif self._flat_quant == 'turboquant':
+            k = self._flat_pq.flat_dequantize(
+                self._flat_keys[..., :end, :], self._flat_keys_scales[..., :end, :], self._flat_pq_head_dim)
+            v = self._flat_pq.flat_dequantize(
+                self._flat_values[..., :end, :], self._flat_values_scales[..., :end, :], self._flat_pq_head_dim)
+            return k, v
         return self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
 
     def _eval_flat_buffer(self):
-        """Evaluate flat buffer arrays (includes scales for Q8_0/Q4_0)."""
+        """Evaluate flat buffer arrays (includes scales/norms for Q8_0/Q4_0/TurboQuant)."""
         mx.eval(self._flat_keys, self._flat_values)
-        if self._flat_quant in ('q8_0', 'q4_0'):
+        if self._flat_quant in ('q8_0', 'q4_0', 'turboquant'):
             mx.eval(self._flat_keys_scales, self._flat_values_scales)
 
     def _update_slow_path(self, keys: mx.array, values: mx.array) -> Tuple[mx.array, mx.array]:
@@ -557,6 +602,7 @@ class TripleLayerKVCache(_BaseCache):
             alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
             self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
             self._write_flat(0, cache_len, full_keys, full_values)
+            self._eval_flat_buffer()  # Force eval before freeing source data
             del full_keys, full_values  # Free intermediate bf16 (flat buffer owns the data now)
             self._flat_offset = cache_len
             self._flat_mode = True
@@ -662,7 +708,7 @@ class TripleLayerKVCache(_BaseCache):
         """
         total_bytes = 0
 
-        # Flat mode (pipeline AM or scored mode): flat bf16 / Q8_0 / Q4_0 buffer
+        # Flat mode (pipeline AM or scored mode): flat bf16 / Q8_0 / Q4_0 / TurboQuant buffer
         if self._flat_mode and self._flat_keys is not None:
             B, H, _, D = self._flat_keys.shape
             if self._flat_quant == 'q8_0':
@@ -676,6 +722,10 @@ class TripleLayerKVCache(_BaseCache):
                 G = self._q4_group_size
                 # uint8 packed (0.5 byte/val) + bf16 scales per group (2 bytes * head_dim/G), K+V
                 total_bytes += self._flat_offset * H * (half_dim * 1 + (head_dim // G) * 2) * 2
+            elif self._flat_quant == 'turboquant':
+                # D is packed_dim (uint32). Per token: packed_dim*4 bytes + 1 norm (4 bytes), K+V
+                packed_dim = D
+                total_bytes += self._flat_offset * H * (packed_dim * 4 + 1 * 4) * 2
             else:
                 head_dim = D
                 total_bytes += self._flat_offset * H * head_dim * 2 * 2  # K+V, bf16

@@ -150,8 +150,12 @@ def make_optimized_cache(
         warm_quantizer: Warm layer quantizer name ("q4_0", "polarquant", "noop").
                        None = strategy default. Overrides strategy-implied quantizer.
         warm_bits: Bits for PolarQuant (2, 3, or 4). Default: 4.
-        flat_quant: Flat buffer quantization: None (bf16) or "q8_0" (int8 + scales).
-                   Reduces steady-state KV memory by ~50%. Dequantizes on every TG step.
+        flat_quant: Flat buffer quantization: None (bf16), "q8_0" (int8 + scales),
+                   "q4_0" (nibble-packed + per-group scales), or "turboquant"
+                   (PolarQuant packed uint32 + per-token norms, ~3.8x compression).
+                   Reduces steady-state KV memory. Dequantizes on every TG step.
+                   Note: "turboquant" requires head_dim >= 128 for usable attention
+                   quality. Models with smaller head_dim auto-downgrade to "q4_0".
         scored_max_cache: Maximum tokens retained in flat buffer during scored_pq
                          chunked prefill eviction. Default: 2048.
 
@@ -205,7 +209,7 @@ def make_optimized_cache(
         pass  # P2 Scored: no custom quantizer needed, uses default Q4_0 for warm aging
     elif warm_quantizer is not None:
         from mlx_lm.models.quantization_strategies import get_quantizer
-        if warm_quantizer in ("polarquant", "turboquant"):
+        if warm_quantizer in ("polarquant", "turboquant", "turboquant_qjl"):
             quantizer_obj = get_quantizer(warm_quantizer, bits=warm_bits)
         else:
             quantizer_obj = get_quantizer(warm_quantizer)
