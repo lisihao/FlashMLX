@@ -178,6 +178,45 @@ v1.1 新增 TurboQuant (PolarQuant PQ4, ICLR 2026) — 第 4 级 flat buffer 量
 | scored+tq | 16K | 431.8 | 16.5 | 37.81s | 976 MB | 80 MB | -97% |
 
 **推荐**：`scored_pq + q8_0` — TG +23%、KV -94%、最佳性能/内存平衡。TurboQuant 仅在极端内存受限场景值得（多省 73 MB，换 36% TG 代价）。
+ 为什么 scored+q8_0 比 standard 更快                                                                 
+                                                                                                     
+  每步 TG 做的事：读模型参数 + 读 KV Cache + attention 计算。                                         
+                                                                                                      
+  16K context 下：                                                                                    
+                                                                                                      
+  standard:     读 2,454 MB KV Cache → attention 扫全部 16K tokens                                    
+  scored+q8_0:  读   153 MB KV Cache → dequant → attention 扫 ~1,600 tokens                           
+                                                                                                      
+  速度快不是因为 q8_0 快，而是因为 scored_pq 把 16K tokens 淘汰到了 ~1,600 tokens。                   
+                                                                                             
+  AM eviction 干掉了 90% 的 tokens，所以：                                                            
+  - 内存读取：2,454 → 153 MB（省了 2.3 GB 带宽）                                                      
+  - attention 计算量：16K → ~1.6K（少了 10x）
+  - Q8 dequant 代价：对 153 MB 做一次乘法 ≈ 微不足道                                                  
+                                                                                                      
+  数字说话                                                                                            
+                                                                                                      
+  看 bf16 vs q8_0 的对比就能隔离出纯 dequant 开销：                                                   
+                                                                                                      
+  ┌─────────────┬──────┬─────────┬──────────────────────────┐                                         
+  │    配置     │  TG  │ KV 内存 │         差异来源         │                                         
+  ├─────────────┼──────┼─────────┼──────────────────────────┤
+  │ scored+bf16 │ 28.3 │ 302 MB  │ 零 dequant，但读 2x 数据 │
+  ├─────────────┼──────┼─────────┼──────────────────────────┤
+  │ scored+q8_0 │ 25.9 │ 153 MB  │ 有 dequant，但读一半数据 │
+  └─────────────┴──────┴─────────┴──────────────────────────┘
+
+  bf16 快 9%，说明 Q8 dequant 的代价约等于省掉一半带宽的收益 — 两者基本打平，Q8 略输。
+
+  但 standard 慢是因为它要读 16x 的数据量（2,454 vs 153 MB），这个差距远大于 dequant 开销。
+
+  一句话
+
+  速度提升来自 scored_pq 的 token eviction（-90% tokens），不是来自量化。Q8 dequant
+  只是一次乘法，代价几乎可忽略。
+
+  TurboQuant 慢的原因也是同理 — 它的 dequant 涉及 Haar 逆旋转 + Lloyd-Max 查表 + 拆包，比 Q8
+  的一次乘法重得多，所以 25.9 → 16.5。
 
 ---
 
