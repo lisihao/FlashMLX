@@ -623,6 +623,7 @@ class RegimeDetector:
         num_layers: int = 40,
         num_experts: int = 256,
         expert_bytes: int = 1_770_000,  # ~1.69 MB default
+        ssd_speed_class: str = "fast",
     ) -> RegimeConfig:
         """Detect optimal regime and return configuration.
 
@@ -666,8 +667,10 @@ class RegimeDetector:
 
         elif ratio >= 0.3:
             # Regime B: Three-tier cache
-            # 40% of available GPU for pool, rest for KV headroom
-            pool_gb = available_for_experts * 0.4
+            # SSD-adaptive pool factor: slow SSD → bigger pool (absorb more misses)
+            pool_factors_b = {"fast": 0.4, "slow": 0.55, "glacial": 0.7}
+            pool_factor = pool_factors_b.get(ssd_speed_class, 0.4)
+            pool_gb = available_for_experts * pool_factor
             pool_gb = max(pool_gb, 2.0)  # Minimum 2 GB pool
             experts_in_pool = int(pool_gb * 1024**3 / expert_bytes / num_layers)
             experts_in_pool = min(experts_in_pool, num_experts)
@@ -690,7 +693,10 @@ class RegimeDetector:
 
         else:
             # Regime A: SSD streaming, minimal pool
-            pool_gb = max(available_for_experts * 0.5, 1.0)
+            # SSD-adaptive: slow SSD needs larger pool to hide latency
+            pool_factors_a = {"fast": 0.5, "slow": 0.65, "glacial": 0.8}
+            pool_factor = pool_factors_a.get(ssd_speed_class, 0.5)
+            pool_gb = max(available_for_experts * pool_factor, 1.0)
             experts_in_pool = int(pool_gb * 1024**3 / expert_bytes / num_layers)
             experts_in_pool = max(experts_in_pool, 8)  # Bare minimum
 
@@ -2055,6 +2061,147 @@ def detect_hardware() -> Tuple[float, float]:
     return gpu_gb, cpu_gb
 
 
+def _resolve_volume(file_path: str) -> str:
+    """Resolve the mount point / volume name for a file path.
+
+    On macOS: /Volumes/TOSHIBA/models/... → "/Volumes/TOSHIBA"
+              /Users/lisihao/...          → "/"
+    """
+    real = os.path.realpath(file_path)
+    # macOS external volumes are under /Volumes/
+    if real.startswith("/Volumes/"):
+        parts = real.split("/")
+        if len(parts) >= 3:
+            return "/".join(parts[:3])  # /Volumes/TOSHIBA
+    return "/"
+
+
+# Per-volume SSD speed cache:  volume_path → (speed_gbps, speed_class)
+# Persisted to ~/.cache/flashmlx/ssd_probe.json so we only probe once per volume,
+# even across process restarts.
+_SSD_CACHE_DIR = os.path.expanduser("~/.cache/flashmlx")
+_SSD_CACHE_FILE = os.path.join(_SSD_CACHE_DIR, "ssd_probe.json")
+
+
+def _load_ssd_cache() -> Dict[str, Tuple[float, str]]:
+    """Load cached SSD probe results from disk."""
+    if not os.path.exists(_SSD_CACHE_FILE):
+        return {}
+    try:
+        with open(_SSD_CACHE_FILE) as f:
+            data = json.load(f)
+        # data: { volume: [speed_gbps, speed_class] }
+        return {k: (v[0], v[1]) for k, v in data.items()}
+    except Exception:
+        return {}
+
+
+def _save_ssd_cache(cache: Dict[str, Tuple[float, str]]):
+    """Save SSD probe results to disk."""
+    try:
+        os.makedirs(_SSD_CACHE_DIR, exist_ok=True)
+        data = {k: [v[0], v[1]] for k, v in cache.items()}
+        with open(_SSD_CACHE_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+    except Exception:
+        pass  # Non-critical, silently skip
+
+
+def probe_ssd_speed(
+    expert_index: Dict[int, LayerExpertIndex],
+    num_reads: int = 5,
+    force: bool = False,
+) -> Tuple[float, str]:
+    """Probe SSD read speed using actual expert weight file paths from the index.
+
+    Results are cached per-volume to ``~/.cache/flashmlx/ssd_probe.json``.
+    Subsequent calls for the same volume return instantly without I/O.
+
+    Args:
+        expert_index: Output of build_expert_index(), maps layer_idx → LayerExpertIndex.
+        num_reads: Number of timed pread() calls (default 5).
+        force: If True, bypass cache and re-probe.
+
+    Returns:
+        (speed_gbps, speed_class) where speed_class is one of:
+          "fast":    >= 3.0 GB/s  (NVMe internal SSD)
+          "slow":    >= 0.5 GB/s  (USB 3.2 external SSD / network mount)
+          "glacial": < 0.5 GB/s   (USB 2.0 / HDD / remote)
+    """
+    import random as _random
+
+    if not expert_index:
+        return 5.0, "fast"
+
+    # Determine volume from first expert file
+    first_comp = next(iter(next(iter(expert_index.values())).components.values()))
+    volume = _resolve_volume(first_comp.file_path)
+
+    # Check disk cache
+    if not force:
+        cache = _load_ssd_cache()
+        if volume in cache:
+            speed, cls = cache[volume]
+            print(f"[SSD Probe] {volume}: {speed:.1f} GB/s ({cls}) [cached]")
+            return speed, cls
+
+    # Collect (file_path, offset, size) from actual expert components
+    probe_targets: List[Tuple[str, int, int]] = []
+    for layer_info in expert_index.values():
+        for comp in layer_info.components.values():
+            for eidx in range(0, layer_info.num_experts, max(1, layer_info.num_experts // 4)):
+                probe_targets.append((
+                    comp.file_path,
+                    comp.base_offset + eidx * comp.expert_stride,
+                    comp.per_expert_size,
+                ))
+    if not probe_targets:
+        return 5.0, "fast"
+
+    targets = _random.sample(probe_targets, min(num_reads, len(probe_targets)))
+
+    # Probe via pread()
+    fds: Dict[str, int] = {}
+    try:
+        for file_path, _, _ in targets:
+            if file_path not in fds:
+                fds[file_path] = os.open(file_path, os.O_RDONLY)
+
+        # Warmup: one throwaway read
+        f0, off0, sz0 = targets[0]
+        os.pread(fds[f0], sz0, off0)
+
+        # Timed reads
+        t0 = time.perf_counter()
+        total_bytes = 0
+        for file_path, offset, size in targets:
+            os.pread(fds[file_path], size, offset)
+            total_bytes += size
+        elapsed = time.perf_counter() - t0
+    finally:
+        for fd in fds.values():
+            os.close(fd)
+
+    speed_gbps = (total_bytes / 1024**3) / elapsed if elapsed > 0 else 5.0
+
+    if speed_gbps >= 3.0:
+        speed_class = "fast"
+    elif speed_gbps >= 0.5:
+        speed_class = "slow"
+    else:
+        speed_class = "glacial"
+
+    # Persist to disk cache
+    cache = _load_ssd_cache()
+    cache[volume] = (round(speed_gbps, 2), speed_class)
+    _save_ssd_cache(cache)
+
+    print(f"[SSD Probe] {volume}: "
+          f"{num_reads} reads x {targets[0][2]/1024:.0f} KB = "
+          f"{speed_gbps:.1f} GB/s ({speed_class}) [saved]")
+    return speed_gbps, speed_class
+
+
 def patch_model_for_offload(
     model,
     model_path: str,
@@ -2097,6 +2244,9 @@ def patch_model_for_offload(
     sample_layer = next(iter(expert_index.values()))
     num_experts = sample_layer.num_experts
 
+    # Step 2.5: Probe SSD speed on actual expert weight files
+    ssd_speed, ssd_class = probe_ssd_speed(expert_index)
+
     # Step 3: Create loader
     loader = ExpertLoader(expert_index, max_workers=max_workers)
     expert_bytes = loader.expert_byte_size()
@@ -2114,6 +2264,7 @@ def patch_model_for_offload(
         num_layers=num_layers,
         num_experts=num_experts,
         expert_bytes=expert_bytes,
+        ssd_speed_class=ssd_class,
     )
     print(f"[ExpertOffload] Regime: {regime.regime}")
     print(f"[ExpertOffload] {regime.description}")
@@ -2255,12 +2406,89 @@ class OffloadContext:
         self._model = model
         self._bridge: Optional[ThunderOMLXBridge] = None
 
+        # Adaptive pool sizing state
+        self._resize_low_count = 0
+        self._resize_high_count = 0
+        self._current_pool_size = regime.pool_size_per_layer if regime else 64
+        self._min_pool_size = 16
+        self._max_pool_size = 256
+
     @property
     def bridge(self) -> Optional['ThunderOMLXBridge']:
         """Get ThunderOMLX bridge (lazy-created on first access)."""
         if self._bridge is None and self._model is not None:
             self._bridge = ThunderOMLXBridge(self, self._model)
         return self._bridge
+
+    def _adaptive_resize_pool(self):
+        """Resize pool based on runtime hit rate feedback.
+
+        Called periodically from FlashBatchGenerator.next().
+        Uses hysteresis to avoid oscillation:
+          - hit_rate < 0.65 for 2 consecutive checks → expand +16
+          - hit_rate > 0.90 for 2 consecutive checks → shrink -16
+          - Between 0.65-0.90: do nothing (dead zone)
+        """
+        if not self.telemetry:
+            return
+
+        hit_rate = self.telemetry.get_overall_hit_rate()
+
+        EXPAND_THRESHOLD = 0.65
+        SHRINK_THRESHOLD = 0.90
+        HYSTERESIS_COUNT = 2
+        STEP_SIZE = 16
+
+        if hit_rate < EXPAND_THRESHOLD:
+            self._resize_low_count += 1
+            self._resize_high_count = 0
+        elif hit_rate > SHRINK_THRESHOLD:
+            self._resize_high_count += 1
+            self._resize_low_count = 0
+        else:
+            # Dead zone: reset both counters
+            self._resize_low_count = 0
+            self._resize_high_count = 0
+
+        new_size = self._current_pool_size
+
+        if self._resize_low_count >= HYSTERESIS_COUNT:
+            new_size = min(self._current_pool_size + STEP_SIZE, self._max_pool_size)
+            self._resize_low_count = 0
+            print(f"[AdaptivePool] Expanding pool: {self._current_pool_size} -> {new_size} "
+                  f"(hit_rate={hit_rate:.1%})")
+        elif self._resize_high_count >= HYSTERESIS_COUNT:
+            new_size = max(self._current_pool_size - STEP_SIZE, self._min_pool_size)
+            self._resize_high_count = 0
+            print(f"[AdaptivePool] Shrinking pool: {self._current_pool_size} -> {new_size} "
+                  f"(hit_rate={hit_rate:.1%})")
+
+        if new_size != self._current_pool_size:
+            self._current_pool_size = new_size
+            self._apply_pool_resize(new_size)
+
+    def _apply_pool_resize(self, new_size: int):
+        """Apply new pool size to all MoE layers without full recompact.
+
+        Updates _pool_size on each FlashMoeSwitchGLU. The actual pool
+        adjustment happens naturally via maintain_pool() eviction/promotion
+        at the new target size — no blocking rebuild needed.
+        """
+        inner = self._model
+        if hasattr(inner, "model"):
+            inner = inner.model
+        if hasattr(inner, "model"):
+            inner = inner.model
+        if hasattr(inner, "language_model"):
+            inner = inner.language_model
+        if hasattr(inner, "model"):
+            inner = inner.model
+
+        for layer in inner.layers:
+            if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+                switch = layer.mlp.switch_mlp
+                if isinstance(switch, FlashMoeSwitchGLU):
+                    switch._pool_size = new_size
 
     def run_maintenance(self, model):
         """Run between-token maintenance on all patched layers.
@@ -2813,15 +3041,17 @@ class FlashBatchGenerator:
         if self._step_count % self._k_adjust_interval == 0:
             self._ctx.adjust_effective_k(self._model)
 
-        # P4: Expert hit rate monitor — check after compact
+        # P4: Expert hit rate monitor — adaptive pool resize + warning
         if (self._compacted
                 and self._ctx.telemetry
                 and self._step_count % self._hitrate_check_interval == 0):
             hit_rate = self._ctx.telemetry.get_overall_hit_rate()
+            # Adaptive resize based on hit rate feedback
+            self._ctx._adaptive_resize_pool()
+            # Keep warning for extreme cases
             if hit_rate < self._hitrate_warn and not self._hitrate_warned:
-                print(f"[FlashBatch] ⚠️  Expert pool hit rate {hit_rate:.1%} "
-                      f"< {self._hitrate_warn:.0%} threshold. "
-                      f"Consider expanding pool or reducing batch size.")
+                print(f"[FlashBatch] Expert pool hit rate {hit_rate:.1%} "
+                      f"< {self._hitrate_warn:.0%} threshold")
                 self._hitrate_warned = True
             elif hit_rate >= self._hitrate_warn and self._hitrate_warned:
                 self._hitrate_warned = False  # Recovered
