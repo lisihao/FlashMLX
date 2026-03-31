@@ -74,7 +74,7 @@ DEFAULT_COMPRESSION_RATIO = 2.0
 DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
-VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "scored_pq", "auto")
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "scored_pq", "kv_direct", "auto")
 
 # Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
 # Data-driven mapping (Qwen3-8B benchmarks):
@@ -134,6 +134,7 @@ def make_optimized_cache(
     warm_bits: int = 4,
     flat_quant: Optional[str] = None,
     scored_max_cache: int = 2048,
+    kv_direct_budget: int = 512,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -185,6 +186,39 @@ def make_optimized_cache(
 
     if strategy == "standard":
         return [KVCache() for _ in range(num_layers)]
+
+    # KV-Direct v2: model-level h^(0) checkpointing (paper 2603.19664)
+    if strategy == "kv_direct":
+        from mlx_lm.models.kv_direct_cache import (
+            KVDirectCache, H0Store, apply_h0_capture,
+        )
+
+        is_hybrid, attn_indices, native_caches = _detect_architecture(model)
+        h0_store = H0Store()
+
+        if is_hybrid:
+            attn_set = set(attn_indices)
+            caches = []
+            for i in range(num_layers):
+                if i in attn_set:
+                    caches.append(KVDirectCache(
+                        budget=kv_direct_budget, h0_store=h0_store,
+                    ))
+                else:
+                    caches.append(native_caches[i])
+        else:
+            caches = [
+                KVDirectCache(budget=kv_direct_budget, h0_store=h0_store)
+                for _ in range(num_layers)
+            ]
+
+        # Install model-level h^(0) capture + reconstruction
+        apply_h0_capture(model, caches, h0_store)
+
+        n_patched = len([c for c in caches if isinstance(c, KVDirectCache)])
+        print(f"[CacheFactory] KV-Direct v2: budget={kv_direct_budget}, "
+              f"{n_patched} layers, h^(0) checkpointing")
+        return caches
 
     # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM
     from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
@@ -333,6 +367,20 @@ def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
             if c0._flat_mode:
                 info["flat_tokens"] = c0._flat_offset
                 info["true_offset"] = c0._true_offset
+            return info
+    except ImportError:
+        pass
+
+    try:
+        from mlx_lm.models.kv_direct_cache import KVDirectCache
+        if isinstance(c0, KVDirectCache):
+            info["strategy"] = "kv_direct"
+            info["budget"] = c0._budget
+            info["offset"] = c0.offset
+            info["recent_count"] = c0._recent_count
+            if c0._h0_store is not None:
+                info["h0_tokens"] = c0._h0_store.count
+                info["h0_bytes"] = c0._h0_store.nbytes
             return info
     except ImportError:
         pass
