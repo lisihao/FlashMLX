@@ -13,10 +13,12 @@ from mlx_lm.models.expert_offload import (
     OffloadContext,
     ThunderOMLXBridge,
     patch_model_for_offload,
+    probe_ssd_speed,
 )
 
 __all__ = [
     "patch_model_for_offload",
+    "probe_ssd_speed",
     "OffloadContext",
     "FlashBatchGenerator",
     "FlashMoeSwitchGLU",
