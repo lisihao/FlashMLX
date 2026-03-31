@@ -292,6 +292,44 @@
   - **文档**: `.solar/nnls-fix-complete-summary.md`, `.solar/critical-finding-nnls-missing.md`
   - **Git commits**: 5b22b39 (问题发现), 536d91e (修复完成)
 
+### Expert Offloading v1.0 ✅ COMPLETE (2026-03-30)
+
+**Mission**: Qwen3.5-35B-A3B MoE 推理优化 (256 experts, 40 layers, Apple Silicon M4 Pro 48GB UMA)
+
+**Code-level optimizations (P0-P6):**
+- ✅ P0: 增量 dequant — gather_qmm 延迟 dequant
+- ✅ P1: in-place pool slot — 避免 pool rebuild
+- ✅ P2: fused gate+up gather_qmm — 单次 gather 替代两次
+- ✅ P3: argsort→scatter — O(k) scatter 替代 O(N log N) sort
+- ✅ P4: 预分配 flat buffer — 避免重复分配
+- ✅ P5: shared_expert 量化 — 共享专家也用量化
+- ✅ P6: token batching — 批量 token prefill
+- **Baseline (P0-P6 complete)**: Qwen3.5-35B 4K: 83.9 tok/s, pool=153/256, saved 37.8%
+
+**Architecture-level optimizations (A1-A5):**
+- ✅ A1: Layer Fusion (mx.compile) — 0% gain, reverted (MoE layers not fusable)
+- ✅ A2: FlashBatchGenerator — continuous batching + compact + maintenance + pruning
+  - Batch=1: 88.8 tok/s (+23% vs raw), Batch=2: 146.2 (+14%), Batch=4: 186.0 (+17%)
+  - All quality PASS, auto-compact after first prefill
+  - Commit: 07e989e (submodule), 4b81360 (parent)
+- ✅ A3: Pipeline Integration — between-token maintenance callback
+  - +4.1% steady (256 tok), +3.6% steady (512 tok), quality PASS
+  - Commit: 705629c (submodule)
+- ✅ A4: Dynamic Pruning — k-reduction + re-compaction
+  - +5.4% TG gain, entropy-based k=8→6 for stable layers
+  - Commit: 31f0f83 (submodule)
+- ✅ A5: Expert Streaming — memory-adaptive pool shrinking
+  - Pool 153→123, freed 2.1 GB, TG -0.2% (noise), quality PASS
+  - Commit: 0326879 (submodule)
+
+**Key files**:
+- `mlx_lm/models/expert_offload.py` — core offloading engine (2796 lines)
+- `mlx_lm/models/qwen2_moe.py` — MoE block with effective_top_k
+- `mlx_lm/models/qwen3_next.py` — Qwen3.5 MoE block variant
+- `mlx_lm/generate.py` — generate_step with between_token_fn, BatchGenerator
+
+**Git**: submodule `07e989e` on `kvtc-p1-p2-improvements`, parent `4b81360` on `master`
+
 ### In-Progress
 - (无当前进行中任务)
 - 🔄 **KVTC 优化** (暂停)
@@ -588,4 +626,4 @@
 
 ---
 
-*最后更新: 2026-03-21 14:20*
+*最后更新: 2026-03-30 — Expert Offloading A1-A5 全部完成*

@@ -4,17 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flashmlx"
-version = "0.1.0"
-description = "High-performance MLX inference engine with Flash Attention optimization"
+version = "1.0.0"
+description = "Enhanced MLX-LM inference engine for Apple Silicon — KV cache compression, expert offloading, and pluggable quantization"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "FlashMLX Contributors"}
 ]
-keywords = ["mlx", "flash-attention", "metal", "apple-silicon", "inference"]
+keywords = ["mlx", "flash-attention", "metal", "apple-silicon", "inference", "kv-cache", "quantization"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -27,30 +27,22 @@ classifiers = [
 
 dependencies = [
     "mlx>=0.31.1",
-    "mlx-lm>=0.31.1",
     "numpy>=1.24.0",
+    "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
-    "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/flashmlx/flashmlx"
-Documentation = "https://flashmlx.readthedocs.io"
-Repository = "https://github.com/flashmlx/flashmlx"
+Repository = "https://github.com/nicepkg/FlashMLX"
 
-[tool.setuptools]
-packages = ["flashmlx"]
-package-dir = {"" = "src"}
-
-[tool.black]
-line-length = 100
-target-version = ['py310']
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -60,4 +52,3 @@ select = ["E", "F", "W", "I"]
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true

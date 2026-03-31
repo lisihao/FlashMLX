@@ -1,11 +1,72 @@
 """
-FlashMLX - High-performance MLX inference engine with Flash Attention optimization
+FlashMLX — Enhanced MLX-LM inference engine for Apple Silicon.
+
+Three optimization routes:
+  Route 1: Expert Offloading (MoE models — Qwen3.5, Mixtral, etc.)
+  Route 2: Chunked Prefill + Streaming Eviction (long context)
+  Route 3: Scored P2 + Pluggable Flat Buffer Quantization (KV cache compression)
+
+Quick start:
+    import flashmlx
+
+    model, tokenizer = flashmlx.load("model_path")
+
+    # Auto-detect best config
+    config = flashmlx.recommend_config(model, model_path="model_path")
+    cache = flashmlx.make_prompt_cache(model, **config.cache.to_cache_kwargs())
+
+    # Or use directly with generate()
+    text = flashmlx.generate(model, tokenizer, prompt, kv_cache="scored_pq")
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
-from . import core
-from . import kernels
-from . import utils
+# ---------------------------------------------------------------------------
+# Model loading (re-export from enhanced mlx-lm)
+# ---------------------------------------------------------------------------
+from mlx_lm.utils import load
+from mlx_lm.generate import generate, stream_generate
 
-__all__ = ["core", "kernels", "utils", "__version__"]
+# ---------------------------------------------------------------------------
+# FlashMLX configuration
+# ---------------------------------------------------------------------------
+from .config import FlashMLXConfig, CacheConfig, OffloadConfig
+
+# ---------------------------------------------------------------------------
+# Model capability detection + recommended config
+# ---------------------------------------------------------------------------
+from .capabilities import detect_capabilities, recommend_config, ModelCapabilities
+
+# ---------------------------------------------------------------------------
+# Cache creation (re-export from enhanced mlx-lm)
+# ---------------------------------------------------------------------------
+from mlx_lm.models.cache import make_prompt_cache
+from mlx_lm.models.cache_factory import make_optimized_cache, VALID_STRATEGIES
+
+# ---------------------------------------------------------------------------
+# Quantization strategies (re-export)
+# ---------------------------------------------------------------------------
+from mlx_lm.models.quantization_strategies import get_quantizer, QuantizationStrategy
+
+__all__ = [
+    "__version__",
+    # Model loading
+    "load",
+    "generate",
+    "stream_generate",
+    # Config
+    "FlashMLXConfig",
+    "CacheConfig",
+    "OffloadConfig",
+    # Capabilities
+    "detect_capabilities",
+    "recommend_config",
+    "ModelCapabilities",
+    # Cache
+    "make_prompt_cache",
+    "make_optimized_cache",
+    "VALID_STRATEGIES",
+    # Quantization
+    "get_quantizer",
+    "QuantizationStrategy",
+]
