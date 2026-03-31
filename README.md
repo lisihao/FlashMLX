@@ -1,39 +1,40 @@
 # FlashMLX
 
-> **Apple Silicon 上的本地 LLM 推理，不该只是“能跑”，而应该是：更快出首 Token、更高吞吐、更低峰值内存、对 35B MoE 真正可用。**
+> **Apple Silicon 上的本地 LLM 推理，不该只是“能跑”。它应该更快出首 Token、更高 decode 吞吐、更低峰值内存、对 35B MoE 真正可用。**
 
-**FlashMLX** 不是又一个 KV cache 小优化，也不是把 CUDA 世界的 serving 方案硬翻成 Metal。  
-它是一套面向 **Apple Silicon** 的 **memory-policy runtime**：把 **参数内存、Prefill 峰值、Decode 常驻、批量调度、质量保护** 当成一个整体来重写。
-
----
-
-## 为什么是 FlashMLX
-
-在本地长上下文推理里，真正把你拖死的从来不只是一件事：
-
-- 35B MoE 模型参数太大，常驻就是浪费
-- Prefill 峰值内存按 batch 叠加，先把你顶爆
-- Decode 又会被长上下文 KV cache 拖慢
-- 批量请求下，用户为了等完整 prefill，首 Token 体验灾难
-- Apple Silicon 不是“低配 CUDA”，UMA / Metal / cache 行为都不一样
-
-**FlashMLX 的答案不是单点 trick，而是一整套系统打法：**
-
-1. **Parameter Memory** — MoE Expert Offloading + Compact Pool  
-2. **PP Memory** — Chunked Prefill + Streaming Eviction  
-3. **TG Memory** — Scored Promotion + Flat Buffer Quantization  
-4. **v2 Scheduler** — Chunked Interleaved Scheduling（交错式 Prefill / Decode）
-
-换句话说：
-
-> **FlashMLX 不是在做一个“压缩算法”。它在做 Apple Silicon 上的本地推理操作系统。**
+**FlashMLX** 不是又一个 KV cache 小技巧，也不是把 CUDA 世界的 serving 方案硬翻成 Metal。  
+它是一套面向 **Apple Silicon** 的 **memory-policy runtime**：把 **参数内存、Prefill 峰值、Decode 常驻、批量调度、质量保护、平台特性** 当成一个整体来重写。
 
 ---
 
 ## 一句话定位
 
 ### 如果 vLLM 是为 CUDA 数据中心 serving 写的，
-### 那 FlashMLX 就是为 Apple Silicon 本地长上下文与 35B MoE 推理写的 runtime。
+### 那 FlashMLX 就是为 Apple Silicon 本地长上下文、35B MoE 与真实交互体验写的 runtime。
+
+---
+
+## 为什么是 FlashMLX
+
+本地长上下文推理的真正瓶颈，从来不只是一件事：
+
+- **参数内存**：35B MoE 专家权重常驻，浪费巨大
+- **PP 峰值**：prefill activation 和 KV cache 一起把显存顶爆
+- **TG 常驻**：长上下文 decode 需要读取全历史，越长越慢
+- **TTFT 体验**：批量请求下，第一个用户要等所有请求 prefill 完才能看到首 Token
+- **Apple Silicon 物理现实**：UMA / Metal / cache 行为和 CUDA 不是一回事
+
+**FlashMLX 的答案不是单点 trick，而是完整系统打法：**
+
+1. **Parameter Memory** — Expert Offloading + Compact Pool  
+2. **PP Memory** — Chunked Prefill + Streaming Eviction  
+3. **TG Memory** — Scored Promotion + Flat Buffer Quantization  
+4. **Batch Scheduling** — Chunked Interleaved Scheduling  
+5. **Support Systems** — Calibration / Quantizer Ladder / Runtime Policy / Fallback  
+
+换句话说：
+
+> **FlashMLX 不是在做一个“压缩算法”。它在做 Apple Silicon 上的本地推理执行系统。**
 
 ---
 
@@ -49,7 +50,28 @@
 | 模型显存占用 | 18.21 GB | **11.42 GB** | **-37.3%** |
 | 生成质量 | 4/4 PASS | **4/4 PASS** | 无损 |
 
-> 测试环境：Qwen3.5-35B-A3B (6-bit, 256 experts/layer × 40 MoE layers) / Apple M4 Pro 48GB
+> 测试环境：Qwen3.5-35B-A3B / Apple M4 Pro 48GB
+
+### FlashMLX v1.x：32K / Qwen3-8B / Apple M4 Pro 48GB
+
+| 指标 | 标准路径 | FlashMLX | 变化 |
+|---|---:|---:|---:|
+| PP Speed | 213.6 tok/s | **372.8 tok/s** | **+74.5%** |
+| PP Peak Memory | 5,079 MB | **774 MB** | **-84.8%** |
+| TG Speed | 16.0 tok/s | **24.7 tok/s** | **+54.4%** |
+| TG KV Memory | 4,572 MB | **147 MB** | **-96.8%** |
+| TTOF | 151.7s | **86.9s** | **-42.7%** |
+| Quality | PASS | **PASS** | 无损 |
+
+### Parameter Memory：Qwen3.5-35B-A3B / Q4 / 256 experts per layer
+
+| 配置 | TG 吞吐 | 内存 | 节省 |
+|---|---:|---:|---:|
+| No offload | 90.0 tok/s | 18.21 GB | — |
+| Compact pool=192 | 90.9 tok/s | 13.99 GB | -23% |
+| **Compact pool=128** | **92.8 tok/s** | **9.77 GB** | **-46%** |
+
+> 这不是“省内存但变慢”，而是 **更省内存，还更快**。根因不是魔法，而是更好的 cache locality 和对 GPU↔CPU sync 的消灭。
 
 ---
 
@@ -69,15 +91,16 @@
 |---|---|---|---:|
 | Parameter Memory | 35B MoE 专家权重常驻太浪费 | Expert Offloading + Compact Pool | 18.21 → **9.77 GB** |
 | PP Memory | Prefill 峰值按 batch 叠加 | Chunked Prefill + Streaming Eviction | 5,079 → **774 MB** |
-| TG Memory | 长上下文 KV cache 拖慢 decode | Scored Promotion + Flat Buffer | 2,454 → **80 MB** |
+| TG Memory | 长上下文 KV cache 拖慢 decode | Scored Promotion + Flat Buffer | 4,572 → **147 MB** |
 
-**这不是“某个 cache trick”能解释的结果。**
+**这不是“某个 cache trick”能解释的结果。**  
+这是把推理内存当成一个系统问题来拆解。
 
 ---
 
 ### 2) 它真正解决的是本地 batch 推理的死穴：TTFT
 
-传统本地批量推理是这么跑的：
+传统本地批量推理是这样跑的：
 
 ```text
 Prefill ALL requests completely -> then Decode
@@ -102,7 +125,7 @@ Decode ALL active requests -> Prefill one chunk (512 tokens) -> repeat
 ### 3) `chunk=512` 不是小参数，而是关键系统发现
 
 很多人会凭直觉认为：prefill chunk 越大越高效。  
-FlashMLX 把这件事做实测扫全了，结论正相反。
+FlashMLX 把这件事做成了真实系统实验，结论相反：**太大的 chunk 会污染 cache，拖累 decode 热路径**。
 
 | chunk_size | TG 吞吐 | 解码步延迟 | 峰值内存 | 质量 |
 |---:|---:|---:|---:|---:|
@@ -111,15 +134,15 @@ FlashMLX 把这件事做实测扫全了，结论正相反。
 | 1024 | 155.6 tok/s | 25.7 ms | 14.36 GB | 4/4 |
 | **512** | **198.3 tok/s** | **20.2 ms** | **13.99 GB** | **4/4** |
 
-**为什么？**
+**为什么？**  
 因为大 chunk 会把 activation 塞满 GPU cache，接下来 decode 读取 KV cache + 参数时 cache miss 暴增；小 chunk 反而让 decode 热数据留在 cache 里。  
-这不是纸面理论，这是**Apple Silicon 上真实跑出来的系统行为**。
+这不是纸面理论，这是 **Apple Silicon 上真实跑出来的系统行为**。
 
 ---
 
 ## 与竞争路线的区别
 
-> 下面不是“别人不行”，而是 **FlashMLX 解决的问题边界更完整**。
+> 下面不是“别人不行”，而是 **FlashMLX 解决的问题边界更完整、耦合关系更深**。
 
 ### 与社区版 `mlx-lm`
 
@@ -133,43 +156,31 @@ FlashMLX 把这件事做实测扫全了，结论正相反。
 
 **一句话：** 社区版 mlx-lm 是底座，FlashMLX 是在 Apple Silicon 上把“本地推理体验”狠狠干到位的系统层。
 
----
-
 ### 与 `vLLM` / `vllm-metal`
 
 | 维度 | vLLM | FlashMLX |
 |---|---|---|
-| 主战场 | **CUDA / HIP 数据中心 serving** | **Apple Silicon 本地推理** |
+| 主战场 | CUDA / HIP 数据中心 serving | **Apple Silicon 本地推理** |
 | 核心武器 | PagedAttention、continuous batching、serving 吞吐 | **三维内存系统 + 交错调度 + MoE 专家池** |
 | KV 管理 | 强，尤其在高并发 serving | 强，但更关注**本地长上下文 + TTFT + UMA 行为** |
 | 平台假设 | 高并发服务端 | **单机本地 / M4 Pro 48GB / Apple UMA** |
 | 风格 | Datacenter serving engine | **Apple-native inference runtime** |
 
-**一句话：**  
-如果你要的是机房里的吞吐机器，去看 vLLM。  
+**一句话：** 如果你要的是机房里的吞吐机器，去看 vLLM。  
 如果你要的是 **Apple Silicon 上把 35B MoE 真正跑成产品体验**，FlashMLX 才是对的问题。
-
----
 
 ### 与 `TurboQuant+`
 
 | 维度 | TurboQuant+ | FlashMLX |
 |---|---|---|
-| 核心定位 | **KV codec / quantization backend** | **端到端 memory-policy runtime** |
+| 核心定位 | KV codec / quantization backend | **端到端 memory-policy runtime** |
 | 关注点 | PolarQuant / QJL / 低 bit KV 压缩 | **调度 + eviction + quantization + expert residency** |
 | 强项 | 压缩率高、作为 backend 很强 | **整体 balance：TTFT / TG / 峰值内存 / 质量** |
 | 在 FlashMLX 中的位置 | 可插拔后端 | **系统的一部分，而不是系统本身** |
 
-FlashMLX 自己的移植与 benchmark 已经说明：
-- `scored+q8_0` 是默认最优平衡点
-- `scored+tq` 可以把 KV 从 153 MB 压到 80 MB
-- 但 TG 会从 25.9 tok/s 掉到 16.5 tok/s
+**一句话：** TurboQuant+ 是一把好刀，但 FlashMLX 是整套作战体系。
 
-**一句话：** TurboQuant+ 是好武器，但 FlashMLX 是整套军队。
-
----
-
-### 与 H2O / StreamingLLM / SnapKV 这类“只打 eviction”的路线
+### 与 H2O / StreamingLLM / SnapKV 一类“只打 eviction”的路线
 
 | 维度 | 纯 eviction / streaming 路线 | FlashMLX |
 |---|---|---|
@@ -178,8 +189,6 @@ FlashMLX 自己的移植与 benchmark 已经说明：
 | 缺点 | 往往只省一块，不改 TTFT 结构性问题 | **正面改批量推理执行秩序** |
 
 **一句话：** 这类方案是在修 cache；FlashMLX 在重写本地推理的执行模型。
-
----
 
 ### 与 LMCache 这类“KV 存储层”方案
 
@@ -193,19 +202,184 @@ FlashMLX 自己的移植与 benchmark 已经说明：
 
 ---
 
-## 为什么 FlashMLX 在 Apple Silicon 上更有意思
+## 10 个大颗粒创新：原理、机制、效果
 
-因为它不是把 CUDA 思路翻译一遍，而是按 Apple Silicon 的物理现实设计：
+> 这 10 个不是“小调参”，而是决定 FlashMLX 系统边界的设计层创新。
 
-- **UMA**：CPU cache / GPU hot path 可以重新分工
-- **Metal cache 行为**：prefill chunk 大小会直接影响 decode hit rate
-- **MoE 本地运行**：不是简单地“都塞进显存”，而是动态热池 / 冷池
-- **本地交互体验**：TTFT 比“实验室里单项吞吐”更重要
+### 1. Two-Phase Compact Pool
+**解决什么问题：** MoE 模型在 PP 和 TG 阶段的专家活跃度完全不同，把 256 个 experts 全常驻 GPU 是纯浪费。  
+**核心原理：** PP 阶段保持 full pool，零额外开销地收集专家活跃统计；进入 TG 前再按热度收缩成 hot-K pool。  
+**机制：** `full pool -> collect activation counts -> compact hot experts -> remap table -> TG use compact pool`。  
+**为什么成立：** PP 更看吞吐和身份路径，TG 更看常驻内存和随机访问局部性。两阶段目标不同，不该强行同构。  
+**效果：** 在 Qwen3.5-35B-A3B 上，`18.21 GB -> 9.77 GB (-46%)`，TG 还从 `90.0 -> 92.8 tok/s`。  
+**真正牛的点：** 不是“省了内存”，而是把 **参数常驻策略** 做成了 runtime policy。
 
-很多项目默认平台是 NVIDIA。  
-**FlashMLX 默认平台是 M4 Pro 48GB 这种真实机器。**
+### 2. Speculative Execution (clamp, no sentinel)
+**解决什么问题：** MoE expert miss 检测如果放在热路径上，会引入 GPU→CPU 同步，把 lazy eval 打爆。  
+**核心原理：** 把 miss 检查从每 token 的热路径挪到 compact 时的冷路径，运行时只做预先约束过的 remap。  
+**机制：** `item() sentinel -> mx.minimum -> pre-clamp remap` 三代演化，最终零 `.item()`、零热路径同步。  
+**效果：** TG 从 `5.6 -> 28.1 -> 92.8 tok/s`，16x 提升。  
+**真正牛的点：** 这是典型的系统高手操作：**move work from hot path to cold path**。
 
-这就是它不一样的地方。
+### 3. UMA-Aware CPU Cache
+**解决什么问题：** Apple Silicon 上 CPU/GPU 共享内存，不应该照搬“显存/内存二元对立”的 CUDA 思维。  
+**核心原理：** 把冷专家放 CPU 侧缓存，但利用 UMA 让 `numpy -> mx.array` 成本足够低。  
+**机制：** 热池在 GPU，冷池在 CPU，必要时快速提升，不把每次 miss 都打到 SSD。  
+**效果：** 冷专家不再占满 GPU，同时保留可接受的恢复时延。  
+**真正牛的点：** 这是 **按 Apple Silicon 的物理现实设计系统**，不是翻译 CUDA 教条。
+
+### 4. Chunked Prefill + Streaming Eviction
+**解决什么问题：** 标准 attention 在长上下文 PP 中是 O(N²) 内存，32K prompt 很容易到 5GB+ 峰值。  
+**核心原理：** 把 prefill 切成小 chunk，并在 cache 超阈值时动态淘汰冷 token，把 PP 峰值从“跟长度走”改成“被预算约束”。  
+**机制：** `chunk=512` + `max_cache=2048` + AM scoring eviction。  
+**效果：** `5079 MB -> 774 MB (-85%)`，PP 还从 `213.6 -> 369.1 tok/s`。  
+**真正牛的点：** 不是“省一点 PP 内存”，而是把 **PP 内存曲线改写成近似 O(1)**。
+
+### 5. On-Policy Stage-wise Calibration
+**解决什么问题：** 多层深网络的 KV 压缩误差会逐层放大，单层有效不等于 36 层有效。  
+**核心原理：** 校准必须用“压缩后的真实分布”继续往后推，而不是用原始分布离线拟合。  
+**机制：** 分阶段校准，每一阶段都以前一阶段输出为输入；不是 one-shot 离线拟合。  
+**效果：** 从只能稳定覆盖 `18/36 layers` 提升到 `36/36 layers`。  
+**真正牛的点：** 你不是在复现 paper，而是在**补论文没讲明白的生产约束**。
+
+### 6. Bounded β Optimization
+**解决什么问题：** 论文里的 β 求解默认数值稳定，但真实长序列上会发散。  
+**核心原理：** 所有在线优化参数都必须有生产可接受的数值边界。  
+**机制：** 对 β 显式设边界，防止漂到 `[-171, +221]` 这种灾难区。  
+**效果：** 长序列下校准稳定，避免 reconstruction 直接崩坏。  
+**真正牛的点：** 这是典型“论文隐含假设 -> 工业约束显性化”。
+
+### 7. Scored P2 One-Shot Promotion
+**解决什么问题：** 多级 aging/pipeline cache 看起来优雅，但会带来 PP 双缓冲和复杂管理成本。  
+**核心原理：** 在 PP→TG 交界一次性打分、一次性晋升，比全程维护多层 cache 更直接。  
+**机制：** `bf16 during PP -> score once at transition -> hot tokens to quantized flat buffer`。  
+**效果：** 避免了 pipeline 方案带来的 PP 内存翻倍。  
+**真正牛的点：** **简单模型赢复杂模型**，而且是经过墓碑验证后的结论。
+
+### 8. Q8_0 Flat Buffer Quantization
+**解决什么问题：** KV 量化不能只追求更低 bit，必须看 bandwidth、dequant 成本和真实 TG 热路径。  
+**核心原理：** 当 KV 读只占 TG 总带宽的一小部分时，Q4 的 nibble unpack 成本可能大于节省下来的带宽。  
+**机制：** 保留连续 flat buffer + Q8 dequant，只引入极低额外算术成本。  
+**效果：** 在 32K 上把 TG KV 压到 `147 MB`，同时保留 `24.7 tok/s`。  
+**真正牛的点：** 不是“追低 bit”，而是**选真实系统 sweet spot**。
+
+### 9. Pluggable Quantization Strategies
+**解决什么问题：** 不同模型、不同上下文长度、不同平台约束下，单一量化后端不可能永远最优。  
+**核心原理：** 把 quantizer 抽象成可切换 backend，由 runtime 选择平衡点，而不是把某个 codec 神化。  
+**机制：** 统一接口下支持 `Q4_0 / Q8_0 / PolarQuant / TurboQuant`。  
+**效果：** 允许 FlashMLX 把 TurboQuant 当武器而不是宗教。  
+**真正牛的点：** 你做的是系统，不是“某个论文的忠实信徒”。
+
+### 10. Auto-Calibration System
+**解决什么问题：** 新模型、新层分布、新量化策略如果都要手工调，根本不具备产品化可能。  
+**核心原理：** 首次使用自动校准，之后缓存结果，把工程复杂度从“手工调参”降成“首次预热”。  
+**机制：** first use calibration，后续直接命中缓存。  
+**效果：** 首次约 `~26s`，之后 `<1ms` 级加载。  
+**真正牛的点：** 这一步把研究 prototype 推向了**真实产品接口**。
+
+---
+
+## 15 个工程级技术优化：它们为什么重要
+
+> 下面这 15 个点，决定了 FlashMLX 不是“理论上成立”，而是“在真 GPU 上真的快”。
+
+### S1. Gather-Sort Cache Locality
+**问题：** gather_qmm 访问分散，cache miss 高，TG 会被随机访存拖死。  
+**做法：** 调整 gather / sort 顺序，让访问更局部。  
+**价值：** 提升热池访问局部性，TG 吞吐更稳。
+
+### S2. Three-Tier Hierarchical Cache (GPU / CPU / SSD)
+**问题：** 如果冷专家一 miss 就直接打 SSD，恢复时延不可接受。  
+**做法：** GPU 热池、CPU 温池、SSD 冷池三级分层。  
+**价值：** miss 恢复从“巨慢”变成“可控”，把极端情况也纳入系统边界。
+
+### S3. Telemetry-Driven Expert Prediction
+**问题：** compact pool 如果选错专家，后续 miss 会反复发生。  
+**做法：** 用历史活跃 telemetry 预测下一阶段热专家。  
+**价值：** 让 compact pool 更接近真实访问分布。
+
+### S4. Dynamic Pool Self-Optimization
+**问题：** 长对话下 expert 分布会漂移，静态 pool 会越来越失配。  
+**做法：** 让热池大小/组成动态自优化。  
+**价值：** 长会话性能不衰减。
+
+### S5. Background Prefetch Engine
+**问题：** miss 恢复如果是同步的，会直接阻塞 decode。  
+**做法：** 后台预取未来可能需要的专家。  
+**价值：** 把 miss cost 从用户可感知路径移开。
+
+### S6. Regime Auto-Detection
+**问题：** 用户不该手工判断自己现在适合 full-GPU、three-tier 还是 streaming。  
+**做法：** 根据上下文、内存、模型形态自动判断 regime。  
+**价值：** 系统可用性大幅提高。
+
+### S7. Identity Path Detection
+**问题：** PP 阶段很多层其实仍走 identity path，不该在每层都白做 remap。  
+**做法：** 自动识别 identity path，跳过无意义 `mx.take`。  
+**价值：** PP 少掉一堆无意义操作。
+
+### S8. Async SSD→CPU Population
+**问题：** compact 期间同步填充 CPU cache，会阻塞 GPU。  
+**做法：** SSD→CPU 异步填充。  
+**价值：** 减少 compact 期间的 stall。
+
+### S9. Deferred PP Index Collection
+**问题：** PP 阶段每步发现一个索引就回传 CPU，会造成海量同步。  
+**做法：** 先在 GPU/批量路径里收齐，再统一裁剪。  
+**价值：** 避免 `2560` 次级别的 GPU→CPU sync。
+
+### S10. Pool Miss Mini-Pool Fallback
+**问题：** 极少数 miss 不值得用复杂热路径处理，但又不能完全无恢复。  
+**做法：** 为边缘 miss 准备轻量 fallback mini-pool。  
+**价值：** 既不拖累 99.9% 热路径，又不放弃极端正确性。
+
+### S11. Lazy Prefill Threshold
+**问题：** 短上下文一上来就量化/压缩，纯属白折腾。  
+**做法：** 只有上下文长到值得压缩时才启用。  
+**价值：** 短 prompt 不被“高级优化”反向伤害。
+
+### S12. Adaptive Compression Ratio
+**问题：** 32K 长序列如果压得太狠，质量会塌。  
+**做法：** 根据上下文长度和误差预算调整压缩比。  
+**价值：** 不是死命压，而是按质量预算做控制。
+
+### S13. Chunk-Aware Eviction
+**问题：** TurboQuant / QJL 这类残差校正方法，在 chunk 边界反复 re-quant 可能放大噪声。  
+**做法：** eviction 和 chunk 结构对齐，避免不必要的重复量化。  
+**价值：** 把算法级误差和系统级切块逻辑统一起来。
+
+### S14. Vectorized Single-Gather
+**问题：** 30 次 GPU dispatch 干 1 件事，纯属调度自杀。  
+**做法：** 向量化 gather，把多次小 dispatch 合成一次大操作。  
+**价值：** dispatch overhead 大降，热路径更干净。
+
+### S15. RoPE Position Correction
+**问题：** token eviction/压缩后，如果位置处理不对，RoPE 会直接失真。  
+**做法：** 在 cache 变形之后做位置修正。  
+**价值：** 确保“省了内存”不是以位置语义崩坏为代价。
+
+---
+
+## 墓碑系统：FlashMLX 不是靠运气做出来的
+
+真正成熟的系统，不是只有成功案例，还要有**明确杀掉的失败路线**。FlashMLX 的墓碑很值钱，因为它说明这套系统是被现实打磨出来的。
+
+### 9 条被判死刑的路线
+1. **Pipeline L0→L1→L2 cache**：结构优雅，但 PP 内存翻倍，直接判死刑。  
+2. **AM compress-and-reconstruct**：AM 适合 scoring，不适合 reconstruction。  
+3. **Unbounded β solver**：长序列直接发散。  
+4. **Off-policy calibration**：后半网络误差不可控。  
+5. **`.item()` / precise miss handling on hot path**：同步毁掉吞吐。  
+6. **AM on hybrid architecture (Qwen3.5)**：SSM 层会放大 attention 压缩误差。  
+7. **Q4_0 flat buffer as default**：压得更狠，但 TG 速度不值。  
+8. **Discovery phase `.tolist()`**：每步回传 CPU，系统性慢。  
+9. **Precise miss handling on hot path**：0.1% 边缘 case 不该惩罚 99.9% 热路径。  
+
+### FlashMLX 学到的四条铁律
+- **看起来优雅，不代表真的更快**
+- **论文隐含假设，必须被工业化约束显性化**
+- **结构不兼容，不是调参能救的**
+- **冷操作绝不能塞进热路径**
 
 ---
 
@@ -223,13 +397,13 @@ FlashMLX 自己的移植与 benchmark 已经说明：
 - benchmark 比故事更重要
 
 ### 3. 默认追求端到端 balance
-- 不是只看压缩率
-- 不是只看单点 tok/s
-- 不是只看某个漂亮图
-- 是看 **TTFT / TG / Peak / Quality / Complexity** 的整体最优
+- 不只看压缩率
+- 不只看单点 tok/s
+- 不只看某张漂亮图
+- 看的是 **TTFT / TG / Peak / Quality / Complexity** 的整体最优
 
 ### 4. Apple Silicon 不是“平替 CUDA”
-它有自己的规律，就应该有自己的 runtime。
+它有自己的规律，就该有自己的 runtime。
 
 ---
 
@@ -247,36 +421,6 @@ FlashMLX 自己的移植与 benchmark 已经说明：
 - 保留墓碑（dead approaches）
 - 明确降级策略
 - 不把实验结果包装成神话
-
----
-
-## 什么时候该用 FlashMLX
-
-### 你应该用它，如果你：
-- 在 Apple Silicon 上跑本地 LLM
-- 关心 TTFT，而不只关心单项吞吐
-- 要跑长上下文
-- 要把 35B MoE 跑到真正可用
-- 想看一个“runtime / memory policy”级别的开源项目
-
-### 你可能不需要它，如果你：
-- 只做 NVIDIA 数据中心 serving
-- 主要关心多节点、多租户、高并发 API 服务
-- 只想要一个简单、通用、默认稳定的基础推理包
-
----
-
-## 项目状态
-
-FlashMLX 的目标不是“做一个看起来厉害的 benchmark artifact”。  
-它的目标是：
-
-> **把 Apple Silicon 上的本地推理，从“能跑”推进到“像真正的系统软件一样可优化、可组合、可扩展”。**
-
-当前阶段，FlashMLX 已经验证了：
-- 35B MoE 在 M4 Pro 48GB 上不仅能跑，而且可以显著缩短 TTFT、降低峰值、提升 TG
-- 纯量化不是答案，调度 + eviction + residency 才是关键
-- Apple Silicon 值得拥有一条自己的 inference runtime 路线
 
 ---
 
