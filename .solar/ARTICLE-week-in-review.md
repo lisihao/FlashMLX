@@ -273,6 +273,54 @@ Qwen3-8B-MLX (Q8), Apple M4 Pro 24GB，Scored Q8 (推荐配置)：
 
 32K 上下文：**TG 快 54%，KV 省 97%，质量无损。**
 
+### v1.1 新增：TurboQuant Flat Buffer — 可插拔量化的极限
+
+v1.0 的 Flat Buffer 提供三档：bf16（无压缩）、Q8_0（2x，推荐）、Q4_0（3.6x，TG 太慢）。
+
+v1.1 把 Google TurboQuant (ICLR 2026) 的 PolarQuant 算法移植进来，作为第四档 `flat_quant="turboquant"`——Haar 随机旋转 + Lloyd-Max 最优标量量化，4 bit/coordinate，3.8x 压缩，**不需要校准数据**。
+
+#### 完整性能矩阵（Qwen3-8B, generate_step 方法论, 200 gen tokens）
+
+**最优配置对比（scored_pq 家族，16K 上下文）**：
+
+| 配置 | PP tok/s | TG tok/s | TTOF | KV TG | KV 节省 | 定位 |
+|------|----------|----------|------|-------|---------|------|
+| standard (baseline) | 347 | 21.0 | 47.0s | 2,454 MB | — | 基线 |
+| **scored + bf16** | 378 | **28.3** | 43.2s | 302 MB | -88% | **速度王** |
+| **scored + q8_0** | 407 | **25.9** | 40.1s | 153 MB | -94% | **推荐默认** |
+| scored + q4_0 | 422 | 18.7 | 38.7s | 85 MB | -97% | 极致压缩 |
+| scored + turboquant | **432** | 16.5 | **37.8s** | **80 MB** | **-97%** | 极致压缩+ |
+
+**全量矩阵（8K 上下文，scored_pq 的优势最明显的区间）**：
+
+| 配置 | PP tok/s | TG tok/s | TTOF | KV TG | KV 节省 |
+|------|----------|----------|------|-------|---------|
+| standard | 353 | 24.6 | 23.0s | 1,246 MB | — |
+| scored + bf16 | 394 | **28.3** (+15%) | 20.6s | 302 MB | -76% |
+| scored + q8_0 | 391 | **25.7** (+4%) | 20.8s | 153 MB | **-88%** |
+| scored + q4_0 | 409 | 18.6 (-24%) | 19.9s | 85 MB | -93% |
+| scored + turboquant | **421** | 16.5 (-33%) | **19.3s** | **80 MB** | **-94%** |
+
+#### 为什么 scored+q8_0 仍是推荐默认？
+
+**TG 带宽分析**：KV Cache 读取只占 TG 总带宽 ~6%（94% 是模型参数）。
+
+- Q8_0 dequant = 1 条 Metal 指令（absmax × int8），几乎免费 → TG 25.9 tok/s
+- Q4_0 dequant = nibble unpack + group scale = compute-bound → TG 18.7 (-28%)
+- TurboQuant dequant = Haar 逆旋转(128×128 matmul) + centroid lookup → TG 16.5 (-36%)
+
+每多一层量化复杂度，省的是 6% 带宽里的一小部分，加的是实打实的 compute。
+
+**边际收益递减**：scored+q8_0 已经 -94% KV → 153 MB。turboquant 再省到 80 MB，多省 73 MB，但牺牲 36% TG 速度。对 48GB M4 Pro 来说，73 MB 无感。
+
+**turboquant 的甜蜜区**：16GB MacBook Air 跑 32K+ 上下文——每一 MB 都 count，TG 慢点可以忍。
+
+#### TurboQuant 的技术约束
+
+**head_dim ≥ 128**：PolarQuant 的 Haar 随机旋转依赖 CLT 收敛。head_dim=128 时各坐标近似 i.i.d. Gaussian，Lloyd-Max 量化器 MSE 最优。head_dim=64（如 Qwen2.5-0.5B）时收敛不足，attention quality 崩溃。代码自动检测并降级到 Q4_0。
+
+**Phase 4 优化**：对 dequant 热路径做了 -25% 延迟优化（关闭 norm_correction、rsqrt 替换 norm+div、向量化 pack、预计算常量）。head_dim≥128 时 norm_correction=False 验证 15/15 token parity。
+
 ---
 
 ## 三线汇合：完整架构
@@ -1619,15 +1667,15 @@ ctx.compact(pool_size=128)  # 18.21 → 9.77 GB, TG: 92.8 tok/s
 - `triple_layer_cache.py` — Scored P2 + Chunked Prefill + Q8/Q4 Flat Buffer
 - `cache_factory.py` — 策略工厂 + 自适应参数
 - `am_calibrator.py` — 自动校准系统
-- `quantization_strategies.py` — 可插拔量化（Q4_0, Q8_0, PolarQuant）
+- `quantization_strategies.py` — 可插拔量化（Q4_0, Q8_0, PolarQuant, TurboQuant）
 
 **Expert Offloading（路线一）**:
 - `expert_offload.py` — Two-Phase Compact Pool + Speculative Execution + CPU Cache
 
 ---
 
-*这篇文章基于 2026 年 3 月 18 日至 29 日的开发记录。*
+*这篇文章基于 2026 年 3 月 18 日至 31 日的开发记录。*
 *KV Cache 数据来自 Qwen3-8B-MLX (Q8) on Apple M4 Pro 24GB。*
 *Expert Offloading 数据来自 Qwen3.5-35B-A3B (Q4) on Apple M4 Pro 48GB。*
 *所有测试在独立子进程中运行，串行执行。*
-*FlashMLX v1.0 — MIT License*
+*FlashMLX v1.1 — MIT License*

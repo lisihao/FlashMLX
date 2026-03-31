@@ -37,7 +37,7 @@
 |------|------|------|------|
 | 参数内存 | MoE 专家权重 | Expert Offloading + Compact Pool | 18.21 → 9.77 GB (**-46%**) |
 | PP 内存 | Prefill 激活峰值 | Chunked Prefill + Streaming Eviction | 5,079 → 774 MB (**-85%**) |
-| TG 内存 | KV Cache 累积 | Scored P2 + Q8 Flat Buffer | 4,572 → 147 MB (**-97%**) |
+| TG 内存 | KV Cache 累积 | Scored P2 + Pluggable Flat Buffer | 2,454 → 80 MB (**-97%**) |
 
 但 v1.0 的所有测试都是**单请求**。当我们把 batch 开到 4，问题来了。
 
@@ -165,6 +165,20 @@ while not all_done:
 
 > Context 越长，FlashMLX 优势越大。16K 下社区版 TG 被 KV Cache 拖到 115 tok/s，FlashMLX 通过更紧凑的调度维持 197 tok/s。
 
+### KV Cache 可插拔量化配置（单请求, Qwen3-8B, M4 Pro 48GB）
+
+v1.1 新增 TurboQuant (PolarQuant PQ4, ICLR 2026) — 第 4 级 flat buffer 量化。
+
+| 配置 | Ctx | PP tok/s | TG tok/s | TTOF | KV PP Peak | KV TG | KV 节省 |
+|------|-----|----------|----------|------|------------|-------|---------|
+| standard | 16K | 347.2 | 21.0 | 47.02s | 3,006 MB | 2,454 MB | — |
+| scored+bf16 | 16K | 378.3 | 28.3 | 43.15s | 976 MB | 302 MB | -88% |
+| **scored+q8_0** | **16K** | **406.7** | **25.9** | **40.14s** | **976 MB** | **153 MB** | **-94%** |
+| scored+q4_0 | 16K | 422.1 | 18.7 | 38.68s | 976 MB | 85 MB | -97% |
+| scored+tq | 16K | 431.8 | 16.5 | 37.81s | 976 MB | 80 MB | -97% |
+
+**推荐**：`scored_pq + q8_0` — TG +23%、KV -94%、最佳性能/内存平衡。TurboQuant 仅在极端内存受限场景值得（多省 73 MB，换 36% TG 代价）。
+
 ---
 
 ## 架构全景
@@ -222,6 +236,14 @@ Tick N:  [Decode R1,R2,R3,R4]     → [Prefill Prompt4 完成! 开始 Prompt3...
 | 4 | **P4 命中率实时监控** | 专家池配置不当导致的性能退化 |
 | 5 | **A4 动态剪枝增强** | entropy-adaptive 的 k 调整 |
 
+### v1.1 新增：TurboQuant 可插拔量化
+
+| # | 创新 | 解决的问题 |
+|---|------|-----------|
+| 1 | **PolarQuant PQ4** (ICLR 2026) | Haar 旋转 + Lloyd-Max 4-bit 标量量化，KV 压缩 3.8x |
+| 2 | **可插拔 flat buffer 架构** | bf16/Q8/Q4/TurboQuant 统一接口，一行切换 |
+| 3 | **head_dim 自动降级** | head_dim < 128 自动回退 q4_0，CLT 收敛保护 |
+
 ### v1.0 设计创新 (10)
 
 | # | 创新 | 路线 | 成果 |
@@ -234,7 +256,7 @@ Tick N:  [Decode R1,R2,R3,R4]     → [Prefill Prompt4 完成! 开始 Prompt3...
 | 6 | Bounded Beta Optimization | TG | 修复论文隐含假设 |
 | 7 | Scored P2 一次性 Promotion | TG | 避免 PP 内存翻倍 |
 | 8 | Q8_0 Flat Buffer | TG | 6% 速度换 50% 内存 |
-| 9 | 可插拔量化策略 | TG | Q4/Q8/PolarQuant 统一接口 |
+| 9 | 可插拔量化策略 | TG | Q4/Q8/PolarQuant/TurboQuant 统一接口 |
 | 10 | 自动校准系统 | TG | 新模型零配置 |
 
 ### 系统工程优化 (15)
@@ -332,7 +354,18 @@ model, tokenizer = load("mlx-community/Qwen3-8B-Instruct")
 # 一行代码启用 KV Cache 压缩
 result = generate(model, tokenizer, prompt="Your long prompt...",
                   kv_cache="scored_pq", kv_flat_quant="q8_0")
+
+# 可选量化级别：None (bf16), "q8_0" (推荐), "q4_0", "turboquant" (极限压缩)
 ```
+
+### KV Cache 配置指南
+
+| 配置 | KV 内存 | TG 速度 | PP 速度 | 适用场景 |
+|------|---------|---------|---------|----------|
+| `scored_pq` (bf16) | -88% @ 16K | +35% | +9% | 最大 TG 速度 |
+| `scored_pq` + `q8_0` | -94% @ 16K | +23% | +17% | **推荐默认** |
+| `scored_pq` + `q4_0` | -97% @ 16K | -11% | +22% | 内存优先 |
+| `scored_pq` + `turboquant` | -97% @ 16K | -21% | +24% | 极限压缩 |
 
 ---
 
@@ -348,7 +381,8 @@ Day 8-9:   Expert Offloading: .item() (5.6 tok/s) → speculative clamp (92.8 to
 Day 10-12: 三级专家管理 + 动态剪枝 + prefetch engine。
 Day 13:    分块交错调度: batch=4 首次跑通，TTFT -74%。
 Day 14:    Turbo Sweep: 发现 chunk=512 是 killer，TG +70%。
-Day 15:    v2.0 发布。30 项创新，9 个墓碑，0 个 mock。
+Day 15:    TurboQuant 移植: PolarQuant PQ4, KV 80 MB (-97%)。
+Day 16:    v2.0 发布。30+ 项创新，9 个墓碑，0 个 mock。
 ```
 
 详细技术文章（25 个创新 + 15 个工程优化 + 9 个墓碑的完整故事）：[从论文到生产](.solar/ARTICLE-week-in-review.md)
@@ -382,6 +416,15 @@ Each scheduler tick: decode ALL active requests (1 token each) -> prefill 1 chun
 
 **16K worst case**: TG **+70%** | TTFT **-74%** | Peak **-51%** | Quality: ALL PASS
 
+### KV Cache Pluggable Quantization (Single Request, Qwen3-8B, 16K)
+
+| Config | TG tok/s | KV TG | KV Save | Use Case |
+|--------|----------|-------|---------|----------|
+| scored+bf16 | 28.3 | 302 MB | -88% | Speed king |
+| **scored+q8_0** | **25.9** | **153 MB** | **-94%** | **Recommended** |
+| scored+q4_0 | 18.7 | 85 MB | -97% | Memory-critical |
+| scored+turboquant | 16.5 | 80 MB | -97% | Max compression |
+
 ### Why chunk=512?
 
 Large prefill chunks pollute GPU L2 cache with activation data, causing decode-phase cache misses. Smaller chunks leave room for KV cache and model parameters to stay resident. Sweet spot: 512 tokens.
@@ -402,6 +445,13 @@ while True:
         if r.finish_reason: print(f"Done: {r.uid}")
 ```
 
-### 30 Innovations, 9 Gravestones, 0 Mocks
+### 30+ Innovations, 9 Gravestones, 0 Mocks
 
 Built on Apple's [mlx-lm](https://github.com/ml-explore/mlx-lm). Full technical article: [From Paper to Production](.solar/ARTICLE-week-in-review.md)
+
+---
+
+*FlashMLX v2.0 — Built for Apple Silicon, March 2026*
+*Batch data: Qwen3.5-35B-A3B (6-bit) on Apple M4 Pro 48GB*
+*KV Cache data: Qwen3-8B-MLX (Q8) on Apple M4 Pro 48GB, generate_step methodology*
+*All benchmarks: serial execution, isolated subprocess*
