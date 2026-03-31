@@ -33,9 +33,6 @@ class H0Store:
     def __init__(self):
         self._h0 = None   # (B, T_total, d_hidden) or None
         self._count = 0
-        # Persistent reconstruction caches (incremental optimization)
-        self._recon_caches = None    # List[KVCache], one per layer
-        self._recon_count = 0        # Evicted tokens already in recon_caches
 
     def append(self, h0):
         """Append new tokens' h^(0). h0 shape: (B, L, d_hidden)."""
@@ -52,31 +49,15 @@ class H0Store:
         """
         return self._h0[:, :n_evicted, :]
 
-    def get_newly_evicted(self, n_evicted):
-        """Return h^(0) for tokens [_recon_count : n_evicted].
-
-        These are tokens evicted since the last reconstruction pass.
-        Returns: (B, delta, d_hidden)
-        """
-        return self._h0[:, self._recon_count:n_evicted, :]
-
-    def init_recon_caches(self, num_layers):
-        """Initialize persistent reconstruction KVCaches (called once)."""
-        self._recon_caches = [KVCache() for _ in range(num_layers)]
-        self._recon_count = 0
-
     @property
     def count(self):
         return self._count
 
     @property
     def nbytes(self):
-        base = 0
-        if self._h0 is not None:
-            base = self._h0.nbytes
-        if self._recon_caches is not None:
-            base += sum(rc.nbytes for rc in self._recon_caches)
-        return base
+        if self._h0 is None:
+            return 0
+        return self._h0.nbytes
 
 
 # ---------------------------------------------------------------------------
@@ -88,8 +69,8 @@ class KVDirectCache(_BaseCache):
 
     Two-region design:
       Recent Region: last ``budget`` tokens -> full K/V stored
-      Evicted Region: older tokens -> K/V reconstructed from shared h^(0)
-                      via forward pass, injected as _recon_keys/_recon_values
+      Evicted Region: older tokens -> K/V reconstructed on-the-fly from
+                      shared h^(0) via forward pass (transient, freed after use)
     """
 
     def __init__(self, budget=512, h0_store=None):
@@ -169,7 +150,7 @@ class KVDirectCache(_BaseCache):
 
     @property
     def nbytes(self):
-        """Per-layer KV bytes only. H0Store/recon_caches are shared — report separately."""
+        """Per-layer recent K/V only. h^(0) is shared — reported separately."""
         kv_bytes = 0
         if self._recent_keys is not None:
             kv_bytes = self._recent_keys.nbytes + self._recent_values.nbytes
@@ -275,47 +256,30 @@ def apply_h0_capture(model, caches, h0_store):
 def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices):
     """Run reconstruction forward pass to produce evicted K/V.
 
-    INCREMENTAL OPTIMIZATION:
-      - First call: batch-process all n_evicted tokens (O(n_evicted² × L)).
-      - Subsequent calls: only process newly evicted tokens (O(n_evicted × L)).
-        Previous tokens' K/V are already cached in persistent recon_caches.
+    Creates FRESH temp KVCaches each call, feeds h^(0)[0:n_evicted] through
+    all layers, extracts K/V and injects into real caches. Temp caches are
+    freed after use — only h^(0) persists (paper-faithful, memory-efficient).
 
     Correctness:
       - Evicted tokens are always the oldest (positions 0..n_evicted-1)
       - They only attend to each other (causal mask) — no need for recent K/V
-      - KVCache.offset auto-increments → RoPE positions stay correct
-      - Incremental append ≡ batch processing (causal, deterministic)
+      - Temp caches start at offset=0 → RoPE positions 0..n_evicted-1 (correct)
     """
+    h_e = h0_store.get_evicted(n_evicted)
+
     num_layers = len(inner_model.layers)
+    temp_caches = [KVCache() for _ in range(num_layers)]
 
-    # Initialize persistent recon_caches on first call
-    if h0_store._recon_caches is None:
-        h0_store.init_recon_caches(num_layers)
+    mask_e = create_attention_mask(h_e, temp_caches[0])
 
-    recon_caches = h0_store._recon_caches
-    prev_count = h0_store._recon_count
+    h = h_e
+    for layer, tc in zip(inner_model.layers, temp_caches):
+        h = layer(h, mask_e, tc)
 
-    if prev_count == 0:
-        # Batch mode: first reconstruction, process all evicted tokens
-        h_e = h0_store.get_evicted(n_evicted)
-        mask_e = create_attention_mask(h_e, recon_caches[0])
-        h = h_e
-        for layer, rc in zip(inner_model.layers, recon_caches):
-            h = layer(h, mask_e, rc)
-    else:
-        # Incremental mode: only process newly evicted token(s)
-        h_new = h0_store.get_newly_evicted(n_evicted)
-        mask_new = create_attention_mask(h_new, recon_caches[0])
-        h = h_new
-        for layer, rc in zip(inner_model.layers, recon_caches):
-            h = layer(h, mask_new, rc)
-
-    h0_store._recon_count = n_evicted
-
-    # Extract K/V from persistent recon_caches and inject into real caches
     kv_direct_set = set(kv_direct_indices)
     for i in range(num_layers):
         if i in kv_direct_set:
-            k, v = recon_caches[i].state
+            tc = temp_caches[i]
+            k, v = tc.state
             caches[i]._recon_keys = k
             caches[i]._recon_values = v
