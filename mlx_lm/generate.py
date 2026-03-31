@@ -3,6 +3,7 @@
 import argparse
 import contextlib
 import functools
+import gc
 import json
 import sys
 import time
@@ -979,6 +980,19 @@ class BatchGenerator:
         finish_reason: Optional[str]
         prompt_cache: Callable[[], List[Any]]
 
+    @dataclass
+    class _PrefillState:
+        """Tracks a prompt being prefilled chunk-by-chunk in interleaved mode."""
+        uid: int
+        remaining: mx.array        # [1, remaining_len] tokens not yet processed
+        cache: List[Any]            # KV cache being built up
+        sampler: Any
+        logits_processor: Any
+        max_tokens: int
+        tokens: mx.array            # full token sequence (for logits_processor)
+        total_length: int           # original prompt length
+        processed: int              # tokens processed so far
+
     def __init__(
         self,
         model,
@@ -998,6 +1012,8 @@ class BatchGenerator:
             Callable[[List[Tuple[int, int, int]]], None]
         ] = None,
         max_kv_size: Optional[int] = None,
+        interleaved: bool = False,
+        interleaved_chunk_size: int = 512,
     ):
         self.model = model
         self.unprocessed_prompts = []
@@ -1015,6 +1031,16 @@ class BatchGenerator:
         self._next_count = 0
         self.max_kv_size = max_kv_size
 
+        # Interleaved scheduling: prefill 1 chunk per tick, decode between chunks
+        self._interleaved = interleaved
+        self._interleaved_chunk_size = interleaved_chunk_size
+        self._prefill_state: Optional[BatchGenerator._PrefillState] = None
+
+        # P3: Memory budget — skip prefill if GPU headroom too low
+        self._memory_budget_bytes: int = 0  # 0 = auto-detect
+        self._memory_reserve_bytes: int = int(2.0 * 1024**3)  # 2GB safety margin
+        self._prefill_skipped: int = 0  # counter for backpressure events
+
         self.active_batch = None
 
         if mx.metal.is_available():
@@ -1025,10 +1051,27 @@ class BatchGenerator:
             self._old_wired_limit = None
 
     def close(self):
+        # Release active batch (KV caches, tokens, logprobs)
+        if self.active_batch is not None:
+            self.active_batch = None
+
+        # Release in-progress prefill state (interleaved mode)
+        if self._prefill_state is not None:
+            self._prefill_state = None
+
+        # Release pending prompts (pre-allocated caches)
+        if self.unprocessed_prompts:
+            self.unprocessed_prompts = []
+
+        # Restore wired limit
         if self._old_wired_limit is not None:
             mx.synchronize(generation_stream)
             mx.set_wired_limit(self._old_wired_limit)
             self._old_wired_limit = None
+
+        # Force free GPU memory held by dead Python objects
+        gc.collect()
+        mx.clear_cache()
 
     def __del__(self):
         self.close()
@@ -1362,8 +1405,220 @@ class BatchGenerator:
         self._stats.generation_tokens += len(responses)
         return responses
 
+    # ── Interleaved scheduling ──────────────────────────────────────────
+    # Decode-first: each tick decodes all active requests, then prefills
+    # at most 1 chunk of a pending prompt. This prevents PP peak memory
+    # from stacking with TG memory when batch > 1.
+
+    def _start_prefill(self):
+        """Pop the next unprocessed prompt and initialize chunked prefill state."""
+        uid, tokens, max_tok, user_cache, sampler, lp, pc = \
+            self.unprocessed_prompts.pop(0)
+
+        input_ids = mx.array(tokens)[None, :]  # [1, seq_len]
+        total_len = input_ids.shape[1]
+
+        # Create batch cache for single prompt (no left-padding)
+        prompt_cache = _make_cache(self.model, [0], self.max_kv_size)
+
+        self._prefill_state = self._PrefillState(
+            uid=uid,
+            remaining=input_ids,
+            cache=prompt_cache,
+            sampler=sampler,
+            logits_processor=lp,
+            max_tokens=max_tok,
+            tokens=mx.array(tokens),
+            total_length=total_len,
+            processed=0,
+        )
+        self._stats.prompt_tokens += total_len
+
+    def _prefill_one_chunk(self):
+        """Process one chunk of the prefilling prompt.
+
+        Returns True when only the last token remains (ready to finalize).
+        """
+        ps = self._prefill_state
+        remaining_len = ps.remaining.shape[1]
+
+        # Keep last token for _step (first decode token)
+        available = remaining_len - 1
+        if available <= 0:
+            return True  # Only last token left
+
+        n = min(self._interleaved_chunk_size, available)
+        self.model(ps.remaining[:, :n], cache=ps.cache)
+        mx.eval([c.state for c in ps.cache if c is not None])
+        ps.remaining = ps.remaining[:, n:]
+        ps.processed += n
+        mx.clear_cache()
+
+        self.prompt_progress_callback(
+            [(ps.uid, ps.processed, ps.total_length)]
+        )
+
+        return ps.remaining.shape[1] <= 1
+
+    def _finalize_prefill(self):
+        """Complete prefill: compute first decode token, create Batch."""
+        ps = self._prefill_state
+
+        for c in ps.cache:
+            c.finalize()
+
+        # Last token → _step to get first decode token
+        y, logprobs = self._step(
+            ps.remaining,
+            ps.cache,
+            [ps.sampler],
+            [ps.logits_processor],
+            [ps.tokens],
+        )
+        mx.async_eval(y, logprobs)
+
+        batch = Batch(
+            [ps.uid],
+            y,
+            logprobs,
+            [ps.max_tokens],
+            [0],
+            ps.cache,
+            [ps.sampler],
+            [ps.logits_processor],
+            [ps.tokens],
+        )
+        self._prefill_state = None
+        return batch
+
+    def _next_interleaved(self):
+        """Interleaved tick: decode-first, then prefill one chunk.
+
+        Phase 1: Decode all active requests (1 token each)
+        Phase 2: Prefill 1 chunk of pending prompt (if slot available)
+        """
+        tic = time.perf_counter()
+        responses = []
+
+        # ── Phase 1: Decode active requests ──
+        if self.active_batch is not None:
+            batch = self.active_batch
+            y, logprobs = batch.y, batch.logprobs
+
+            # Accumulate tokens
+            for i, toks in enumerate(batch.tokens):
+                batch.tokens[i] = mx.concatenate((toks, y[i : i + 1]))
+
+            # One decode step
+            batch.y, batch.logprobs = self._step(
+                y[:, None],
+                batch.cache,
+                batch.samplers,
+                batch.logits_processors,
+                batch.tokens,
+            )
+            mx.async_eval(batch.y, batch.logprobs, batch.tokens)
+
+            y_list = y.tolist()
+            toc = time.perf_counter()
+            self._stats.generation_time += toc - tic
+            tic = toc
+
+            # Collect responses and remove finished
+            keep_idx = []
+            end_idx = []
+            for e, (t, uid, num_tok, max_tok) in enumerate(
+                zip(y_list, batch.uids, batch.num_tokens, batch.max_tokens)
+            ):
+                rcache = None
+                num_tok += 1
+                batch.num_tokens[e] = num_tok
+                if t in self.stop_tokens:
+                    finish_reason = "stop"
+                    end_idx.append(e)
+                elif num_tok >= max_tok:
+                    finish_reason = "length"
+                    end_idx.append(e)
+                else:
+                    finish_reason = None
+                    keep_idx.append(e)
+                if finish_reason is not None:
+                    rcache = batch.extract_cache(e)
+                responses.append(
+                    self.Response(uid, t, logprobs[e], finish_reason, rcache)
+                )
+
+            if len(end_idx):
+                if len(keep_idx) > 0:
+                    batch.filter(keep_idx)
+                else:
+                    self.active_batch = None
+
+        # ── Phase 2: Prefill one chunk (memory-gated) ──
+        num_active = len(self.active_batch) if self.active_batch else 0
+        has_slot = num_active < self.completion_batch_size
+
+        # P3: Memory budget gate — skip new prefill if GPU headroom too low.
+        # Always allow continuing an in-progress prefill (don't abandon mid-prompt).
+        # Only gate NEW prefill starts.
+        mem_ok = True
+        if (has_slot
+                and self._prefill_state is None
+                and self.unprocessed_prompts
+                and mx.metal.is_available()):
+            budget = self._memory_budget_bytes
+            if budget == 0:
+                budget = mx.device_info()["max_recommended_working_set_size"]
+            headroom = budget - mx.get_active_memory()
+            if headroom < self._memory_reserve_bytes:
+                mem_ok = False
+                self._prefill_skipped += 1
+
+        if has_slot:
+            prefill_tic = time.perf_counter()
+
+            # Continue existing prefill (always — never abandon mid-prompt)
+            if self._prefill_state is not None:
+                done = self._prefill_one_chunk()
+                if done:
+                    new_batch = self._finalize_prefill()
+                    if self.active_batch is None:
+                        self.active_batch = new_batch
+                    else:
+                        self.active_batch.extend(new_batch)
+
+            # Start new prefill (only if memory allows)
+            elif self.unprocessed_prompts and mem_ok:
+                self._start_prefill()
+                done = self._prefill_one_chunk()
+                if done:
+                    new_batch = self._finalize_prefill()
+                    if self.active_batch is None:
+                        self.active_batch = new_batch
+                    else:
+                        self.active_batch.extend(new_batch)
+
+            self._stats.prompt_time += time.perf_counter() - prefill_tic
+
+        # ── Housekeeping ──
+        self._next_count += 1
+        if self._next_count % 512 == 0:
+            mx.clear_cache()
+        self._stats.generation_tokens += len(responses)
+
+        # All done?
+        if (self.active_batch is None
+                and self._prefill_state is None
+                and not self.unprocessed_prompts
+                and not responses):
+            return []
+
+        return responses
+
     def next(self):
         with mx.stream(generation_stream):
+            if self._interleaved:
+                return self._next_interleaved()
             return self._next()
 
 

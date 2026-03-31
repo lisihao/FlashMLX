@@ -2375,7 +2375,7 @@ class OffloadContext:
     def create_pipeline_fn(
         self,
         model,
-        maintenance_interval: int = 8,
+        maintenance_interval: int = 4,
         k_adjust_interval: int = 64,
         prefetch_interval: int = 32,
     ):
@@ -2392,7 +2392,7 @@ class OffloadContext:
 
         Args:
             model: The model being used for generation
-            maintenance_interval: Run pool maintenance every N tokens (default 8)
+            maintenance_interval: Run pool maintenance every N tokens (default 4)
             k_adjust_interval: Adjust effective_k every N tokens (default 64)
             prefetch_interval: Schedule prefetch every N tokens (default 32)
         """
@@ -2718,17 +2718,27 @@ class OffloadContext:
 
 
 class FlashBatchGenerator:
-    """Wrapper around mlx_lm.generate.BatchGenerator with expert offloading.
+    """Chunked Interleaved Scheduler with expert offloading.
+
+    Scheduling strategy (interleaved=True):
+      Each tick: decode all active requests → prefill 1 chunk of pending prompt.
+      PP peak memory never stacks across requests (only 1 chunk at a time).
 
     Integrates:
-      - Auto-compact after first prefill (PP→TG transition)
+      - Chunked interleaved scheduling (decode-first, 1 chunk per tick)
+      - Auto-compact after first request's prefill completes
       - A4 dynamic pruning (k-reduction based on entropy)
       - Pool maintenance between decode steps (A3 pipeline)
       - Memory-adaptive pool management (A5)
 
+    After compact, subsequent request PP chunks go through compact pool.
+    Out-of-pool experts are remapped to nearest in-pool expert (speculative).
+    P0 verified 77-87% cross-request hit rate — quality impact is minimal.
+
     Usage:
         ctx = patch_model_for_offload(model, path, ...)
-        gen = FlashBatchGenerator(model, ctx, max_tokens=128, completion_batch_size=4)
+        gen = FlashBatchGenerator(model, ctx, max_tokens=128,
+                                  completion_batch_size=4, interleaved=True)
         uids = gen.insert([prompt1, prompt2, ...])
         while True:
             responses = gen.next()
@@ -2738,15 +2748,33 @@ class FlashBatchGenerator:
                 print(r.token, r.finish_reason)
     """
 
-    def __init__(self, model, ctx: OffloadContext, **batch_kwargs):
+    def __init__(self, model, ctx: OffloadContext,
+                 interleaved: bool = True,
+                 interleaved_chunk_size: int = 512,
+                 maintenance_interval: int = 4,
+                 k_adjust_interval: int = 64,
+                 hitrate_warn_threshold: float = 0.70,
+                 hitrate_check_interval: int = 32,
+                 **batch_kwargs):
         from mlx_lm.generate import BatchGenerator
+
+        # Force interleaved params into BatchGenerator
+        batch_kwargs["interleaved"] = interleaved
+        batch_kwargs["interleaved_chunk_size"] = interleaved_chunk_size
+
         self._gen = BatchGenerator(model, **batch_kwargs)
         self._ctx = ctx
         self._model = model
+        self._interleaved = interleaved
         self._compacted = False
         self._step_count = 0
-        self._maintenance_interval = 8
-        self._k_adjust_interval = 64
+        self._maintenance_interval = maintenance_interval
+        self._k_adjust_interval = k_adjust_interval
+
+        # P4: Expert hit rate monitor — warn if compact pool coverage drops
+        self._hitrate_warn = hitrate_warn_threshold
+        self._hitrate_check_interval = hitrate_check_interval
+        self._hitrate_warned = False
 
     def insert(self, prompts, **kwargs):
         """Insert prompts for generation. Returns list of UIDs."""
@@ -2757,10 +2785,19 @@ class FlashBatchGenerator:
         return self._gen.remove(uids, **kwargs)
 
     def next(self):
-        """Process one step. Auto-compacts after first prefill."""
+        """Process one tick: decode active + prefill 1 chunk.
+
+        Expert offloading lifecycle:
+          1. First request PP: full pool (identity path, buffering indices)
+          2. First request done → active_batch exists → compact()
+          3. Subsequent request PP chunks: compact pool (remap path)
+          4. TG: compact pool with A3/A4/A5 maintenance
+        """
         responses = self._gen.next()
 
-        # Auto-compact after first prefill creates the active batch
+        # Auto-compact after first request's prefill completes.
+        # In interleaved mode, active_batch is set when _finalize_prefill()
+        # creates a Batch — exactly when the first request's all chunks are done.
         if not self._compacted and self._gen.active_batch is not None:
             self._ctx.compact()
             self._ctx.enable_dynamic_pruning(self._model)
@@ -2776,6 +2813,19 @@ class FlashBatchGenerator:
         if self._step_count % self._k_adjust_interval == 0:
             self._ctx.adjust_effective_k(self._model)
 
+        # P4: Expert hit rate monitor — check after compact
+        if (self._compacted
+                and self._ctx.telemetry
+                and self._step_count % self._hitrate_check_interval == 0):
+            hit_rate = self._ctx.telemetry.get_overall_hit_rate()
+            if hit_rate < self._hitrate_warn and not self._hitrate_warned:
+                print(f"[FlashBatch] ⚠️  Expert pool hit rate {hit_rate:.1%} "
+                      f"< {self._hitrate_warn:.0%} threshold. "
+                      f"Consider expanding pool or reducing batch size.")
+                self._hitrate_warned = True
+            elif hit_rate >= self._hitrate_warn and self._hitrate_warned:
+                self._hitrate_warned = False  # Recovered
+
         return responses
 
     def stats(self):
@@ -2783,8 +2833,12 @@ class FlashBatchGenerator:
         return self._gen.stats()
 
     def close(self):
-        """Clean shutdown."""
+        """Clean shutdown — release batch caches, expert pool state, GPU memory."""
         self._gen.close()
+        self._compacted = False
+        self._step_count = 0
+        gc.collect()
+        mx.clear_cache()
 
     @property
     def active_batch(self):
@@ -2793,3 +2847,8 @@ class FlashBatchGenerator:
     @property
     def unprocessed_prompts(self):
         return self._gen.unprocessed_prompts
+
+    @property
+    def prefill_in_progress(self):
+        """True if a prompt is currently being prefilled chunk-by-chunk."""
+        return self._gen._prefill_state is not None

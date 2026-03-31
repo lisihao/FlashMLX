@@ -1,283 +1,325 @@
-## MLX LM 
+# FlashMLX
 
-MLX LM is a Python package for generating text and fine-tuning large language
-models on Apple silicon with MLX.
+**Apple Silicon 上的高性能 MoE 推理引擎** | High-Performance MoE Inference on Apple Silicon
 
-Some key features include:
+基于 [mlx-lm](https://github.com/ml-explore/mlx-lm) 的 fork，专为 Mixture-of-Experts (MoE) 大模型在内存受限的 Apple Silicon 设备上实现高效推理而设计。
 
-* Integration with the Hugging Face Hub to easily use thousands of LLMs with a
-  single command. 
-* Support for quantizing and uploading models to the Hugging Face Hub.
-* [Low-rank and full model
-  fine-tuning](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/LORA.md)
-  with support for quantized models.
-* Distributed inference and fine-tuning with `mx.distributed`
+---
 
-The easiest way to get started is to install the `mlx-lm` package:
+## 核心创新
 
-**With `pip`**:
+### 分块交错调度 (Chunked Interleaved Scheduling)
 
-```sh
-pip install mlx-lm
+传统批处理推理在 prefill 阶段一次性处理所有请求的 prompt，导致内存峰值随 batch size 线性叠加。FlashMLX 采用**分块交错调度**策略：
+
+```
+每个调度 tick: 解码所有活跃请求 → prefill 1 个 chunk(512 tokens)
 ```
 
-**With `conda`**:
+- Prefill 内存峰值不再随请求数叠加（每次只处理 1 个 chunk）
+- 首个请求的 TTFT 大幅缩短（无需等待所有请求 prefill 完成）
+- 解码吞吐量显著提升（更小的 chunk 减少 GPU activation 残留，改善缓存局部性）
 
-```sh
-conda install -c conda-forge mlx-lm
-```
+### 三级专家管理 (Three-Tier Expert Management)
 
-### Quick Start
+针对 MoE 模型（如 Qwen3.5-35B-A3B，256 experts/layer x 40 layers）的智能专家调度：
 
-To generate text with an LLM use:
+| 层级 | 存储 | 延迟 | 容量 |
+|------|------|------|------|
+| GPU 热池 (Hot Pool) | 统一显存 | ~0ms | ~153 experts/layer |
+| CPU 暖缓存 (Warm Cache) | 系统内存 | ~0.1ms | ~145 experts/layer |
+| SSD 冷存储 (Cold Storage) | NVMe/USB | ~2-5ms | 全部 256 experts/layer |
+
+### A4 动态剪枝 (Dynamic Pruning)
+
+运行时根据 gate entropy 自适应调整每层激活的专家数量（effective top-k），在不影响质量的前提下减少计算量。
+
+### 内存预算门控 (Memory Budget Gate)
+
+Prefill 前检测 GPU headroom，当剩余显存低于安全阈值（2GB）时自动跳过新请求的 prefill，防止 OOM。显存恢复后自动继续。
+
+### 专家命中率监控 (Expert Hit Rate Monitor)
+
+实时监控 GPU 热池命中率，当低于 70% 阈值时发出警告，帮助诊断 pool size 配置问题。
+
+---
+
+## 性能基准
+
+**测试环境**: Apple M4 Pro 48GB | Qwen3.5-35B-A3B (6-bit) | Batch=4
+
+### FlashMLX vs 社区版 mlx-lm
+
+| 指标 | 社区版 (16K) | FlashMLX (16K) | 提升 |
+|------|:---:|:---:|:---:|
+| **解码吞吐 (TG)** | 115.8 tok/s | **196.9 tok/s** | **+70.0%** |
+| **首 Token 延迟 (TTFT)** | 82.0s | **21.1s** | **-74.3%** |
+| **GPU 内存峰值** | 28.01 GB | **13.78 GB** | **-50.8%** |
+| **模型显存占用** | 18.21 GB | **11.42 GB** | **-37.3%** |
+
+### 全 Context 长度对比
+
+| Context | 模式 | PP (tok/s) | TG (tok/s) | TTFT | 内存峰值 | 质量 |
+|---------|------|:---:|:---:|:---:|:---:|:---:|
+| 4K | 社区版 | 947 | 150.5 | 17.0s | 24.63G | 4/4 |
+| 4K | **FlashMLX** | 950 | **184.3** | **4.9s** | **12.60G** | 4/4 |
+| 8K | 社区版 | 883 | 137.7 | 36.3s | 25.64G | 4/4 |
+| 8K | **FlashMLX** | 851 | **177.4** | **9.7s** | **12.98G** | 4/4 |
+| 16K | 社区版 | 779 | 115.8 | 82.0s | 28.01G | 4/4 |
+| 16K | **FlashMLX** | 775 | **196.9** | **21.1s** | **13.78G** | 4/4 |
+
+> Context 越长，FlashMLX 的优势越大。16K 下解码速度提升 70%，因为更小的 prefill chunk 减少了 GPU activation 残留，使解码阶段的内存访问模式更紧凑。
+
+---
+
+## 快速开始
+
+### 安装
 
 ```bash
-mlx_lm.generate --prompt "How tall is Mt Everest?"
+git clone https://github.com/lisihao/FlashMLX.git
+cd FlashMLX
+pip install -e .
 ```
 
-To chat with an LLM use:
-
-```bash
-mlx_lm.chat
-```
-
-This will give you a chat REPL that you can use to interact with the LLM. The
-chat context is preserved during the lifetime of the REPL.
-
-Commands in `mlx-lm` typically take command line options which let you specify
-the model, sampling parameters, and more. Use `-h` to see a list of available
-options for a command, e.g.:
-
-```bash
-mlx_lm.generate -h
-```
-
-The default model for generation and chat is
-`mlx-community/Llama-3.2-3B-Instruct-4bit`.  You can specify any MLX-compatible
-model with the `--model` flag. Thousands are available in the
-[MLX Community](https://huggingface.co/mlx-community) Hugging Face
-organization.
-
-### Python API
-
-You can use `mlx-lm` as a module:
+### 使用 FlashBatchGenerator
 
 ```python
-from mlx_lm import load, generate
+from mlx_lm import load
+from mlx_lm.models.expert_offload import patch_model_for_offload, FlashBatchGenerator
 
-model, tokenizer = load("mlx-community/Mistral-7B-Instruct-v0.3-4bit")
+# 加载模型并启用专家卸载
+model, tokenizer = load("your-moe-model-path")
+ctx = patch_model_for_offload(model, "your-moe-model-path")
 
-prompt = "Write a story about Einstein"
-
-messages = [{"role": "user", "content": prompt}]
-prompt = tokenizer.apply_chat_template(
-    messages, add_generation_prompt=True,
+# 创建批处理生成器（自动启用分块交错调度）
+gen = FlashBatchGenerator(
+    model, ctx,
+    max_tokens=512,
+    completion_batch_size=4,
 )
 
-text = generate(model, tokenizer, prompt=prompt, verbose=True)
+# 插入多个请求
+prompts = [tokenizer.encode(p) for p in your_prompts]
+uids = gen.insert(prompts, max_tokens=[512] * len(prompts))
+
+# 流式获取结果
+while True:
+    responses = gen.next()
+    for r in responses:
+        if r.finish_reason is not None:
+            print(f"Request {r.uid} complete")
 ```
 
-To see a description of all the arguments you can do:
+### 关键参数
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `interleaved` | `True` | 启用分块交错调度 |
+| `interleaved_chunk_size` | `512` | 每次 prefill 的 chunk 大小（tokens） |
+| `maintenance_interval` | `4` | 专家池维护频率（每 N 步） |
+
+---
+
+## 技术架构
 
 ```
->>> help(generate)
+请求队列                      调度器                          GPU
+┌─────────┐              ┌──────────────┐             ┌──────────────┐
+│ Prompt 1 │──────┐      │  每个 tick:    │             │  Hot Pool    │
+│ Prompt 2 │──────┤      │  1. Decode ALL │────────────▶│  (153 exp)   │
+│ Prompt 3 │──────┤      │  2. Prefill 1  │             │              │
+│ Prompt 4 │──────┘      │     chunk(512) │             │  KV Cache    │
+└─────────┘              └──────────────┘             └──────┬───────┘
+                                                             │
+                              CPU                            │ miss
+                         ┌──────────────┐                    │
+                         │  Warm Cache   │◀───────────────────┘
+                         │  (145 exp)    │
+                         │              │──── miss ──▶ SSD Cold Storage
+                         └──────────────┘              (256 exp, all)
 ```
 
-Check out the [generation
-example](https://github.com/ml-explore/mlx-lm/tree/main/mlx_lm/examples/generate_response.py)
-to see how to use the API in more detail. Check out the [batch generation
-example](https://github.com/ml-explore/mlx-lm/tree/main/mlx_lm/examples/batch_generate_response.py)
-to see how to efficiently generate continuations for a batch of prompts.
-
-The `mlx-lm` package also comes with functionality to quantize and optionally
-upload models to the Hugging Face Hub.
-
-You can convert models using the Python API:
-
-```python
-from mlx_lm import convert
-
-repo = "mistralai/Mistral-7B-Instruct-v0.3"
-upload_repo = "mlx-community/My-Mistral-7B-Instruct-v0.3-4bit"
-
-convert(repo, quantize=True, upload_repo=upload_repo)
-```
-
-This will generate a 4-bit quantized Mistral 7B and upload it to the repo
-`mlx-community/My-Mistral-7B-Instruct-v0.3-4bit`. It will also save the
-converted model in the path `mlx_model` by default.
-
-To see a description of all the arguments you can do:
+### 调度时序
 
 ```
->>> help(convert)
+Tick 1: [Decode R1,R2,R3] → [Prefill Prompt4 chunk 0-511]
+Tick 2: [Decode R1,R2,R3,R4] → [Prefill Prompt4 chunk 512-1023]
+Tick 3: [Decode R1,R2,R3,R4] → [Prefill Prompt4 chunk 1024-1535]
+...
 ```
 
-#### Streaming
+每个 tick 中，所有已激活的请求先进行一步解码（产出 1 token），然后对下一个待处理的 prompt 进行 1 个 chunk 的 prefill。这确保了：
+- 解码延迟始终稳定（不被大 prefill 阻塞）
+- 内存峰值可控（只有 1 个 chunk 的 activation 开销）
+- 首请求几乎立刻开始产出（无需等待整个 batch prefill 完成）
 
-For streaming generation, use the `stream_generate` function. This yields
-a generation response object.
+---
 
-For example,
+## 致谢
 
-```python
-from mlx_lm import load, stream_generate
+FlashMLX 基于 Apple 的 [mlx-lm](https://github.com/ml-explore/mlx-lm) 构建。感谢 MLX 团队提供的优秀底层框架。
 
-repo = "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
-model, tokenizer = load(repo)
+---
 
-prompt = "Write a story about Einstein"
+# FlashMLX (English)
 
-messages = [{"role": "user", "content": prompt}]
-prompt = tokenizer.apply_chat_template(
-    messages, add_generation_prompt=True,
-)
+**High-Performance MoE Inference Engine on Apple Silicon**
 
-for response in stream_generate(model, tokenizer, prompt, max_tokens=512):
-    print(response.text, end="", flush=True)
-print()
-```
+A fork of [mlx-lm](https://github.com/ml-explore/mlx-lm), purpose-built for efficient Mixture-of-Experts (MoE) large model inference on memory-constrained Apple Silicon devices.
 
-#### Sampling
+---
 
-The `generate` and `stream_generate` functions accept `sampler` and
-`logits_processors` keyword arguments. A sampler is any callable which accepts
-a possibly batched logits array and returns an array of sampled tokens.  The
-`logits_processors` must be a list of callables which take the token history
-and current logits as input and return the processed logits. The logits
-processors are applied in order.
+## Key Innovations
 
-Some standard sampling functions and logits processors are provided in
-`mlx_lm.sample_utils`.
+### Chunked Interleaved Scheduling
 
-### Command Line
-
-You can also use `mlx-lm` from the command line with:
+Traditional batch inference processes all prompts at once during prefill, causing memory peaks to scale linearly with batch size. FlashMLX uses **chunked interleaved scheduling**:
 
 ```
-mlx_lm.generate --model mistralai/Mistral-7B-Instruct-v0.3 --prompt "hello"
+Each scheduler tick: decode all active requests → prefill 1 chunk (512 tokens)
 ```
 
-This will download a Mistral 7B model from the Hugging Face Hub and generate
-text using the given prompt.
+- Prefill memory peaks no longer stack across requests (only 1 chunk at a time)
+- First request TTFT drastically reduced (no waiting for all requests to prefill)
+- Decode throughput significantly improved (smaller chunks reduce GPU activation residue, improving cache locality)
 
-For a full list of options run:
+### Three-Tier Expert Management
 
-```
-mlx_lm.generate --help
-```
+Intelligent expert scheduling for MoE models (e.g., Qwen3.5-35B-A3B, 256 experts/layer x 40 layers):
 
-To quantize a model from the command line run:
+| Tier | Storage | Latency | Capacity |
+|------|---------|---------|----------|
+| GPU Hot Pool | Unified Memory | ~0ms | ~153 experts/layer |
+| CPU Warm Cache | System RAM | ~0.1ms | ~145 experts/layer |
+| SSD Cold Storage | NVMe/USB | ~2-5ms | All 256 experts/layer |
 
-```
-mlx_lm.convert --model mistralai/Mistral-7B-Instruct-v0.3 -q
-```
+### A4 Dynamic Pruning
 
-For more options run:
+Adaptively adjusts effective top-k per layer at runtime based on gate entropy, reducing computation without quality loss.
 
-```
-mlx_lm.convert --help
-```
+### Memory Budget Gate
 
-You can upload new models to Hugging Face by specifying `--upload-repo` to
-`convert`. For example, to upload a quantized Mistral-7B model to the
-[MLX Hugging Face community](https://huggingface.co/mlx-community) you can do:
+Checks GPU headroom before prefill. Automatically skips new request prefill when available memory drops below the safety threshold (2GB), preventing OOM. Resumes automatically when memory recovers.
 
-```
-mlx_lm.convert \
-    --model mistralai/Mistral-7B-Instruct-v0.3 \
-    -q \
-    --upload-repo mlx-community/my-4bit-mistral
-```
+### Expert Hit Rate Monitor
 
-Models can also be converted and quantized directly in the
-[mlx-my-repo](https://huggingface.co/spaces/mlx-community/mlx-my-repo) Hugging
-Face Space.
+Real-time monitoring of GPU hot pool hit rate. Warns when hit rate drops below 70% threshold, helping diagnose pool size configuration issues.
 
-### Long Prompts and Generations 
+---
 
-`mlx-lm` has some tools to scale efficiently to long prompts and generations:
+## Benchmarks
 
-- A rotating fixed-size key-value cache.
-- Prompt caching
+**Test Environment**: Apple M4 Pro 48GB | Qwen3.5-35B-A3B (6-bit) | Batch=4
 
-To use the rotating key-value cache pass the argument `--max-kv-size n` where
-`n` can be any integer. Smaller values like `512` will use very little RAM but
-result in worse quality. Larger values like `4096` or higher will use more RAM
-but have better quality.
+### FlashMLX vs Community mlx-lm
 
-Caching prompts can substantially speedup reusing the same long context with
-different queries. To cache a prompt use `mlx_lm.cache_prompt`. For example:
+| Metric | Community (16K) | FlashMLX (16K) | Improvement |
+|--------|:---:|:---:|:---:|
+| **Decode Throughput (TG)** | 115.8 tok/s | **196.9 tok/s** | **+70.0%** |
+| **Time to First Token (TTFT)** | 82.0s | **21.1s** | **-74.3%** |
+| **GPU Peak Memory** | 28.01 GB | **13.78 GB** | **-50.8%** |
+| **Model Memory Footprint** | 18.21 GB | **11.42 GB** | **-37.3%** |
+
+### Full Context Length Comparison
+
+| Context | Mode | PP (tok/s) | TG (tok/s) | TTFT | Peak Memory | Quality |
+|---------|------|:---:|:---:|:---:|:---:|:---:|
+| 4K | Community | 947 | 150.5 | 17.0s | 24.63G | 4/4 |
+| 4K | **FlashMLX** | 950 | **184.3** | **4.9s** | **12.60G** | 4/4 |
+| 8K | Community | 883 | 137.7 | 36.3s | 25.64G | 4/4 |
+| 8K | **FlashMLX** | 851 | **177.4** | **9.7s** | **12.98G** | 4/4 |
+| 16K | Community | 779 | 115.8 | 82.0s | 28.01G | 4/4 |
+| 16K | **FlashMLX** | 775 | **196.9** | **21.1s** | **13.78G** | 4/4 |
+
+> The longer the context, the greater FlashMLX's advantage. At 16K, decode speed improves by 70% because smaller prefill chunks reduce GPU activation residue, resulting in more compact memory access patterns during decode.
+
+---
+
+## Quick Start
+
+### Installation
 
 ```bash
-cat prompt.txt | mlx_lm.cache_prompt \
-  --model mistralai/Mistral-7B-Instruct-v0.3 \
-  --prompt - \
-  --prompt-cache-file mistral_prompt.safetensors
-``` 
-
-Then use the cached prompt with `mlx_lm.generate`:
-
-```
-mlx_lm.generate \
-    --prompt-cache-file mistral_prompt.safetensors \
-    --prompt "\nSummarize the above text."
+git clone https://github.com/lisihao/FlashMLX.git
+cd FlashMLX
+pip install -e .
 ```
 
-The cached prompt is treated as a prefix to the supplied prompt. Also notice
-when using a cached prompt, the model to use is read from the cache and need
-not be supplied explicitly.
-
-Prompt caching can also be used in the Python API in order to avoid
-recomputing the prompt. This is useful in multi-turn dialogues or across
-requests that use the same context. See the
-[example](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/examples/chat.py)
-for more usage details.
-
-### Supported Models
-
-`mlx-lm` supports thousands of LLMs available on the Hugging Face Hub. If the
-model you want to run is not supported, file an
-[issue](https://github.com/ml-explore/mlx-lm/issues/new) or better yet, submit
-a pull request. Many supported models are available in various quantization
-formats in the [MLX Community](https://huggingface.co/mlx-community) Hugging
-Face organization.
-
-For some models the tokenizer may require you to enable the `trust_remote_code`
-option. You can do this by passing `--trust-remote-code` in the command line.
-If you don't specify the flag explicitly, you will be prompted to trust remote
-code in the terminal when running the model. 
-
-Tokenizer options can also be set in the Python API. For example:
+### Using FlashBatchGenerator
 
 ```python
-model, tokenizer = load(
-    "qwen/Qwen-7B",
-    tokenizer_config={"eos_token": "<|endoftext|>", "trust_remote_code": True},
+from mlx_lm import load
+from mlx_lm.models.expert_offload import patch_model_for_offload, FlashBatchGenerator
+
+# Load model with expert offloading
+model, tokenizer = load("your-moe-model-path")
+ctx = patch_model_for_offload(model, "your-moe-model-path")
+
+# Create batch generator (chunked interleaved scheduling enabled by default)
+gen = FlashBatchGenerator(
+    model, ctx,
+    max_tokens=512,
+    completion_batch_size=4,
 )
+
+# Insert multiple requests
+prompts = [tokenizer.encode(p) for p in your_prompts]
+uids = gen.insert(prompts, max_tokens=[512] * len(prompts))
+
+# Stream results
+while True:
+    responses = gen.next()
+    for r in responses:
+        if r.finish_reason is not None:
+            print(f"Request {r.uid} complete")
 ```
 
-### Large Models
+### Key Parameters
 
-> [!NOTE]
-    This requires macOS 15.0 or higher to work.
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `interleaved` | `True` | Enable chunked interleaved scheduling |
+| `interleaved_chunk_size` | `512` | Prefill chunk size per tick (tokens) |
+| `maintenance_interval` | `4` | Expert pool maintenance frequency (every N steps) |
 
-Models which are large relative to the total RAM available on the machine can
-be slow. `mlx-lm` will attempt to make them faster by wiring the memory
-occupied by the model and cache. This requires macOS 15 or higher to
-work.
+---
 
-If you see the following warning message:
+## Architecture
 
-> [WARNING] Generating with a model that requires ...
-
-then the model will likely be slow on the given machine. If the model fits in
-RAM then it can often be sped up by increasing the system wired memory limit.
-To increase the limit, set the following `sysctl`:
-
-```bash
-sudo sysctl iogpu.wired_limit_mb=N
+```
+Request Queue                  Scheduler                        GPU
+┌─────────┐              ┌──────────────┐             ┌──────────────┐
+│ Prompt 1 │──────┐      │  Each tick:    │             │  Hot Pool    │
+│ Prompt 2 │──────┤      │  1. Decode ALL │────────────▶│  (153 exp)   │
+│ Prompt 3 │──────┤      │  2. Prefill 1  │             │              │
+│ Prompt 4 │──────┘      │     chunk(512) │             │  KV Cache    │
+└─────────┘              └──────────────┘             └──────┬───────┘
+                                                             │
+                              CPU                            │ miss
+                         ┌──────────────┐                    │
+                         │  Warm Cache   │◀───────────────────┘
+                         │  (145 exp)    │
+                         │              │──── miss ──▶ SSD Cold Storage
+                         └──────────────┘              (256 exp, all)
 ```
 
-The value `N` should be larger than the size of the model in megabytes but
-smaller than the memory size of the machine.
+### Scheduling Timeline
+
+```
+Tick 1: [Decode R1,R2,R3] → [Prefill Prompt4 chunk 0-511]
+Tick 2: [Decode R1,R2,R3,R4] → [Prefill Prompt4 chunk 512-1023]
+Tick 3: [Decode R1,R2,R3,R4] → [Prefill Prompt4 chunk 1024-1535]
+...
+```
+
+Each tick: all active requests first perform one decode step (producing 1 token), then the next pending prompt gets 1 chunk of prefill. This ensures:
+- Stable decode latency (never blocked by large prefills)
+- Controllable memory peaks (only 1 chunk of activation overhead)
+- Near-instant first request output (no waiting for full batch prefill)
+
+---
+
+## Acknowledgments
+
+FlashMLX is built on Apple's [mlx-lm](https://github.com/ml-explore/mlx-lm). Thanks to the MLX team for the excellent underlying framework.
