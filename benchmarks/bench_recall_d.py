@@ -231,7 +231,7 @@ def _trigger_reconstruction(model, cache):
 
     # Reconstruct up to the full context (limited by h0 archive size)
     # For this benchmark, we ignore budget limits to test max recall capability.
-    n_evicted = min(h0_store.count, 4096)  # test with up to 4K tokens
+    n_evicted = h0_store.count  # reconstruct full h0 archive
 
     if n_evicted <= 0:
         print("    [recon] No h0 tokens to reconstruct")
