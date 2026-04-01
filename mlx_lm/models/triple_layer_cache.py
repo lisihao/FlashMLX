@@ -98,6 +98,9 @@ class TripleLayerKVCache(_BaseCache):
         scored_prefill_chunk_evict: bool = False,  # Enable prefill eviction for PP memory savings
         scored_prefill_max_cache: int = 4096,  # Eviction trigger: evict when cache exceeds this
         flat_quant: Optional[str] = None,  # Flat buffer quantization: None='bf16', 'q8_0'
+        pinned_tokens: int = 0,  # First N tokens are never evicted (system prompt protection)
+        density_mode: Optional[str] = None,  # Route 0: off | balanced | ultra_long | recall_first
+        density_scale: float = 0.0,  # Route 0: log2 space bias (+1 = double compression)
     ):
         # Memory budget (PRIMARY trigger)
         self.memory_budget_mb = memory_budget_mb
@@ -215,12 +218,96 @@ class TripleLayerKVCache(_BaseCache):
             from mlx_lm.models.quantization_strategies import PolarQuantizer
             self._flat_pq = PolarQuantizer(bits=4, norm_correction=False)
 
+        # Pinned prefix: first N tokens are never evicted (system prompt protection).
+        # When AM scoring/compression runs, pinned tokens are unconditionally kept.
+        # Typical usage: system prompt (500-2000 tokens) is pinned for multi-agent reuse.
+        self.pinned_tokens = pinned_tokens
+
         # Route 5: Scored KV-Direct fusion — h^(0) archive reference
         self._h0_store = None  # Set by cache_factory for scored_kv_direct strategy
 
         # Route 5: Reconstructed K/V injection (consumed once per step)
         self._recon_keys = None
         self._recon_values = None
+
+        # Merge strategy: track prefix-era tokens in flat buffer for dedup.
+        # After _scored_compress_prefix, the flat buffer layout is:
+        #   [pinned (0:pin_n)] [hot scored] [recent] [TG appended...]
+        # When recall injects [0:N], tokens in [pinned + hot scored] overlap.
+        # _flat_prefix_token_count = pinned + hot scored (tokens to skip on recall).
+        self._flat_prefix_token_count = 0
+
+        # Route 0: Density Router parameters + signal
+        self._density_mode = density_mode  # None = off
+        self._density_scale = density_scale
+        self._density_signal = None  # populated by _scored_compress_prefix
+
+    # -------------------------------------------------------------------
+    # Route 0: Density signal extraction
+    # -------------------------------------------------------------------
+
+    def _extract_density_signal(
+        self,
+        importance_masks: list,
+        total_len: int,
+        scorable_len: int,
+        n_hot: int,
+        n_dropped: int,
+    ) -> dict:
+        """Extract density signal from AM importance masks.
+
+        Computes per-chunk and aggregate density metrics from the AM scoring
+        results. These metrics feed Route 0's discrete compression level
+        selection (see config.DensityLevel + snap_to_nearest).
+
+        Zero-cost: operates on already-computed numpy boolean arrays.
+
+        Returns dict with:
+            keep_ratio: fraction of scorable tokens kept (= 1/effective_ratio)
+            concentration: mean gap coefficient-of-variation across chunks
+                (low = uniform distribution, high = clustered important tokens)
+            log2_ratio: log2 of effective compression ratio
+            n_chunks: number of full chunks scored
+            chunk_concentrations: per-chunk concentration values
+        """
+        import math
+
+        if not importance_masks or scorable_len == 0:
+            return {
+                "keep_ratio": 1.0,
+                "concentration": 0.0,
+                "log2_ratio": 0.0,
+                "n_chunks": 0,
+                "chunk_concentrations": [],
+            }
+
+        actual_ratio = scorable_len / max(n_hot, 1)
+        log2_ratio = math.log2(max(actual_ratio, 1.01))
+        keep_ratio = n_hot / scorable_len
+
+        # Per-chunk concentration: coefficient of variation of gaps between
+        # important token positions.  Low CV = evenly spread (uniform density),
+        # high CV = clustered (variable density within chunk).
+        chunk_concentrations = []
+        for mask in importance_masks:
+            positions = np.where(mask)[0]
+            if len(positions) > 1:
+                gaps = np.diff(positions).astype(np.float32)
+                mean_gap = gaps.mean()
+                cv = float(gaps.std() / max(mean_gap, 1e-6))
+                chunk_concentrations.append(cv)
+            else:
+                chunk_concentrations.append(0.0)
+
+        mean_concentration = float(np.mean(chunk_concentrations)) if chunk_concentrations else 0.0
+
+        return {
+            "keep_ratio": float(keep_ratio),
+            "concentration": mean_concentration,
+            "log2_ratio": float(log2_ratio),
+            "n_chunks": len(importance_masks),
+            "chunk_concentrations": chunk_concentrations,
+        }
 
     def inject_reconstruction(self, recon_keys, recon_values):
         """Inject reconstructed K/V for next attention step.
@@ -510,10 +597,22 @@ class TripleLayerKVCache(_BaseCache):
         else:
             k, v = self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
 
-        # Route 5: Prepend reconstructed K/V if injected (consumed once)
+        # Route 5: Prepend reconstructed K/V if injected (consumed once).
+        # Dedup: recall covers [0:N] which overlaps with prefix-era hot tokens
+        # in the flat buffer. Skip those to avoid duplicate attention entries.
+        # Layout after merge: [recall [0:N]] + [non-prefix tokens from flat buffer]
         if self._recon_keys is not None:
-            k = mx.concatenate([self._recon_keys, k], axis=2)
-            v = mx.concatenate([self._recon_values, v], axis=2)
+            skip = self._flat_prefix_token_count
+            if skip > 0 and skip < end:
+                # Skip prefix-era tokens (covered by recall), keep rest
+                k_rest = k[..., skip:, :]
+                v_rest = v[..., skip:, :]
+                k = mx.concatenate([self._recon_keys, k_rest], axis=2)
+                v = mx.concatenate([self._recon_values, v_rest], axis=2)
+            else:
+                # No prefix tokens to skip (or skip covers everything)
+                k = mx.concatenate([self._recon_keys, k], axis=2)
+                v = mx.concatenate([self._recon_values, v], axis=2)
             self._recon_keys = None
             self._recon_values = None
 
@@ -633,23 +732,42 @@ class TripleLayerKVCache(_BaseCache):
             del full_keys, full_values  # Free intermediate bf16 (flat buffer owns the data now)
             self._flat_offset = cache_len
             self._flat_mode = True
+            # Track prefix tokens for recall dedup
+            self._flat_prefix_token_count = cache_len - recent_len
             return self._fetch_flat(self._flat_offset)
 
         return full_keys, full_values
 
     def _get_effective_ratio(self, context_len: int) -> float:
-        """Select optimal compression ratio based on context length.
+        """Select optimal compression ratio based on context length and Route 0 density.
 
-        Data-driven mapping (Qwen3-8B benchmarks):
-            <= 16K: 3.0x — best TG (+27%) and quality, proven at 16K
-            16K-32K: 1.5x — gentle compression, preserves numerical details
-            > 32K:  1.5x — same gentle ratio, calibration limited
+        Without Route 0 (density_mode=None):
+            Adaptive: <= 16K → 3.0x, > 16K → 1.5x
+            Explicit: use self.compression_ratio directly
+
+        With Route 0 (density_mode set):
+            Base ratio (adaptive or explicit) → log2 → + density_scale →
+            snap_to_nearest DensityLevel → use that level's compression_ratio.
         """
+        # Step 1: Get base ratio
         if not self.adaptive_ratio:
-            return self.compression_ratio
-        if context_len <= 16384:
-            return 3.0
-        return 1.5
+            base_ratio = self.compression_ratio
+        elif context_len <= 16384:
+            base_ratio = 3.0
+        else:
+            base_ratio = 1.5
+
+        # Step 2: Apply Route 0 density_scale (if active)
+        if self._density_mode is not None and self._density_mode != "off":
+            if self._density_scale == 0.0:
+                return base_ratio  # passthrough: no discretization at scale=0
+            import math
+            from flashmlx.config import snap_to_nearest
+            base_log2 = math.log2(max(base_ratio, 1.01))
+            level = snap_to_nearest(base_log2, scale=self._density_scale)
+            return level.compression_ratio
+
+        return base_ratio
 
     def _am_compress_prefix(
         self,
@@ -660,9 +778,10 @@ class TripleLayerKVCache(_BaseCache):
         """
         Apply AM compression to old prefix (non-recent tokens) at promotion time.
 
-        Splits the full cache into [old_prefix | recent], compresses old_prefix
-        in chunks of cold_batch_threshold (512), reassembles with recent.
+        Splits the full cache into [pinned | scorable | recent], compresses
+        scorable region in chunks of cold_batch_threshold (512), reassembles.
 
+        Pinned tokens (first self.pinned_tokens) are never compressed.
         Only compresses FULL chunks. Partial remainder is kept uncompressed.
         """
         B, n_heads, total_len, head_dim = keys.shape
@@ -671,11 +790,15 @@ class TripleLayerKVCache(_BaseCache):
         if old_len <= 0:
             return keys, values
 
-        # Split: [old_prefix | recent]
-        old_keys = keys[:, :, :old_len, :]
-        old_values = values[:, :, :old_len, :]
+        # Split: [pinned | scorable | recent]
+        pin_n = min(self.pinned_tokens, old_len)
+        pinned_keys = keys[:, :, :pin_n, :] if pin_n > 0 else None
+        pinned_values = values[:, :, :pin_n, :] if pin_n > 0 else None
+        scorable_keys = keys[:, :, pin_n:old_len, :]
+        scorable_values = values[:, :, pin_n:old_len, :]
         recent_keys = keys[:, :, old_len:, :]
         recent_values = values[:, :, old_len:, :]
+        scorable_len = old_len - pin_n
 
         # Compression parameters — adaptive ratio selects based on context length
         effective_ratio = self._get_effective_ratio(total_len)
@@ -686,10 +809,16 @@ class TripleLayerKVCache(_BaseCache):
         compressed_v = []
         n_full_chunks = 0
 
-        for offset in range(0, old_len, chunk_size):
-            chunk_end = min(offset + chunk_size, old_len)
-            chunk_k = old_keys[:, :, offset:chunk_end, :]
-            chunk_v = old_values[:, :, offset:chunk_end, :]
+        # Pinned tokens go first (unconditionally)
+        if pin_n > 0:
+            compressed_k.append(pinned_keys)
+            compressed_v.append(pinned_values)
+
+        # Compress scorable region
+        for offset in range(0, scorable_len, chunk_size):
+            chunk_end = min(offset + chunk_size, scorable_len)
+            chunk_k = scorable_keys[:, :, offset:chunk_end, :]
+            chunk_v = scorable_values[:, :, offset:chunk_end, :]
             chunk_len = chunk_end - offset
 
             if chunk_len == chunk_size:
@@ -706,7 +835,7 @@ class TripleLayerKVCache(_BaseCache):
                 compressed_k.append(chunk_k)
                 compressed_v.append(chunk_v)
 
-        # Reassemble: compressed_old + recent
+        # Reassemble: pinned + compressed_scorable + recent
         compressed_k.append(recent_keys)
         compressed_v.append(recent_values)
 
@@ -716,7 +845,8 @@ class TripleLayerKVCache(_BaseCache):
         if self.layer_idx == 0:
             saved = total_len - result_keys.shape[2]
             ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
-            print(f"[AM Promotion{ratio_info}] {old_len} old + {recent_len} recent → "
+            pin_info = f"{pin_n} pinned + " if pin_n > 0 else ""
+            print(f"[AM Promotion{ratio_info}] {pin_info}{scorable_len} scorable + {recent_len} recent → "
                   f"{result_keys.shape[2]} tokens "
                   f"({n_full_chunks} chunks compressed, saved {saved} tokens)")
 
@@ -1216,6 +1346,8 @@ class TripleLayerKVCache(_BaseCache):
         When KV cache exceeds scored_prefill_max_cache during chunked prefill,
         AM-score accumulated tokens and keep only hot ones. This bounds PP peak
         memory to ~max_cache tokens instead of growing to full context length.
+
+        Pinned tokens (first self.pinned_tokens) are never evicted.
         """
         keys = self.recent_keys
         values = self.recent_values
@@ -1228,19 +1360,26 @@ class TripleLayerKVCache(_BaseCache):
         if old_len <= 0:
             return
 
-        old_k = keys[:, :, :old_len, :]
-        old_v = values[:, :, :old_len, :]
+        # Split old into [pinned | scorable]
+        pin_n = min(self.pinned_tokens, old_len)
+        scorable_start = pin_n
+        scorable_len = old_len - pin_n
+
+        pinned_k = keys[:, :, :pin_n, :] if pin_n > 0 else None
+        pinned_v = values[:, :, :pin_n, :] if pin_n > 0 else None
+        scorable_k = keys[:, :, scorable_start:old_len, :]
+        scorable_v = values[:, :, scorable_start:old_len, :]
         recent_k = keys[:, :, old_len:, :]
         recent_v = values[:, :, old_len:, :]
 
-        # AM scoring on old tokens (reuse _get_importance_mask)
+        # AM scoring on scorable tokens only (pinned are unconditionally kept)
         effective_ratio = self._get_effective_ratio(self._prefill_tokens_seen)
         chunk_size = self.cold_batch_threshold  # 512
         budget = int(chunk_size / effective_ratio)
 
         global_indices = []
-        for offset in range(0, old_len, chunk_size):
-            chunk_end = min(offset + chunk_size, old_len)
+        for offset in range(0, scorable_len, chunk_size):
+            chunk_end = min(offset + chunk_size, scorable_len)
             chunk_len = chunk_end - offset
             if chunk_len == chunk_size:
                 imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
@@ -1249,22 +1388,39 @@ class TripleLayerKVCache(_BaseCache):
                 # Partial chunk: keep all tokens
                 global_indices.append(np.arange(offset, chunk_end))
 
-        all_indices = np.concatenate(global_indices)
-        idx = mx.array(all_indices, dtype=mx.int32)
+        parts = []
+        if pin_n > 0:
+            parts.append(pinned_k)
 
-        hot_k = old_k[:, :, idx, :]
-        hot_v = old_v[:, :, idx, :]
+        if global_indices:
+            all_indices = np.concatenate(global_indices)
+            idx = mx.array(all_indices, dtype=mx.int32)
+            parts.append(scorable_k[:, :, idx, :])
+            n_hot = len(all_indices)
+        else:
+            all_indices = np.array([], dtype=np.int32)
+            n_hot = 0
 
-        # Replace recent with [hot | recent_window]
-        self.recent_keys = mx.concatenate([hot_k, recent_k], axis=2)
-        self.recent_values = mx.concatenate([hot_v, recent_v], axis=2)
+        parts.append(recent_k)
+
+        parts_v = []
+        if pin_n > 0:
+            parts_v.append(pinned_v)
+        if n_hot > 0:
+            parts_v.append(scorable_v[:, :, idx, :])
+        parts_v.append(recent_v)
+
+        # Replace recent with [pinned | hot | recent_window]
+        self.recent_keys = mx.concatenate(parts, axis=2)
+        self.recent_values = mx.concatenate(parts_v, axis=2)
         mx.eval(self.recent_keys, self.recent_values)
 
         self._prefill_eviction_count += 1
         if self.layer_idx == 0:
+            pin_info = f"{pin_n} pinned + " if pin_n > 0 else ""
             print(f"[Scored Prefill Evict #{self._prefill_eviction_count}] "
                   f"{total_len} → {self.recent_keys.shape[2]} tokens "
-                  f"(kept {len(all_indices)} hot + {recent_window} recent, "
+                  f"(kept {pin_info}{n_hot} hot + {recent_window} recent, "
                   f"ratio={effective_ratio}x)")
 
     def _promote_to_flat_buffer(self, keys, values):
@@ -1279,6 +1435,9 @@ class TripleLayerKVCache(_BaseCache):
         self._write_flat(0, cache_len, keys, values)
         self._flat_offset = cache_len
         self._flat_mode = True
+        # After chunked eviction, all prefix tokens are already scored
+        recent_len = min(self.recent_size, cache_len)
+        self._flat_prefix_token_count = cache_len - recent_len
         self.recent_keys = None
         self.recent_values = None
         self._eval_flat_buffer()
@@ -1293,6 +1452,7 @@ class TripleLayerKVCache(_BaseCache):
         Architecture D (P2): AM score on clean bf16 → hot/drop split.
 
         Scored-as-Warm-tier architecture:
+        - Pinned tokens (system prompt) → flat buffer bf16 (always kept)
         - Important tokens (AM selected) → flat buffer bf16 (HOT attention path)
         - Unimportant tokens → dropped (same as Pipeline)
         - Recent tokens → flat buffer bf16 (exact)
@@ -1308,55 +1468,86 @@ class TripleLayerKVCache(_BaseCache):
 
         self._true_offset = total_len
 
-        # Split: [old_prefix | recent]
-        old_keys = keys[:, :, :old_len, :]
-        old_values = values[:, :, :old_len, :]
+        # Split: [pinned | scorable | recent]
+        pin_n = min(self.pinned_tokens, old_len)
+        scorable_start = pin_n
+        scorable_len = old_len - pin_n
+
+        pinned_k = keys[:, :, :pin_n, :] if pin_n > 0 else None
+        pinned_v = values[:, :, :pin_n, :] if pin_n > 0 else None
+        scorable_k = keys[:, :, scorable_start:old_len, :]
+        scorable_v = values[:, :, scorable_start:old_len, :]
         recent_k = keys[:, :, old_len:, :]
         recent_v = values[:, :, old_len:, :]
 
-        # Process old prefix: build global importance index (vectorized)
+        # Process scorable region: build global importance index (vectorized)
         effective_ratio = self._get_effective_ratio(total_len)
         chunk_size = self.cold_batch_threshold  # 512
         budget = int(chunk_size / effective_ratio)
 
         # Phase 1: Build global index array (numpy, cheap)
-        # Instead of 30 per-chunk gathers, build one global index and do 1 gather
         global_indices = []
+        importance_masks = []  # Route 0: collect for density signal
         n_full_chunks = 0
 
-        for offset in range(0, old_len, chunk_size):
-            chunk_end = min(offset + chunk_size, old_len)
+        for offset in range(0, scorable_len, chunk_size):
+            chunk_end = min(offset + chunk_size, scorable_len)
             chunk_len = chunk_end - offset
 
             if chunk_len == chunk_size:
                 imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
                 global_indices.append(np.where(imp_mask)[0] + offset)
+                importance_masks.append(imp_mask)
                 n_full_chunks += 1
             else:
                 # Partial chunk: keep all tokens
                 global_indices.append(np.arange(offset, chunk_end))
 
-        all_indices = np.concatenate(global_indices)
+        if global_indices:
+            all_indices = np.concatenate(global_indices)
+        else:
+            all_indices = np.array([], dtype=np.int32)
         n_hot_tokens = len(all_indices)
-        n_dropped_tokens = old_len - n_hot_tokens
+        n_dropped_tokens = scorable_len - n_hot_tokens
 
-        # Phase 2: Allocate flat buffer and write directly (no intermediate tensors)
-        global_idx = mx.array(all_indices, dtype=mx.int32)
-        cache_len = n_hot_tokens + recent_len
+        # Route 0: Extract density signal (zero cost — numpy ops on existing masks)
+        self._density_signal = self._extract_density_signal(
+            importance_masks, total_len, scorable_len, n_hot_tokens, n_dropped_tokens,
+        )
+
+        # Phase 2: Allocate flat buffer and write: [pinned | hot_scored | recent]
+        cache_len = pin_n + n_hot_tokens + recent_len
 
         if self.layer_idx == 0:
             ratio_info = f" (adaptive→{effective_ratio}x)" if self.adaptive_ratio else ""
+            pin_info = f"{pin_n} pinned + " if pin_n > 0 else ""
+            density_info = f" density={self._density_signal['keep_ratio']:.2f}"
             print(f"[Scored P2{ratio_info}] {old_len} old + {recent_len} recent → "
-                  f"{n_hot_tokens} hot(bf16) + {n_dropped_tokens} dropped + {recent_len} recent "
-                  f"({n_full_chunks} chunks scored)")
+                  f"{pin_info}{n_hot_tokens} hot(bf16) + {n_dropped_tokens} dropped + {recent_len} recent "
+                  f"({n_full_chunks} chunks scored{density_info})")
 
         alloc_len = ((cache_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
         self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
-        # Direct gather into flat buffer: [hot_important | recent]
-        self._write_flat(0, n_hot_tokens, old_keys[:, :, global_idx, :], old_values[:, :, global_idx, :])
-        self._write_flat(n_hot_tokens, cache_len, recent_k, recent_v)
+
+        write_offset = 0
+        # Write pinned tokens first (unconditionally kept)
+        if pin_n > 0:
+            self._write_flat(0, pin_n, pinned_k, pinned_v)
+            write_offset = pin_n
+
+        # Write AM-scored hot tokens
+        if n_hot_tokens > 0:
+            global_idx = mx.array(all_indices, dtype=mx.int32)
+            self._write_flat(write_offset, write_offset + n_hot_tokens,
+                             scorable_k[:, :, global_idx, :], scorable_v[:, :, global_idx, :])
+            write_offset += n_hot_tokens
+
+        # Write recent tokens
+        self._write_flat(write_offset, cache_len, recent_k, recent_v)
         self._flat_offset = cache_len
         self._flat_mode = True
+        # Track prefix-era token count for recall dedup (pinned + hot scored)
+        self._flat_prefix_token_count = pin_n + n_hot_tokens
         self._eval_flat_buffer()
 
     def _dequant_scored_chunks(

@@ -9,14 +9,121 @@ Memory savings (Qwen3-8B): 18x for evicted tokens.
   Standard KV per token: 36 layers * 2 * 8 * 128 * 2B = 147,456 bytes
   h^(0) per token:       4096 * 2B = 8,192 bytes
 
+Reconstruction mode:
+  - Prefix Exact: reconstruct_prefix_kv(start=0, end=N) — continuous prefix
+    replay from position 0. Produces bit-identical K/V when h^(0) is bf16.
+    This is the only mode the paper validates.
+  - Sparse reconstruction is NOT supported (incorrect RoPE + causal mask).
+
+h^(0) quantization:
+  - bf16: exact storage (paper-faithful)
+  - q8/q4: compressed archive, NOT exact — introduces quantization error.
+    Useful for memory savings but outputs may diverge from standard.
+
+Paper validation scope: 135M–4B models. 8B+ is empirically validated
+by FlashMLX benchmarks but outside paper's verification range.
+
 Technique: __class__ swapping on inner model (zero model code changes).
 """
 
+import logging
 import mlx.core as mx
 
 from .base import create_attention_mask
 from .cache import _BaseCache, KVCache
 from .cache import create_attention_mask as cache_create_attention_mask
+
+logger = logging.getLogger(__name__)
+
+# Sentinel to detect double-patching
+_KV_DIRECT_PATCHED = "_kv_direct_patched"
+
+
+# ---------------------------------------------------------------------------
+# Route 0: Reconstruction Budget (controls Route 0↔5 coupling)
+# ---------------------------------------------------------------------------
+
+class ReconstructionBudget:
+    """Controls how aggressively Route 0 can rely on Route 5 reconstruction.
+
+    Prevents over-dependence on the reconstruction path, which would cause:
+    - Tail latency spikes (user feels "usually fast, sudden stutter on details")
+    - Excessive GPU utilization from frequent h^(0) replays
+
+    Usage:
+        budget = ReconstructionBudget()
+        if budget.can_reconstruct(estimated_tokens=1024):
+            # Route 0 allows aggressive compression
+            ...
+        budget.record_reconstruction(actual_tokens=1024, latency_ms=350)
+    """
+
+    def __init__(
+        self,
+        max_recall_per_turn: int = 1,
+        max_recon_tokens: int = 2048,
+        max_recon_latency_ms: float = 500.0,
+        cooldown_turns: int = 2,
+    ):
+        self.max_recall_per_turn = max_recall_per_turn
+        self.max_recon_tokens = max_recon_tokens
+        self.max_recon_latency_ms = max_recon_latency_ms
+        self.cooldown_turns = cooldown_turns
+
+        # Runtime state
+        self._recalls_this_turn = 0
+        self._turns_since_last_recall = cooldown_turns  # Start with budget available
+        self._total_reconstructions = 0
+        self._total_recon_tokens = 0
+        self._total_recon_ms = 0.0
+
+    def can_reconstruct(self, estimated_tokens: int = 0) -> bool:
+        """Check if reconstruction budget allows another recall.
+
+        Args:
+            estimated_tokens: Expected number of tokens to reconstruct.
+
+        Returns:
+            True if reconstruction is allowed within budget.
+        """
+        if self._recalls_this_turn >= self.max_recall_per_turn:
+            return False
+        if estimated_tokens > self.max_recon_tokens:
+            return False
+        if self._turns_since_last_recall < self.cooldown_turns:
+            return False
+        return True
+
+    def record_reconstruction(self, actual_tokens: int, latency_ms: float):
+        """Record that a reconstruction happened this turn."""
+        self._recalls_this_turn += 1
+        self._turns_since_last_recall = 0
+        self._total_reconstructions += 1
+        self._total_recon_tokens += actual_tokens
+        self._total_recon_ms += latency_ms
+
+    def advance_turn(self):
+        """Call at the start of each generation turn to reset per-turn state."""
+        self._recalls_this_turn = 0
+        self._turns_since_last_recall += 1
+
+    @property
+    def max_allowed_scale(self) -> float:
+        """Maximum Route 0 density_scale when reconstruction is available."""
+        if self.can_reconstruct():
+            return 3.0  # Allow aggressive compression
+        return 1.0  # Conservative — no budget for rescue
+
+    @property
+    def stats(self) -> dict:
+        return {
+            "total_reconstructions": self._total_reconstructions,
+            "total_recon_tokens": self._total_recon_tokens,
+            "total_recon_ms": self._total_recon_ms,
+            "recalls_this_turn": self._recalls_this_turn,
+            "turns_since_last_recall": self._turns_since_last_recall,
+            "can_reconstruct": self.can_reconstruct(),
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -35,11 +142,12 @@ class H0Store:
       'q4':  int4 absmax per-token packed uint8 — 4x compression, lossy
     """
 
-    def __init__(self, quant=None):
+    def __init__(self, quant=None, recon_budget=None):
         self._quant = quant
         self._h0 = None       # bf16: (B, T, d) | q8: int8 (B, T, d) | q4: uint8 (B, T, d//2)
         self._scales = None   # q8/q4: float16 (B, T, 1)
         self._count = 0
+        self.recon_budget = recon_budget or ReconstructionBudget()
 
     def append(self, h0):
         """Append new tokens' h^(0). h0 shape: (B, L, d_hidden)."""
@@ -301,8 +409,19 @@ def apply_h0_capture(model, caches, h0_store):
         model: Outer Model (has model.model as inner model with layers).
         caches: List of cache objects (KVDirectCache for attention layers).
         h0_store: H0Store instance for shared h^(0) storage.
+
+    Raises:
+        RuntimeError: If already patched (double-patch prevention).
     """
-    inner_model = model.model
+    inner_model = _find_inner_model(model)
+
+    # Guard: prevent double-patching
+    if getattr(inner_model, _KV_DIRECT_PATCHED, False):
+        raise RuntimeError(
+            "apply_h0_capture: model already patched. "
+            "Call unpatch_model() first or reuse existing patch."
+        )
+
     base_cls = type(inner_model)
     parent_call = base_cls.__call__
 
@@ -312,6 +431,15 @@ def apply_h0_capture(model, caches, h0_store):
 
     def _make_patched_call(h0s, kv_indices, orig_call):
         def __call__(self, inputs, cache=None, input_embeddings=None):
+            # Guard: batch_size > 1 is unsupported
+            B = inputs.shape[0] if input_embeddings is None else input_embeddings.shape[0]
+            if B > 1:
+                raise RuntimeError(
+                    f"KV-Direct h^(0) capture requires batch_size=1, got {B}. "
+                    f"h^(0) storage is sequence-global — multi-batch would corrupt "
+                    f"token ordering. Use standard KV cache for batched inference."
+                )
+
             # Phase 0: Compute h^(0)
             if input_embeddings is not None:
                 h = input_embeddings
@@ -358,28 +486,72 @@ def apply_h0_capture(model, caches, h0_store):
         (base_cls,),
         {"__call__": _make_patched_call(h0_store, kv_direct_indices, parent_call)},
     )
+    inner_model._kv_direct_patched = True
+    inner_model._kv_direct_base_cls = base_cls
 
 
 # ---------------------------------------------------------------------------
 # Route 5: h^(0) capture only (for scored_pq fusion)
 # ---------------------------------------------------------------------------
 
+def _find_inner_model(model):
+    """Find the innermost model with embed_tokens.
+
+    Handles different model hierarchies:
+      - Qwen3:   Model.model (Qwen3Model)
+      - Qwen3.5: Model.language_model.model (Qwen3_5TextModel)
+    """
+    # Qwen3 pattern: model.model.embed_tokens
+    if hasattr(model, 'model') and hasattr(model.model, 'embed_tokens'):
+        return model.model
+    # Qwen3.5 / VLM pattern: model.language_model.model.embed_tokens
+    if hasattr(model, 'language_model'):
+        lm = model.language_model
+        if hasattr(lm, 'model') and hasattr(lm.model, 'embed_tokens'):
+            return lm.model
+    raise ValueError(
+        f"Cannot find inner model with embed_tokens in {type(model).__name__}. "
+        f"Available attributes: {[k for k in dir(model) if not k.startswith('_')]}"
+    )
+
+
 def apply_h0_capture_only(model, h0_store):
     """Install h^(0) capture WITHOUT reconstruction — for scored_pq fusion.
 
-    Patches the inner model to capture embed_tokens output into h0_store
+    EXPERIMENTAL: This patch captures embed_tokens output into h0_store
     on every forward call, then delegates to the original __call__ with
     input_embeddings to avoid recomputation.
 
     Unlike apply_h0_capture, this does NOT run reconstruction — the
     scored_pq cache handles attention normally via its flat buffer.
+    h^(0) is stored for potential future prefix reconstruction.
+
+    Raises:
+        RuntimeError: If already patched (double-patch prevention).
     """
-    inner_model = model.model
+    inner_model = _find_inner_model(model)
+
+    # Guard: prevent double-patching
+    if getattr(inner_model, _KV_DIRECT_PATCHED, False):
+        raise RuntimeError(
+            "apply_h0_capture_only: model already patched. "
+            "Call unpatch_model() first or reuse existing patch."
+        )
+
     base_cls = type(inner_model)
     parent_call = base_cls.__call__
 
     def _make_capture_call(h0s, orig_call):
         def __call__(self, inputs, cache=None, input_embeddings=None):
+            # Guard: batch_size > 1 is unsupported
+            B = inputs.shape[0] if input_embeddings is None else input_embeddings.shape[0]
+            if B > 1:
+                raise RuntimeError(
+                    f"KV-Direct h^(0) capture requires batch_size=1, got {B}. "
+                    f"h^(0) storage is sequence-global — multi-batch would corrupt "
+                    f"token ordering. Use standard KV cache for batched inference."
+                )
+
             # Compute h^(0) once
             if input_embeddings is not None:
                 h = input_embeddings
@@ -399,48 +571,88 @@ def apply_h0_capture_only(model, h0_store):
         (base_cls,),
         {"__call__": _make_capture_call(h0_store, parent_call)},
     )
+    inner_model._kv_direct_patched = True
+    inner_model._kv_direct_base_cls = base_cls
 
 
 # ---------------------------------------------------------------------------
 # Route 5: On-demand reconstruction from h^(0)
 # ---------------------------------------------------------------------------
 
-def reconstruct_kv(inner_model, h0_store, start, end):
-    """Reconstruct K/V for tokens [start:end] from h^(0).
+def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
+    """Reconstruct K/V for a continuous prefix [0:end] from h^(0).
 
     Runs a forward pass through all layers using h^(0) as input,
     producing the exact K/V that would have been computed originally.
 
+    IMPORTANT: Only continuous prefix reconstruction is supported.
+    h^(0) replays tokens causally from position 0, so arbitrary sparse
+    ranges (e.g. [50:100] without [0:50]) produce incorrect RoPE positions
+    and causal masks. See paper (arxiv 2603.19664) Section 3.2.
+
     Args:
         inner_model: The inner model (e.g., model.model) with .layers.
         h0_store: H0Store containing archived embeddings.
-        start: Start token index (inclusive). Must be 0 for now (prefix-only).
+        start: Must be 0 (prefix reconstruction only).
         end: End token index (exclusive).
+        chunk_size: If > 0, process h^(0) in chunks of this size.
+            Between chunks, mx.eval() is called to yield GPU to other tasks.
+            This reduces max block time from ~500ms (full) to ~30ms (per chunk).
+            Default: 0 (no chunking, process all at once).
 
     Returns:
         List of (keys, values) tuples per layer, each (B, n_kv_heads, N, head_dim).
+
+    Raises:
+        NotImplementedError: If start != 0 (sparse reconstruction not supported).
     """
     if start != 0:
         raise NotImplementedError(
-            "reconstruct_kv currently only supports prefix reconstruction (start=0). "
-            "Arbitrary range reconstruction requires KVCache initial_offset support."
+            "Only prefix reconstruction (start=0) is supported. "
+            "Sparse hole-filling requires offset-aware KVCache (not implemented)."
         )
 
-    h_range = h0_store.get_range(start, end)
-
+    n_tokens = end - start
     num_layers = len(inner_model.layers)
+
+    # Non-chunked path: process all tokens at once (original behavior)
+    if chunk_size <= 0 or n_tokens <= chunk_size:
+        h_range = h0_store.get_range(start, end)
+        temp_caches = [KVCache() for _ in range(num_layers)]
+        mask = create_attention_mask(h_range, temp_caches[0])
+        h = h_range
+        for layer, tc in zip(inner_model.layers, temp_caches):
+            h = layer(h, mask, tc)
+        return [tc.state for tc in temp_caches]
+
+    # Chunked path: process in chunks, yielding GPU between chunks.
+    # Temp KVCaches accumulate across chunks (like chunked prefill).
+    # Each chunk attends to all previous tokens via causal mask.
     temp_caches = [KVCache() for _ in range(num_layers)]
 
-    mask = create_attention_mask(h_range, temp_caches[0])
+    for chunk_start in range(start, end, chunk_size):
+        chunk_end = min(chunk_start + chunk_size, end)
+        h_chunk = h0_store.get_range(chunk_start, chunk_end)
+        mask = create_attention_mask(h_chunk, temp_caches[0])
 
-    h = h_range
-    for layer, tc in zip(inner_model.layers, temp_caches):
-        h = layer(h, mask, tc)
+        h = h_chunk
+        for layer, tc in zip(inner_model.layers, temp_caches):
+            h = layer(h, mask, tc)
+
+        # Force evaluation to yield GPU between chunks.
+        # This allows other agents' TG steps to interleave.
+        mx.eval(h)
 
     return [tc.state for tc in temp_caches]
 
 
-def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices):
+# Default chunk size for reconstruction (64 tokens ≈ 25-30ms on 8B).
+# Set to 0 to disable chunking (process all at once).
+RECON_CHUNK_SIZE = 64
+
+
+def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
+                        chunk_size=RECON_CHUNK_SIZE):
     """Run reconstruction forward pass to produce evicted K/V.
 
     Creates FRESH temp KVCaches each call, feeds h^(0)[0:n_evicted] through
@@ -451,22 +663,53 @@ def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indi
       - Evicted tokens are always the oldest (positions 0..n_evicted-1)
       - They only attend to each other (causal mask) — no need for recent K/V
       - Temp caches start at offset=0 → RoPE positions 0..n_evicted-1 (correct)
+
+    Args:
+        chunk_size: If > 0, process in chunks to yield GPU for concurrent agents.
+            Default: RECON_CHUNK_SIZE (64 tokens).
     """
-    h_e = h0_store.get_evicted(n_evicted)
-
-    num_layers = len(inner_model.layers)
-    temp_caches = [KVCache() for _ in range(num_layers)]
-
-    mask_e = create_attention_mask(h_e, temp_caches[0])
-
-    h = h_e
-    for layer, tc in zip(inner_model.layers, temp_caches):
-        h = layer(h, mask_e, tc)
+    kv_list = reconstruct_prefix_kv(
+        inner_model, h0_store, 0, n_evicted, chunk_size=chunk_size
+    )
 
     kv_direct_set = set(kv_direct_indices)
+    num_layers = len(inner_model.layers)
     for i in range(num_layers):
-        if i in kv_direct_set:
-            tc = temp_caches[i]
-            k, v = tc.state
+        if i in kv_direct_set and i < len(kv_list):
+            k, v = kv_list[i]
             caches[i]._recon_keys = k
             caches[i]._recon_values = v
+
+
+# ---------------------------------------------------------------------------
+# Unpatch: restore original model class
+# ---------------------------------------------------------------------------
+
+def unpatch_model(model):
+    """Remove KV-Direct monkey-patch, restoring original __call__.
+
+    Safe to call on unpatched models (no-op).
+
+    Args:
+        model: Outer Model previously patched by apply_h0_capture[_only].
+
+    Returns:
+        True if unpatch occurred, False if model was not patched.
+    """
+    try:
+        inner_model = _find_inner_model(model)
+    except ValueError:
+        return False
+
+    if not getattr(inner_model, _KV_DIRECT_PATCHED, False):
+        return False
+
+    base_cls = getattr(inner_model, "_kv_direct_base_cls", None)
+    if base_cls is None:
+        logger.warning("unpatch_model: _kv_direct_base_cls missing, cannot restore")
+        return False
+
+    inner_model.__class__ = base_cls
+    inner_model._kv_direct_patched = False
+    del inner_model._kv_direct_base_cls
+    return True

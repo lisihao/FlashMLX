@@ -137,6 +137,9 @@ def make_optimized_cache(
     scored_max_cache: int = 2048,
     kv_direct_budget: int = 512,
     h0_quant: Optional[str] = None,
+    pinned_tokens: int = 0,
+    density_mode: Optional[str] = None,
+    density_scale: float = 0.0,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -161,6 +164,9 @@ def make_optimized_cache(
                    quality. Models with smaller head_dim auto-downgrade to "q4_0".
         scored_max_cache: Maximum tokens retained in flat buffer during scored_pq
                          chunked prefill eviction. Default: 2048.
+        pinned_tokens: First N tokens are never evicted by AM scoring/compression.
+                      Typical use: system prompt protection for multi-agent reuse.
+                      Default: 0 (no pinning).
 
     Returns:
         List of cache objects, one per layer.
@@ -187,6 +193,10 @@ def make_optimized_cache(
         strategy = _auto_detect_strategy(calibration_file)
 
     if strategy == "standard":
+        # Check for hybrid architecture (SSM+Attention models like Qwen3.5)
+        is_hybrid, _, native_caches = _detect_architecture(model)
+        if is_hybrid:
+            return native_caches
         return [KVCache() for _ in range(num_layers)]
 
     # KV-Direct v2: model-level h^(0) checkpointing (paper 2603.19664)
@@ -270,6 +280,9 @@ def make_optimized_cache(
         warm_overflow_threshold=DEFAULT_WARM_OVERFLOW_THRESHOLD,
         scored_mode=is_scored,
         flat_quant=flat_quant,
+        pinned_tokens=pinned_tokens,
+        density_mode=density_mode,
+        density_scale=density_scale,
     )
     if is_scored:
         # P2 Scored: skip all warm quantization during prefill.
@@ -288,15 +301,14 @@ def make_optimized_cache(
     # Detect hybrid architecture (SSM + Attention)
     is_hybrid, attn_indices, native_caches = _detect_architecture(model)
 
-    if is_hybrid and is_scored:
-        # Auto-disable scored_pq for hybrid SSM+Attention models.
-        # Benchmark data (Qwen3.5-35B-A3B): scored_pq causes TG -22% to -64%
-        # because scoring overhead on few attention layers outweighs KV savings.
-        # Use expert offloading (Route 1) for MoE memory optimization instead.
+    if is_hybrid and strategy == "scored_pq":
+        # Auto-disable plain scored_pq for hybrid SSM+Attention models.
+        # Benchmark data (Qwen3.5-35B-A3B): Q8/Q4 flat_quant causes TG regression.
+        # scored_kv_direct is NOT auto-disabled — h^(0) capture is valuable on hybrid.
         attn_ratio = len(attn_indices) / num_layers
         print(f"[CacheFactory] scored_pq auto-disabled for hybrid model "
               f"({len(attn_indices)}/{num_layers} attention layers, {attn_ratio:.0%}). "
-              f"Use expert offloading for MoE memory optimization.")
+              f"Use scored_kv_direct or expert offloading instead.")
         return native_caches
 
     if is_hybrid:
@@ -321,9 +333,14 @@ def make_optimized_cache(
 
     # Route 5: Scored KV-Direct — install h^(0) capture on top of scored_pq
     if is_scored_kv_direct:
-        from mlx_lm.models.kv_direct_cache import H0Store, apply_h0_capture_only
+        from mlx_lm.models.kv_direct_cache import (
+            H0Store, ReconstructionBudget, apply_h0_capture_only,
+        )
 
-        h0_store = H0Store(quant=h0_quant)
+        # Route 0↔5 coupling: ReconstructionBudget controls how aggressively
+        # Route 0 can compress, knowing Route 5 can reconstruct.
+        recon_budget = ReconstructionBudget()
+        h0_store = H0Store(quant=h0_quant, recon_budget=recon_budget)
         for c in caches:
             if isinstance(c, TripleLayerKVCache):
                 c._h0_store = h0_store
@@ -332,7 +349,9 @@ def make_optimized_cache(
         n_layers = sum(1 for c in caches if isinstance(c, TripleLayerKVCache))
         quant_label = h0_quant or "bf16"
         print(f"[CacheFactory] Scored KV-Direct: h^(0) capture installed, "
-              f"{n_layers} layers, h^(0) archive active, h0_quant={quant_label}")
+              f"{n_layers} layers, h^(0) archive active, h0_quant={quant_label}, "
+              f"recon_budget=({recon_budget.max_recall_per_turn}/turn, "
+              f"cd={recon_budget.cooldown_turns})")
 
     return caches
 
@@ -360,7 +379,16 @@ def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
     if not cache_list:
         return {"strategy": "empty", "num_layers": 0}
 
+    # Find representative cache — on hybrid models, c0 may be ArraysCache (SSM layer).
+    # Look for the first TripleLayerKVCache or KVDirectCache for accurate info.
     c0 = cache_list[0]
+    triple_cache = None
+    try:
+        from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+        triple_cache = next((c for c in cache_list if isinstance(c, TripleLayerKVCache)), None)
+    except ImportError:
+        pass
+
     info = {
         "num_layers": len(cache_list),
         "type": type(c0).__name__,
@@ -368,28 +396,31 @@ def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
 
     try:
         from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
-        if isinstance(c0, TripleLayerKVCache):
-            if c0.scored_mode and c0._h0_store is not None:
+        tc = triple_cache or c0
+        if isinstance(tc, TripleLayerKVCache):
+            if tc.scored_mode and tc._h0_store is not None:
                 info["strategy"] = "scored_kv_direct"
-                info["h0_count"] = c0._h0_store.count
-                info["h0_bytes"] = c0._h0_store.nbytes
-            elif c0.scored_mode:
+                info["h0_count"] = tc._h0_store.count
+                info["h0_bytes"] = tc._h0_store.nbytes
+                if tc._h0_store.recon_budget:
+                    info["recon_budget"] = tc._h0_store.recon_budget.stats
+            elif tc.scored_mode:
                 info["strategy"] = "scored_pq"
-            elif c0.enable_cold_am:
+            elif tc.enable_cold_am:
                 info["strategy"] = "triple_am"
             else:
                 info["strategy"] = "triple"
-            info["recent_size"] = c0.recent_size
-            info["warm_size"] = c0.warm_size
-            info["compression_ratio"] = c0.compression_ratio
-            info["flat_mode"] = c0._flat_mode
-            info["scored_mode"] = c0.scored_mode
-            if c0._scored_active:
+            info["recent_size"] = tc.recent_size
+            info["warm_size"] = tc.warm_size
+            info["compression_ratio"] = tc.compression_ratio
+            info["flat_mode"] = tc._flat_mode
+            info["scored_mode"] = tc.scored_mode
+            if tc._scored_active:
                 info["scored_active"] = True
-                info["flat_tokens"] = c0._flat_offset if c0._flat_mode else 0
-            if c0._flat_mode:
-                info["flat_tokens"] = c0._flat_offset
-                info["true_offset"] = c0._true_offset
+                info["flat_tokens"] = tc._flat_offset if tc._flat_mode else 0
+            if tc._flat_mode:
+                info["flat_tokens"] = tc._flat_offset
+                info["true_offset"] = tc._true_offset
             return info
     except ImportError:
         pass

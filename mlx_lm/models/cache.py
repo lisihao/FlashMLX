@@ -33,6 +33,9 @@ def make_prompt_cache(
     kv_scored_max_cache: int = 2048,
     kv_direct_budget: int = 512,
     h0_quant: Optional[str] = None,
+    pinned_tokens: int = 0,
+    density_mode: Optional[str] = None,
+    density_scale: float = 0.0,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -64,6 +67,12 @@ def make_prompt_cache(
             "q8_0" for int8+scales (~50% KV memory savings). Default: None.
         kv_scored_max_cache (int): Maximum tokens in scored_pq flat buffer.
             Default: 2048.
+        pinned_tokens (int): First N tokens are never evicted by AM scoring.
+            Protects system prompt for multi-agent reuse. Default: 0.
+        density_mode (Optional[str]): Route 0 density router mode.
+            One of "balanced", "ultra_long", "recall_first", or None (off).
+        density_scale (float): Route 0 additive bias in log2 space.
+            +1 doubles compression, -1 halves it. Default: 0.0.
     """
     # FlashMLX: kv_cache parameter takes priority over model.make_cache()
     # This ensures scored_pq works on hybrid models (Qwen3.5, PLaMo2, etc.)
@@ -88,6 +97,11 @@ def make_prompt_cache(
             kwargs["kv_direct_budget"] = kv_direct_budget
         if h0_quant is not None:
             kwargs["h0_quant"] = h0_quant
+        if pinned_tokens > 0:
+            kwargs["pinned_tokens"] = pinned_tokens
+        if density_mode is not None:
+            kwargs["density_mode"] = density_mode
+            kwargs["density_scale"] = density_scale
         return make_optimized_cache(model, **kwargs)
 
     # Model-specific cache (hybrid models like Qwen3.5 define make_cache())
