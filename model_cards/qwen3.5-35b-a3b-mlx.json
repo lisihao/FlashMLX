@@ -1,0 +1,51 @@
+{
+  "model_id": "qwen3.5-35b-a3b-mlx",
+  "model_name": "Qwen3.5-35B-A3B-MLX (6-bit)",
+  "model_path": "/Volumes/toshiba/models/Qwen3.5-35B-A3B-MLX",
+  "architecture": {
+    "type": "hybrid_ssm_attention",
+    "num_layers": 40,
+    "attention_layers": 10,
+    "hidden_size": 4096,
+    "head_dim": 128,
+    "num_kv_heads": 8
+  },
+  "optimal": {
+    "strategy": "standard"
+  },
+  "offload": {
+    "enabled": false
+  },
+  "benchmarks": {
+    "4k": {
+      "context": 4096,
+      "pp_toks": 757.2,
+      "tg_toks": 58.3,
+      "ttft_ms": 5410,
+      "tg_mem_mb": 149,
+      "pp_peak_mb": 150
+    },
+    "8k": {
+      "context": 8192,
+      "pp_toks": 745.5,
+      "tg_toks": 58.3,
+      "ttft_ms": 10990,
+      "tg_mem_mb": 234,
+      "pp_peak_mb": 250
+    },
+    "16k": {
+      "context": 16384,
+      "pp_toks": 728.8,
+      "tg_toks": 57.9,
+      "ttft_ms": 22480,
+      "tg_mem_mb": 427,
+      "pp_peak_mb": 459
+    }
+  },
+  "platform": "M4 Max 64GB",
+  "not_recommended": [
+    "scored_pq",
+    "scored_kv_direct"
+  ],
+  "notes": "Hybrid architecture (30 SSM + 10 Attention). KV cache is only 427MB at 16K — not the bottleneck. Optimization target is Route 1 (Expert Offloading), not KV compression."
+}

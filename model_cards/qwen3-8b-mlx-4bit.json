@@ -1,0 +1,75 @@
+{
+  "model_id": "qwen3-8b-mlx-4bit",
+  "model_name": "Qwen3-8B-MLX (4-bit)",
+  "model_path": "/Volumes/toshiba/models/qwen3-8b-mlx",
+  "architecture": {
+    "type": "pure_transformer",
+    "num_layers": 36,
+    "attention_layers": 36,
+    "hidden_size": 4096,
+    "head_dim": 128,
+    "num_kv_heads": 8
+  },
+  "optimal": {
+    "strategy": "scored_pq",
+    "flat_quant": "q8_0",
+    "compression_ratio": 0.0,
+    "calibration_file": "calibrations/am_calibration_qwen3-8b_2.0x_onpolicy.pkl",
+    "recent_size": 512,
+    "warm_size": 2048,
+    "scored_max_cache": 2048
+  },
+  "offload": {
+    "enabled": false
+  },
+  "benchmarks": {
+    "4k": {
+      "context": 4096,
+      "pp_toks": 434.4,
+      "tg_toks": 30.1,
+      "ttft_ms": 9430,
+      "tg_mem_mb": 141,
+      "pp_peak_mb": 155
+    },
+    "8k": {
+      "context": 8192,
+      "pp_toks": 430.7,
+      "tg_toks": 27.9,
+      "ttft_ms": 19030,
+      "tg_mem_mb": 240,
+      "pp_peak_mb": 261
+    },
+    "16k": {
+      "context": 16384,
+      "pp_toks": 424.0,
+      "tg_toks": 25.1,
+      "ttft_ms": 38600,
+      "tg_mem_mb": 370,
+      "pp_peak_mb": 396
+    },
+    "32k": {
+      "context": 32768,
+      "pp_toks": 409.5,
+      "tg_toks": 21.6,
+      "ttft_ms": 80024,
+      "tg_mem_mb": 529,
+      "pp_peak_mb": 526
+    }
+  },
+  "standard_baselines": {
+    "32k": {
+      "context": 32768,
+      "pp_toks": 269.5,
+      "tg_toks": 16.1,
+      "ttft_ms": 121596,
+      "tg_mem_mb": 4647,
+      "pp_peak_mb": 4840
+    }
+  },
+  "platform": "M4 Max 64GB",
+  "not_recommended": [
+    "kv_direct",
+    "scored_pq_q4"
+  ],
+  "notes": "v2.0 Official Baseline (2026-04-01). scored_pq+Q8 optimal. 32K: PP +52%, TG +34%, Mem -89% vs standard. Q4 flat kills TG (-45%). Route 5 h^(0) capture zero-cost."
+}

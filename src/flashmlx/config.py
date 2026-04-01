@@ -28,6 +28,7 @@ class CacheConfig(BaseModel):
         - "triple_pq": Triple + PolarQuant warm quantization
         - "triple_pq_am": Triple + PolarQuant + AM
         - "scored_pq": AM-scored differential compression (recommended)
+        - "scored_kv_direct": Route 5 — h^(0) capture + prefix exact reconstruction
         - "auto": Auto-select based on calibration availability
 
     Flat quantization (flat_quant):
@@ -70,6 +71,18 @@ class CacheConfig(BaseModel):
         default=2048,
         description="Warm layer size in tokens",
     )
+    kv_direct_budget: int = Field(
+        default=512,
+        description="KV-Direct: number of recent tokens to keep as full K/V",
+    )
+    h0_quant: Optional[str] = Field(
+        default=None,
+        description="h^(0) quantization for scored_kv_direct: None (bf16), 'q8', 'q4'",
+    )
+    pinned_tokens: int = Field(
+        default=0,
+        description="First N tokens are never evicted (system prompt protection)",
+    )
 
     @field_validator("strategy")
     @classmethod
@@ -77,7 +90,7 @@ class CacheConfig(BaseModel):
         valid = (
             "standard", "triple", "triple_am", "triple_pq",
             "triple_pq_am", "triple_tq", "triple_tq_am",
-            "scored_pq", "auto",
+            "scored_pq", "scored_kv_direct", "kv_direct", "auto",
         )
         if v not in valid:
             raise ValueError(f"Unknown strategy: {v!r}. Use one of: {valid}")
@@ -88,6 +101,13 @@ class CacheConfig(BaseModel):
     def validate_flat_quant(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and v not in ("q8_0", "q4_0", "turboquant"):
             raise ValueError(f"Unknown flat_quant: {v!r}. Use: None, 'q8_0', 'q4_0', 'turboquant'")
+        return v
+
+    @field_validator("h0_quant")
+    @classmethod
+    def validate_h0_quant(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ("q8", "q4"):
+            raise ValueError(f"Unknown h0_quant: {v!r}. Use: None, 'q8', 'q4'")
         return v
 
     @field_validator("warm_bits")
@@ -116,6 +136,10 @@ class CacheConfig(BaseModel):
             kwargs["kv_warm_bits"] = self.warm_bits
         if self.scored_max_cache != 2048:
             kwargs["kv_scored_max_cache"] = self.scored_max_cache
+        if self.h0_quant is not None:
+            kwargs["h0_quant"] = self.h0_quant
+        if self.pinned_tokens > 0:
+            kwargs["pinned_tokens"] = self.pinned_tokens
         return kwargs
 
     def to_factory_kwargs(self) -> dict[str, Any]:
@@ -138,6 +162,12 @@ class CacheConfig(BaseModel):
             kwargs["compression_ratio"] = self.compression_ratio
         if self.scored_max_cache != 2048:
             kwargs["scored_max_cache"] = self.scored_max_cache
+        if self.strategy in ("kv_direct", "scored_kv_direct"):
+            kwargs["kv_direct_budget"] = self.kv_direct_budget
+        if self.h0_quant is not None:
+            kwargs["h0_quant"] = self.h0_quant
+        if self.pinned_tokens > 0:
+            kwargs["pinned_tokens"] = self.pinned_tokens
         return kwargs
 
 

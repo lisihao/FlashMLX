@@ -4,7 +4,7 @@ Route 5: Scored KV-Direct — Phase 1 & 2 Tests
 Test 1: h^(0) accumulation — scored_kv_direct captures embeddings
 Test 2: Output match — scored_kv_direct == scored_pq (Phase 1, no reconstruction)
 Test 3: Memory overhead — h^(0) archive size matches expected
-Test 4: Reconstruction correctness — reconstruct_kv produces bit-identical K/V
+Test 4: Reconstruction correctness — reconstruct_prefix_kv produces bit-identical K/V
 Test 5: Injection — inject_reconstruction prepends to flat buffer output
 """
 
@@ -181,8 +181,8 @@ def test_4_reconstruction_correctness():
     assert h0_store is not None
 
     # Reconstruct K/V from h^(0) for prefix (all tokens)
-    from mlx_lm.models.kv_direct_cache import reconstruct_kv
-    recon_kv = reconstruct_kv(model.model, h0_store, 0, prompt_len)
+    from mlx_lm.models.kv_direct_cache import reconstruct_prefix_kv
+    recon_kv = reconstruct_prefix_kv(model.model, h0_store, 0, prompt_len)
     mx.eval([k for k, v in recon_kv] + [v for k, v in recon_kv])
 
     # Compare reconstructed K/V vs standard
@@ -296,8 +296,8 @@ def test_6_q8_reconstruction():
     assert h0_store is not None
     assert h0_store._quant == 'q8'
 
-    from mlx_lm.models.kv_direct_cache import reconstruct_kv
-    recon_kv = reconstruct_kv(model.model, h0_store, 0, prompt_len)
+    from mlx_lm.models.kv_direct_cache import reconstruct_prefix_kv
+    recon_kv = reconstruct_prefix_kv(model.model, h0_store, 0, prompt_len)
     mx.eval([k for k, v in recon_kv] + [v for k, v in recon_kv])
 
     max_k_diff = 0.0
@@ -356,8 +356,8 @@ def test_7_q4_reconstruction():
     assert h0_store is not None
     assert h0_store._quant == 'q4'
 
-    from mlx_lm.models.kv_direct_cache import reconstruct_kv
-    recon_kv = reconstruct_kv(model.model, h0_store, 0, prompt_len)
+    from mlx_lm.models.kv_direct_cache import reconstruct_prefix_kv
+    recon_kv = reconstruct_prefix_kv(model.model, h0_store, 0, prompt_len)
     mx.eval([k for k, v in recon_kv] + [v for k, v in recon_kv])
 
     max_k_diff = 0.0
@@ -431,12 +431,85 @@ def test_8_q8_output_quality():
     return True  # Always pass — report quality, no hard threshold
 
 
+def test_9_double_patch_guard():
+    """Double-patching must raise RuntimeError."""
+    print("\n=== Test 9: Double-Patch Guard ===")
+    from mlx_lm.models.kv_direct_cache import (
+        H0Store, apply_h0_capture_only, unpatch_model,
+    )
+    model, tokenizer = load(MODEL)
+
+    h0_store = H0Store(quant=None)
+    apply_h0_capture_only(model, h0_store)
+
+    # Second patch should raise
+    try:
+        apply_h0_capture_only(model, h0_store)
+        print("  FAIL: double-patch did not raise")
+        return False
+    except RuntimeError as e:
+        print(f"  Double-patch correctly raised: {e}")
+
+    # Unpatch should succeed
+    ok = unpatch_model(model)
+    assert ok, "unpatch_model returned False"
+    print("  unpatch_model() succeeded")
+
+    # Re-patch after unpatch should work
+    apply_h0_capture_only(model, h0_store)
+    print("  Re-patch after unpatch succeeded")
+
+    # Cleanup
+    unpatch_model(model)
+    print("  PASS")
+    return True
+
+
+def test_10_batch_size_guard():
+    """batch_size > 1 must raise RuntimeError at runtime."""
+    print("\n=== Test 10: Batch Size Guard ===")
+    from mlx_lm.models.kv_direct_cache import (
+        H0Store, apply_h0_capture_only, unpatch_model,
+    )
+    model, tokenizer = load(MODEL)
+
+    h0_store = H0Store(quant=None)
+    apply_h0_capture_only(model, h0_store)
+
+    # batch_size=1 should work
+    tokens_b1 = mx.array(tokenizer.encode("Hello")).reshape(1, -1)
+    try:
+        out = model(tokens_b1)
+        mx.eval(out)
+        print("  batch_size=1: OK")
+    except RuntimeError:
+        print("  FAIL: batch_size=1 should not raise")
+        unpatch_model(model)
+        return False
+
+    # batch_size=2 should raise
+    tokens_b2 = mx.concatenate([tokens_b1, tokens_b1], axis=0)
+    try:
+        out = model(tokens_b2)
+        mx.eval(out)
+        print("  FAIL: batch_size=2 did not raise")
+        unpatch_model(model)
+        return False
+    except RuntimeError as e:
+        print(f"  batch_size=2 correctly raised: {e}")
+
+    unpatch_model(model)
+    print("  PASS")
+    return True
+
+
 if __name__ == "__main__":
     results = {}
     for test_fn in [test_1_h0_accumulation, test_2_output_match,
                     test_3_memory_overhead, test_4_reconstruction_correctness,
                     test_5_injection, test_6_q8_reconstruction,
-                    test_7_q4_reconstruction, test_8_q8_output_quality]:
+                    test_7_q4_reconstruction, test_8_q8_output_quality,
+                    test_9_double_patch_guard, test_10_batch_size_guard]:
         try:
             results[test_fn.__name__] = test_fn()
         except Exception as e:

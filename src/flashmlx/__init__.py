@@ -44,6 +44,11 @@ from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm.models.cache_factory import make_optimized_cache, VALID_STRATEGIES
 
 # ---------------------------------------------------------------------------
+# Model Cards (per-model config — single source of truth)
+# ---------------------------------------------------------------------------
+from .model_cards import ModelCard, load_card, load_card_or_detect, save_card, list_cards
+
+# ---------------------------------------------------------------------------
 # Quantization strategies (re-export)
 # ---------------------------------------------------------------------------
 from mlx_lm.models.quantization_strategies import get_quantizer, QuantizationStrategy
@@ -66,6 +71,12 @@ __all__ = [
     "make_prompt_cache",
     "make_optimized_cache",
     "VALID_STRATEGIES",
+    # Model Cards
+    "ModelCard",
+    "load_card",
+    "load_card_or_detect",
+    "save_card",
+    "list_cards",
     # Quantization
     "get_quantizer",
     "QuantizationStrategy",
