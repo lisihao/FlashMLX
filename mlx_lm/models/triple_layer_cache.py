@@ -44,6 +44,10 @@ class TripleLayerKVCache(_BaseCache):
         - L1 (Warm): 512-2048 tokens, KV quantization (~2x compression)
         - L2 (Cold): 2048+ tokens, AM compression (~1.5x compression)
 
+    Class Attributes:
+        _shared_surprise: Cross-layer surprise scores from layer 0's keys.
+        _shared_surprise_tag: (eviction_count, scorable_len) to prevent stale reads.
+
     Parameters
     ----------
     recent_size : int
@@ -76,6 +80,10 @@ class TripleLayerKVCache(_BaseCache):
     ...     compression_ratio=1.5
     ... )
     """
+
+    # Cross-layer surprise sharing: layer 0 computes, all layers use
+    _shared_surprise = None   # np.ndarray of windowed z-scores
+    _shared_surprise_tag = None  # (eviction_count, scorable_len) freshness check
 
     def __init__(
         self,
@@ -226,9 +234,10 @@ class TripleLayerKVCache(_BaseCache):
         # Route 5: Scored KV-Direct fusion — h^(0) archive reference
         self._h0_store = None  # Set by cache_factory for scored_kv_direct strategy
 
-        # Route 5: Reconstructed K/V injection (consumed once per step)
+        # Route 5: Reconstructed K/V injection
         self._recon_keys = None
         self._recon_values = None
+        self._recon_persistent = True  # persist across TG steps (not just first token)
 
         # Merge strategy: track prefix-era tokens in flat buffer for dedup.
         # After _scored_compress_prefix, the flat buffer layout is:
@@ -321,6 +330,15 @@ class TripleLayerKVCache(_BaseCache):
         """
         self._recon_keys = recon_keys
         self._recon_values = recon_values
+
+    def clear_reconstruction(self):
+        """Explicitly clear persistent reconstruction data.
+
+        Call this when generation is complete or cache is being reset,
+        to free the memory held by reconstructed K/V tensors.
+        """
+        self._recon_keys = None
+        self._recon_values = None
 
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
@@ -597,7 +615,7 @@ class TripleLayerKVCache(_BaseCache):
         else:
             k, v = self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
 
-        # Route 5: Prepend reconstructed K/V if injected (consumed once).
+        # Route 5: Prepend reconstructed K/V if available.
         # Dedup: recall covers [0:N] which overlaps with prefix-era hot tokens
         # in the flat buffer. Skip those to avoid duplicate attention entries.
         # Layout after merge: [recall [0:N]] + [non-prefix tokens from flat buffer]
@@ -613,8 +631,9 @@ class TripleLayerKVCache(_BaseCache):
                 # No prefix tokens to skip (or skip covers everything)
                 k = mx.concatenate([self._recon_keys, k], axis=2)
                 v = mx.concatenate([self._recon_values, v], axis=2)
-            self._recon_keys = None
-            self._recon_values = None
+            if not self._recon_persistent:
+                self._recon_keys = None
+                self._recon_values = None
 
         return k, v
 
@@ -1283,12 +1302,19 @@ class TripleLayerKVCache(_BaseCache):
 
     # ── Architecture D: Scored Differential Compression ──────────────────
 
-    def _get_importance_mask(self, chunk_len: int, budget: int, prefix_len: int) -> np.ndarray:
+    def _get_importance_mask(self, chunk_len: int, budget: int, prefix_len: int,
+                             surprise_scores: "np.ndarray | None" = None) -> np.ndarray:
         """
-        Get boolean importance mask from AM calibration.
+        Get boolean importance mask from AM calibration + surprise protection.
 
         Uses the same selected_indices as pipeline AM, but instead of deleting
         unselected tokens, returns a mask for differential bit allocation.
+        When surprise_scores are provided, tokens with high z-scores are
+        protected from eviction regardless of AM ranking.
+
+        Args:
+            surprise_scores: optional (chunk_len,) z-score array from key norms.
+                Tokens with z-score >= 2.0 are unconditionally protected.
 
         Returns:
             mask: np.ndarray of shape (chunk_len,) where True = important (PQ4)
@@ -1338,6 +1364,31 @@ class TripleLayerKVCache(_BaseCache):
 
         importance_mask = np.zeros(chunk_len, dtype=bool)
         importance_mask[clipped_indices] = True
+
+        # Surprise protection: keep tokens with unusual key norms (z-score >= 2.0).
+        # RoPE preserves L2 norms, so key norms reflect token content, not position.
+        if surprise_scores is not None:
+            surprise_threshold = 2.0
+            surprise_mask = surprise_scores >= surprise_threshold
+            n_surprise = int(surprise_mask.sum())
+            if n_surprise > 0:
+                combined = importance_mask | surprise_mask
+                n_combined = int(combined.sum())
+                if n_combined <= budget:
+                    importance_mask = combined
+                elif n_surprise <= budget:
+                    # Surprise fits in budget; fill rest with AM picks
+                    remaining = budget - n_surprise
+                    am_only = importance_mask & ~surprise_mask
+                    am_idx = np.where(am_only)[0][:remaining]
+                    importance_mask = surprise_mask.copy()
+                    importance_mask[am_idx] = True
+                else:
+                    # Even surprise alone exceeds budget; take top-k by z-score
+                    top_idx = np.argsort(-surprise_scores)[:budget]
+                    importance_mask = np.zeros(chunk_len, dtype=bool)
+                    importance_mask[top_idx] = True
+
         return importance_mask
 
     def _scored_prefill_evict(self):
@@ -1377,12 +1428,46 @@ class TripleLayerKVCache(_BaseCache):
         chunk_size = self.cold_batch_threshold  # 512
         budget = int(chunk_size / effective_ratio)
 
+        # Cross-layer surprise scoring: layer 0 computes key-norm z-scores with
+        # ±16 window expansion, then shares via class attribute so all 36 layers
+        # protect the same tokens. Without sharing, needle tokens might survive
+        # at some layers but get evicted at others, breaking attention.
+        surprise_all = None
+        evict_tag = (self._prefill_eviction_count + 1, scorable_len)
+        if scorable_len > 0:
+            if self.layer_idx == 0:
+                kn = mx.linalg.norm(scorable_k.astype(mx.float32), axis=-1)
+                kn = kn.mean(axis=1).squeeze(0)
+                kn_np = np.array(kn)
+                # Per-chunk z-score: normalize within each 512-token chunk so
+                # needle tokens stand out from LOCAL filler, not diluted by
+                # AM-selected survivors from previous evictions.
+                per_chunk_z = np.zeros(scorable_len, dtype=np.float32)
+                for ci in range(0, scorable_len, chunk_size):
+                    ce = min(ci + chunk_size, scorable_len)
+                    chunk = kn_np[ci:ce]
+                    c_mean, c_std = chunk.mean(), chunk.std() + 1e-8
+                    per_chunk_z[ci:ce] = np.abs(chunk - c_mean) / c_std
+                # Window max-pool: expand surprise to ±16 tokens around outliers
+                half_w = 16
+                padded = np.pad(per_chunk_z, (half_w, half_w), constant_values=0)
+                from numpy.lib.stride_tricks import sliding_window_view
+                surprise_all = sliding_window_view(padded, 2 * half_w + 1).max(axis=-1)
+                # Share with other layers
+                TripleLayerKVCache._shared_surprise = surprise_all
+                TripleLayerKVCache._shared_surprise_tag = evict_tag
+            elif (TripleLayerKVCache._shared_surprise_tag == evict_tag and
+                  TripleLayerKVCache._shared_surprise is not None):
+                surprise_all = TripleLayerKVCache._shared_surprise
+
         global_indices = []
         for offset in range(0, scorable_len, chunk_size):
             chunk_end = min(offset + chunk_size, scorable_len)
             chunk_len = chunk_end - offset
             if chunk_len == chunk_size:
-                imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size)
+                chunk_surprise = surprise_all[offset:chunk_end] if surprise_all is not None else None
+                imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size,
+                                                    surprise_scores=chunk_surprise)
                 global_indices.append(np.where(imp_mask)[0] + offset)
             else:
                 # Partial chunk: keep all tokens

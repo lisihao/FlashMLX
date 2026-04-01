@@ -302,9 +302,10 @@ class KVDirectCache(_BaseCache):
         # Shared h^(0) store (set by factory, shared across all layers)
         self._h0_store = h0_store
 
-        # Reconstructed K/V injection (set by model patch, consumed once)
+        # Reconstructed K/V injection
         self._recon_keys = None
         self._recon_values = None
+        self._recon_persistent = True  # persist across TG steps
 
     def update_and_fetch(self, keys, values):
         """Update cache with new K/V and return full-sequence K/V.
@@ -336,8 +337,9 @@ class KVDirectCache(_BaseCache):
 
         # 3. Within budget — standard behavior, no eviction
         if self.offset <= self._budget:
-            self._recon_keys = None
-            self._recon_values = None
+            if not self._recon_persistent:
+                self._recon_keys = None
+                self._recon_values = None
             return self._recent_keys, self._recent_values
 
         # 4. Trim recent window to budget
@@ -351,12 +353,18 @@ class KVDirectCache(_BaseCache):
         if self._recon_keys is not None:
             all_k = mx.concatenate([self._recon_keys, self._recent_keys], axis=2)
             all_v = mx.concatenate([self._recon_values, self._recent_values], axis=2)
-            self._recon_keys = None
-            self._recon_values = None
+            if not self._recon_persistent:
+                self._recon_keys = None
+                self._recon_values = None
             return all_k, all_v
 
         # 6. Fallback: no reconstruction (shouldn't happen in steady state)
         return self._recent_keys, self._recent_values
+
+    def clear_reconstruction(self):
+        """Explicitly clear persistent reconstruction data."""
+        self._recon_keys = None
+        self._recon_values = None
 
     # --- _BaseCache interface ---
 
