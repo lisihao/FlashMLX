@@ -215,6 +215,26 @@ class TripleLayerKVCache(_BaseCache):
             from mlx_lm.models.quantization_strategies import PolarQuantizer
             self._flat_pq = PolarQuantizer(bits=4, norm_correction=False)
 
+        # Route 5: Scored KV-Direct fusion — h^(0) archive reference
+        self._h0_store = None  # Set by cache_factory for scored_kv_direct strategy
+
+        # Route 5: Reconstructed K/V injection (consumed once per step)
+        self._recon_keys = None
+        self._recon_values = None
+
+    def inject_reconstruction(self, recon_keys, recon_values):
+        """Inject reconstructed K/V for next attention step.
+
+        The injected K/V is prepended to the flat buffer output on the
+        next _fetch_flat call, then automatically cleared.
+
+        Args:
+            recon_keys: (B, n_kv_heads, N, head_dim) reconstructed keys
+            recon_values: (B, n_kv_heads, N, head_dim) reconstructed values
+        """
+        self._recon_keys = recon_keys
+        self._recon_values = recon_values
+
     def _load_am_calibration(self, filepath: str):
         """Load AM calibration file directly (bypasses CalibrationRegistry)."""
         import pickle
@@ -479,18 +499,25 @@ class TripleLayerKVCache(_BaseCache):
         if self._flat_quant == 'q8_0':
             k = self._flat_keys[..., :end, :].astype(mx.bfloat16) * self._flat_keys_scales[..., :end, :]
             v = self._flat_values[..., :end, :].astype(mx.bfloat16) * self._flat_values_scales[..., :end, :]
-            return k, v
         elif self._flat_quant == 'q4_0':
             k = self._q4_dequantize(self._flat_keys[..., :end, :], self._flat_keys_scales[..., :end, :])
             v = self._q4_dequantize(self._flat_values[..., :end, :], self._flat_values_scales[..., :end, :])
-            return k, v
         elif self._flat_quant == 'turboquant':
             k = self._flat_pq.flat_dequantize(
                 self._flat_keys[..., :end, :], self._flat_keys_scales[..., :end, :], self._flat_pq_head_dim)
             v = self._flat_pq.flat_dequantize(
                 self._flat_values[..., :end, :], self._flat_values_scales[..., :end, :], self._flat_pq_head_dim)
-            return k, v
-        return self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
+        else:
+            k, v = self._flat_keys[..., :end, :], self._flat_values[..., :end, :]
+
+        # Route 5: Prepend reconstructed K/V if injected (consumed once)
+        if self._recon_keys is not None:
+            k = mx.concatenate([self._recon_keys, k], axis=2)
+            v = mx.concatenate([self._recon_values, v], axis=2)
+            self._recon_keys = None
+            self._recon_values = None
+
+        return k, v
 
     def _eval_flat_buffer(self):
         """Evaluate flat buffer arrays (includes scales/norms for Q8_0/Q4_0/TurboQuant)."""

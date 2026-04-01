@@ -32,6 +32,7 @@ def make_prompt_cache(
     kv_flat_quant: Optional[str] = None,
     kv_scored_max_cache: int = 2048,
     kv_direct_budget: int = 512,
+    h0_quant: Optional[str] = None,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -85,6 +86,8 @@ def make_prompt_cache(
             kwargs["scored_max_cache"] = kv_scored_max_cache
         if kv_direct_budget != 512:
             kwargs["kv_direct_budget"] = kv_direct_budget
+        if h0_quant is not None:
+            kwargs["h0_quant"] = h0_quant
         return make_optimized_cache(model, **kwargs)
 
     # Model-specific cache (hybrid models like Qwen3.5 define make_cache())

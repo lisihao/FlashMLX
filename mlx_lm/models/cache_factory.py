@@ -12,6 +12,7 @@ Strategies:
     - "triple_tq": Triple + TurboQuant (PQ3 + damped QJL). ~73% savings, correct output.
     - "triple_tq_am": Triple + TurboQuant + AM
     - "scored_pq": Architecture D — AM-scored differential PQ4/PQ2 (~81% savings, no token deletion)
+    - "scored_kv_direct": Route 5 — scored_pq + h^(0) archive (lossless reconstruction capability)
     - "auto": Auto-select based on calibration availability
 
 Usage:
@@ -74,7 +75,7 @@ DEFAULT_COMPRESSION_RATIO = 2.0
 DEFAULT_WARM_OVERFLOW_THRESHOLD = 64
 
 # Valid strategies
-VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "scored_pq", "kv_direct", "auto")
+VALID_STRATEGIES = ("standard", "triple", "triple_am", "triple_pq", "triple_pq_am", "triple_tq", "triple_tq_am", "scored_pq", "scored_kv_direct", "kv_direct", "auto")
 
 # Adaptive ratio: pass compression_ratio=0 to enable context-aware ratio selection
 # Data-driven mapping (Qwen3-8B benchmarks):
@@ -135,6 +136,7 @@ def make_optimized_cache(
     flat_quant: Optional[str] = None,
     scored_max_cache: int = 2048,
     kv_direct_budget: int = 512,
+    h0_quant: Optional[str] = None,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -220,10 +222,11 @@ def make_optimized_cache(
               f"{n_patched} layers, h^(0) checkpointing")
         return caches
 
-    # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM
+    # Triple or Triple+AM or Triple+PQ or Triple+PQ+AM or Scored KV-Direct
     from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
 
-    is_scored = strategy == "scored_pq"
+    is_scored_kv_direct = strategy == "scored_kv_direct"
+    is_scored = strategy == "scored_pq" or is_scored_kv_direct
     enable_am = strategy in ("triple_am", "triple_pq_am", "triple_tq_am") or is_scored
 
     # Validate calibration for AM
@@ -306,16 +309,32 @@ def make_optimized_cache(
                 caches.append(TripleLayerKVCache(**cache_kwargs, layer_idx=i))
             else:
                 caches.append(native_caches[i])
-        return caches
     else:
         # Pure Transformer path (existing logic, unchanged)
-        return [
+        caches = [
             TripleLayerKVCache(
                 **cache_kwargs,
                 layer_idx=i,
             )
             for i in range(num_layers)
         ]
+
+    # Route 5: Scored KV-Direct — install h^(0) capture on top of scored_pq
+    if is_scored_kv_direct:
+        from mlx_lm.models.kv_direct_cache import H0Store, apply_h0_capture_only
+
+        h0_store = H0Store(quant=h0_quant)
+        for c in caches:
+            if isinstance(c, TripleLayerKVCache):
+                c._h0_store = h0_store
+
+        apply_h0_capture_only(model, h0_store)
+        n_layers = sum(1 for c in caches if isinstance(c, TripleLayerKVCache))
+        quant_label = h0_quant or "bf16"
+        print(f"[CacheFactory] Scored KV-Direct: h^(0) capture installed, "
+              f"{n_layers} layers, h^(0) archive active, h0_quant={quant_label}")
+
+    return caches
 
 
 def _auto_detect_strategy(calibration_file: Optional[str]) -> str:
@@ -350,7 +369,11 @@ def get_cache_info(cache_list: List[Any]) -> Dict[str, Any]:
     try:
         from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
         if isinstance(c0, TripleLayerKVCache):
-            if c0.scored_mode:
+            if c0.scored_mode and c0._h0_store is not None:
+                info["strategy"] = "scored_kv_direct"
+                info["h0_count"] = c0._h0_store.count
+                info["h0_bytes"] = c0._h0_store.nbytes
+            elif c0.scored_mode:
                 info["strategy"] = "scored_pq"
             elif c0.enable_cold_am:
                 info["strategy"] = "triple_am"
