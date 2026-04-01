@@ -59,6 +59,14 @@ class BenchmarkResult(BaseModel):
     pp_peak_mb: float = Field(description="Peak memory during prefill (MB)")
 
 
+class ModeConfig(BaseModel):
+    """Route 0 product mode configuration."""
+
+    density_scale: float = Field(description="Additive bias in log2 space")
+    strategy: str = Field(default="scored_pq", description="Cache strategy for this mode")
+    description: str = Field(default="", description="Human-readable description")
+
+
 class ModelCard(BaseModel):
     """Per-model configuration card — single source of truth.
 
@@ -103,13 +111,32 @@ class ModelCard(BaseModel):
     )
     notes: str = Field(default="", description="Human-readable notes and warnings")
 
+    # Route 0: Product modes
+    modes: dict[str, ModeConfig] = Field(
+        default_factory=dict,
+        description="Route 0 product modes: 'balanced', 'ultra_long', 'recall_first'",
+    )
+
     def to_config(self) -> FlashMLXConfig:
         """Build a complete FlashMLXConfig from this card."""
         return FlashMLXConfig(cache=self.optimal, offload=self.offload)
 
-    def to_cache_kwargs(self) -> dict[str, Any]:
-        """Convert optimal config to make_prompt_cache() kwargs."""
-        return self.optimal.to_cache_kwargs()
+    def to_cache_kwargs(self, mode: str | None = None) -> dict[str, Any]:
+        """Convert optimal config to make_prompt_cache() kwargs.
+
+        Args:
+            mode: Optional Route 0 mode name ('balanced', 'ultra_long',
+                  'recall_first'). If provided and defined in card.modes,
+                  overrides strategy and adds density_scale.
+        """
+        kwargs = self.optimal.to_cache_kwargs()
+        if mode and mode in self.modes:
+            mc = self.modes[mode]
+            kwargs["density_mode"] = mode
+            kwargs["density_scale"] = mc.density_scale
+            if mc.strategy != self.optimal.strategy:
+                kwargs["kv_cache"] = mc.strategy
+        return kwargs
 
     def is_hybrid(self) -> bool:
         return self.architecture.type == "hybrid_ssm_attention"
