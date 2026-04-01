@@ -11,9 +11,70 @@ All configs are serializable to JSON for persistence and remote configuration.
 
 from __future__ import annotations
 
+import math
+from enum import Enum
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
+
+
+# ---------------------------------------------------------------------------
+# Route 0: Density Router — discrete compression levels
+# Paper 2603.25926 insight: continuous ratios collapse, discrete ones are stable.
+# ---------------------------------------------------------------------------
+
+class DensityLevel(Enum):
+    """Discrete compression levels for Route 0 Density Router.
+
+    Each level defines a keep-ratio and its corresponding compression ratio.
+    The log2 of the compression ratio is used for scale-space arithmetic.
+    """
+
+    keep_80 = (0.80, 1.25)   # light compression
+    keep_50 = (0.50, 2.0)    # current default (scored_pq adaptive)
+    keep_33 = (0.33, 3.0)    # moderate compression
+    keep_20 = (0.20, 5.0)    # aggressive (needs Route 5 backup)
+    keep_10 = (0.10, 10.0)   # extreme (Route 5 required)
+
+    def __init__(self, keep_ratio: float, compression_ratio: float):
+        self.keep_ratio = keep_ratio
+        self.compression_ratio = compression_ratio
+        self.log2_ratio = math.log2(compression_ratio)
+
+
+# Sorted by log2_ratio for snap_to_nearest binary-style lookup
+_LEVELS_BY_LOG2 = sorted(DensityLevel, key=lambda d: d.log2_ratio)
+
+
+def snap_to_nearest(
+    log2_target: float,
+    scale: float = 0.0,
+    levels: list[DensityLevel] | None = None,
+) -> DensityLevel:
+    """Snap a continuous log2 compression target to the nearest discrete level.
+
+    Operates in log2 space: scale=+1 doubles compression, scale=-1 halves it.
+
+    Args:
+        log2_target: Raw log2(compression_ratio) from density signal.
+        scale: Additive bias in log2 space (user/mode knob).
+        levels: Override level set (default: all 5 DensityLevel values).
+
+    Returns:
+        The closest DensityLevel.
+    """
+    if levels is None:
+        levels = _LEVELS_BY_LOG2
+
+    adjusted = log2_target + scale
+    best = levels[0]
+    best_dist = abs(adjusted - best.log2_ratio)
+    for lvl in levels[1:]:
+        dist = abs(adjusted - lvl.log2_ratio)
+        if dist < best_dist:
+            best = lvl
+            best_dist = dist
+    return best
 
 
 class CacheConfig(BaseModel):
@@ -84,6 +145,24 @@ class CacheConfig(BaseModel):
         description="First N tokens are never evicted (system prompt protection)",
     )
 
+    # Route 0: Density Router
+    density_mode: str = Field(
+        default="off",
+        description="Density router mode: 'off' | 'balanced' | 'ultra_long' | 'recall_first'",
+    )
+    density_scale: float = Field(
+        default=0.0,
+        description="Additive bias in log2 space. +1 = double compression, -1 = halve.",
+    )
+
+    @field_validator("density_mode")
+    @classmethod
+    def validate_density_mode(cls, v: str) -> str:
+        valid = ("off", "balanced", "ultra_long", "recall_first")
+        if v not in valid:
+            raise ValueError(f"Unknown density_mode: {v!r}. Use one of: {valid}")
+        return v
+
     @field_validator("strategy")
     @classmethod
     def validate_strategy(cls, v: str) -> str:
@@ -140,6 +219,9 @@ class CacheConfig(BaseModel):
             kwargs["h0_quant"] = self.h0_quant
         if self.pinned_tokens > 0:
             kwargs["pinned_tokens"] = self.pinned_tokens
+        if self.density_mode != "off":
+            kwargs["density_mode"] = self.density_mode
+            kwargs["density_scale"] = self.density_scale
         return kwargs
 
     def to_factory_kwargs(self) -> dict[str, Any]:
@@ -168,7 +250,22 @@ class CacheConfig(BaseModel):
             kwargs["h0_quant"] = self.h0_quant
         if self.pinned_tokens > 0:
             kwargs["pinned_tokens"] = self.pinned_tokens
+        if self.density_mode != "off":
+            kwargs["density_mode"] = self.density_mode
+            kwargs["density_scale"] = self.density_scale
         return kwargs
+
+    def effective_density_scale(self) -> float:
+        """Resolve density_scale from density_mode preset or manual override."""
+        _MODE_SCALES = {
+            "off": 0.0,
+            "balanced": 0.0,
+            "ultra_long": 1.5,
+            "recall_first": 2.5,
+        }
+        if self.density_mode in _MODE_SCALES and self.density_scale == 0.0:
+            return _MODE_SCALES[self.density_mode]
+        return self.density_scale
 
 
 class OffloadConfig(BaseModel):

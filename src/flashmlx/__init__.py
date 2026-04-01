@@ -30,7 +30,7 @@ from mlx_lm.generate import generate, stream_generate
 # ---------------------------------------------------------------------------
 # FlashMLX configuration
 # ---------------------------------------------------------------------------
-from .config import FlashMLXConfig, CacheConfig, OffloadConfig
+from .config import FlashMLXConfig, CacheConfig, OffloadConfig, DensityLevel, snap_to_nearest
 
 # ---------------------------------------------------------------------------
 # Model capability detection + recommended config
@@ -46,7 +46,7 @@ from mlx_lm.models.cache_factory import make_optimized_cache, VALID_STRATEGIES
 # ---------------------------------------------------------------------------
 # Model Cards (per-model config — single source of truth)
 # ---------------------------------------------------------------------------
-from .model_cards import ModelCard, load_card, load_card_or_detect, save_card, list_cards
+from .model_cards import ModelCard, ModeConfig, load_card, load_card_or_detect, save_card, list_cards
 
 # ---------------------------------------------------------------------------
 # Quantization strategies (re-export)
@@ -63,6 +63,8 @@ __all__ = [
     "FlashMLXConfig",
     "CacheConfig",
     "OffloadConfig",
+    "DensityLevel",
+    "snap_to_nearest",
     # Capabilities
     "detect_capabilities",
     "recommend_config",
@@ -73,6 +75,7 @@ __all__ = [
     "VALID_STRATEGIES",
     # Model Cards
     "ModelCard",
+    "ModeConfig",
     "load_card",
     "load_card_or_detect",
     "save_card",
