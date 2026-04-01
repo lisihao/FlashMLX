@@ -74,6 +74,325 @@
 > 这不是“省内存但变慢”，而是 **更省内存，还更快**。根因不是魔法，而是更好的 cache locality 和对 GPU↔CPU sync 的消灭。
 
 ---
+## 当前系统组成
+
+### Active Stack
+- **Chunked Interleaved Scheduling**
+- **Expert Offloading + Compact Pool**
+- **Attention Matching / Scored Eviction**
+- **Flat Buffer Quantization (bf16 / q8_0 / q4_0 / TurboQuant)**
+- **Budget Gating / Runtime Monitoring / Layer Scheduling**
+
+### Engineering Attitude
+- 保留 benchmark
+- 保留墓碑（dead approaches）
+- 明确降级策略
+- 不把实验结果包装成神话
+
+---
+
+## Route 5: Context Recall — 基于 KV-Direct 的可恢复压缩
+
+> **核心命题：KV cache 压缩之后，丢掉的 token 真的就永远找不回来了吗？**
+
+### 论文基础
+
+Route 5 基于论文 [KV-Direct (arXiv: 2603.19664)](https://arxiv.org/abs/2603.19664) 的核心观察：
+
+> Transformer 中，所有层的 K/V 都是同一个输入 h^(0) = embed\_tokens(x) 经过逐层 forward 得到的。
+> 只要保存 h^(0)，就可以在任何时刻重新跑一遍 forward pass，精确重建出每一层的 K/V。
+
+这意味着：
+
+| 存储方式 | 每 token 代价 (Qwen3-8B) | 精确度 |
+|---------|:---:|:---:|
+| 完整 K/V (36层 × 8头 × 128维 × 2) | 147,456 字节 | 100% |
+| **h^(0) 存档 (4096维 × bf16)** | **8,192 字节** | **100% 可重建** |
+| 压缩比 | **18×** | — |
+
+**一句话：花 1/18 的内存，换回"随时可精确恢复"的能力。**
+
+---
+
+### 为什么需要 Route 5
+
+FlashMLX v1.x 的 scored\_pq 已经很强：32K 上下文 TG +34%、内存 -89%。但它有一个结构性局限：
+
+**丢了就是丢了。**
+
+AM scoring 淘汰的 token，永远不会回来。对于单轮问答，这不是问题。但在这些场景下会暴露：
+
+- **多轮长对话**：第一轮的系统提示 token 被淘汰，第五轮的回答质量塌了
+- **多 Agent 共享上下文**：Agent A 用过的 token，Agent B 需要但已经丢了
+- **RAG + 长前缀**：前 8K 的检索文档被压缩淘汰，后面回答找不到依据
+
+Route 5 的回答不是"压得少一点"，而是：
+
+> **正常压缩，正常运行。但每个 token 的 h^(0) 都存着档。需要的时候，精确重建。**
+
+---
+
+### 设计决策：我们做了什么，没做什么
+
+#### 决策 1：h^(0) 存档，不存完整 K/V
+
+论文的核心 insight 是 h^(0) 足够重建一切。我们没有选择存完整 K/V 的 checkpoint（太贵），也没有选择存中间层的 hidden state（不通用）。
+
+h^(0) = embed\_tokens(x)，一次计算、所有层共享、18× 压缩。这是唯一正确的存储粒度。
+
+#### 决策 2：只做连续前缀重建，不做稀疏补洞
+
+论文的重建依赖因果注意力机制：position 0 → position N 的 token 必须顺序经过每一层。这意味着：
+
+- **[0:N] 前缀重建** — 完全正确。RoPE 位置、因果 mask、KV cache offset 全对。
+- **[50:100] 稀疏补洞** — 不正确。跳过 [0:50] 会导致 RoPE 错位和注意力 mask 断裂。
+
+我们的 API 直接在接口层强制这个约束：
+
+```python
+def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
+    if start != 0:
+        raise NotImplementedError("Only prefix reconstruction (start=0) supported.")
+```
+
+**不给未来的自己留坑。**
+
+#### 决策 3：Monkey-patch，不改模型代码
+
+h^(0) capture 需要拦截 `embed_tokens` 的输出。两种做法：
+
+| 方案 | 优点 | 缺点 |
+|------|------|------|
+| 修改模型 forward 代码 | 干净 | 每个模型架构都要改，维护地狱 |
+| **`__class__` 动态替换** | **零侵入** | 需要防御机制 |
+
+我们选了 monkey-patch。代价是需要一套防御体系：
+
+- **双重 patch 检测**：`_KV_DIRECT_PATCHED` 哨兵，第二次 patch 直接 raise
+- **batch_size > 1 拦截**：h^(0) 是序列级存储，多 batch 会混淆 token 顺序
+- **`unpatch_model()`**：完整恢复原始 `__class__`，benchmark 切策略时必须
+
+#### 决策 4：Q8 h^(0) 是工程探索，不是论文承诺
+
+论文用 bf16 h^(0)，重建是 exact 的。我们提供 Q8/Q4 量化选项：
+
+| h^(0) 模式 | 精度 | 内存 (32K, d=4096) | 定位 |
+|------------|:---:|:---:|------|
+| bf16 | exact | 256 MB | **论文对齐，默认推荐** |
+| q8 | near-exact | 128 MB | 工程折中，长上下文友好 |
+| q4 | lossy | 64 MB | 实验性，不推荐 |
+
+**量化后的 h^(0) 重建出来的 K/V 不再是 exact 的。** 我们在代码和文档中严格区分这一点。
+
+#### 决策 5：与 scored\_pq 融合，不是替代
+
+Route 5 不是一个独立策略。它是 scored\_pq 的**上层能力**：
+
+```
+scored_pq          = AM scoring + flat buffer Q8 → 快速推理，token 淘汰不可逆
+scored_kv_direct   = scored_pq + h^(0) capture  → 同样快，但淘汰 token 可精确重建
+```
+
+`apply_h0_capture_only()` 在 scored\_pq 之上安装 h^(0) 采集，不影响任何热路径逻辑。h^(0) 只是安静地存着，直到有人需要。
+
+---
+
+### 超越论文：五个关键改进
+
+#### 改进 1：N Crossover 验证 — 论文 4B 以下，我们验到 8B
+
+论文在 135M–4B 模型上验证，预测 N ≈ 50 时重建比标准 prefill 更快。我们实测：
+
+| 模型 | 参数量 | Crossover N | 含义 |
+|------|:------:|:----------:|------|
+| 论文范围 | 135M–4B | ~50 | 50 token 以上重建比 prefill 快 |
+| **Qwen3-8B** | **8B** | **8** | **8 个 token 就值得重建** |
+| Qwen3-1.7B | 1.7B | 100 | 小模型重建开销相对大 |
+
+**8B 模型 36 层，重建时每层共享同一份 h^(0)，层数越多重建越划算。** 这个发现直接把 Route 5 从"大 N 才划算"变成"几乎任何 N 都划算"。
+
+#### 改进 2：分块重建 — 让出 GPU 给其他 Agent
+
+论文的重建是一次性跑完所有 token。在多 Agent 场景下，一次重建 500 个 token 可能锁住 GPU 500ms，其他 Agent 的 decode 全部等待。
+
+我们引入 **chunked reconstruction**：
+
+```python
+RECON_CHUNK_SIZE = 64  # 每块 64 token，约 25-30ms
+
+for chunk_start in range(0, end, chunk_size):
+    h_chunk = h0_store.get_range(chunk_start, chunk_end)
+    for layer in inner_model.layers:
+        h = layer(h_chunk, mask, temp_cache)
+    mx.eval(h)  # 强制 evaluate，让出 GPU
+```
+
+**效果：GPU 最大阻塞时间从 ~500ms 降到 ~30ms。** 多 Agent 调度器可以在 chunk 间插入其他 Agent 的 decode step。
+
+#### 改进 3：Pinned Prefix — 系统提示永不被淘汰
+
+论文没有讨论系统提示保护。但在实际使用中，前 N 个 token（系统提示）被 AM scoring 淘汰是灾难性的。
+
+我们在 AM scoring 的三条路径中都加入了 pinned 保护：
+
+```
+_scored_compress_prefix:  [pinned | scorable | recent]  — pinned 无条件保留
+_scored_prefill_evict:    [pinned | scorable | recent]  — pinned 不参与打分
+_am_compress_prefix:      [pinned | scorable | recent]  — pinned 跳过压缩
+```
+
+从 `CacheConfig.pinned_tokens` 一路穿透到 `TripleLayerKVCache.__init__`，全链路支持。
+
+#### 改进 4：Dedup — 重建注入不产生重复 token
+
+当 recall 重建 [0:N] 并注入 cache 时，flat buffer 中已有的前缀时代 token（pinned + hot scored）会和重建结果重叠。重复 token 会稀释注意力权重。
+
+我们追踪 `_flat_prefix_token_count`，注入时跳过重叠部分：
+
+```
+注入前: flat buffer = [pinned + hot scored | recent | TG appended]
+注入后: attention sees = [reconstructed 0:N] + [non-prefix part of flat] + [recent + TG]
+```
+
+**不重不漏，精确拼接。**
+
+#### 改进 5：h^(0) 采集零成本 — 实测验证
+
+这是最重要的发现。很多人会问：每个 token 都存 h^(0)，不会拖慢推理吗？
+
+| 指标 | scored\_pq | scored\_kv\_direct | 差异 |
+|------|:---:|:---:|:---:|
+| PP tok/s (32K) | 409.5 | 409.5 | **+0.0%** |
+| TG tok/s (32K) | 21.6 | 21.6 | **-0.0%** |
+| 输出 | ✅ | ✅ | **完全一致** |
+| 额外内存 | — | +32M (bf16) | h^(0) 存储 |
+
+**原因**：`embed_tokens(x)` 是 forward pass 的第一步，scored\_pq 本来就要算。h^(0) capture 只是把已经算好的结果 `.append()` 到一个列表里。**没有额外计算，只有一次内存拷贝。**
+
+---
+
+### 实测性能基线 (Official v2.0)
+
+**Qwen3-8B-MLX (4-bit) / 32K context / Apple M4 Max 64GB**
+
+| 指标 | Standard | scored\_pq + Q8 | 变化 |
+|------|:---:|:---:|:---:|
+| PP 吞吐 | 269.5 tok/s | **409.5 tok/s** | **+51.9%** |
+| TG 吞吐 | 16.1 tok/s | **21.6 tok/s** | **+34.2%** |
+| TTFT | 121.6s | **80.0s** | **-34.2%** |
+| PP Peak 内存 | 4,840 MB | **526 MB** | **-89.1%** |
+| TG 内存 | 4,647 MB | **529 MB** | **-88.6%** |
+| 质量 | PASS | **PASS** | **无损** |
+
+> 所有参数固化在 `model_cards/qwen3-8b-mlx-4bit.json`，一行代码加载：
+> ```python
+> card = load_card("/path/to/model")
+> cache = make_prompt_cache(model, **card.to_cache_kwargs())
+> ```
+
+---
+
+### 架构总图
+
+```
+Text Input
+   │
+   ▼
+┌──────────────────────────────────────────────────┐
+│  embed_tokens(x) → h^(0)                        │
+│     │                                            │
+│     ├─── h0_store.append(h^(0))  ← 存档 (零成本) │
+│     │                                            │
+│     ▼                                            │
+│  Forward through 36 layers                       │
+│     │                                            │
+│     ├─── scored_pq: AM scoring → flat buffer Q8  │
+│     │    (正常压缩，正常淘汰)                      │
+│     │                                            │
+│     └─── TG decode (热路径，不受影响)              │
+└──────────────────────────────────────────────────┘
+                    │
+                    │ (需要时，冷路径)
+                    ▼
+┌──────────────────────────────────────────────────┐
+│  Context Recall (按需触发)                        │
+│                                                  │
+│  h0_store.get_range(0, N)                        │
+│     │                                            │
+│     ▼ 分块重建 (64 token/chunk, ~30ms/chunk)      │
+│  for chunk in [0:64, 64:128, ...]:               │
+│     h = h0_store[chunk]                          │
+│     for layer in model.layers:                   │
+│         h = layer(h, mask, temp_cache)           │
+│     mx.eval(h)  # 让出 GPU                       │
+│     │                                            │
+│     ▼                                            │
+│  精确 K/V → inject into scored cache (with dedup) │
+└──────────────────────────────────────────────────┘
+```
+
+---
+
+### 墓碑：Route 5 中被杀掉的路线
+
+| 路线 | 为什么被杀 |
+|------|----------|
+| 稀疏补洞重建 [50:100] | RoPE 位置错位 + 因果 mask 断裂，不是"暂时不支持"，是"物理上不成立" |
+| Q4 h^(0) 作为默认 | 量化误差逐层放大，重建出来的 K/V 偏差不可控 |
+| 每步 TG 都自动触发重建 | 重建是冷路径操作，塞进热路径会杀死 TG 吞吐 |
+| h^(0) 存完整 hidden state 而非 embed\_tokens | 中间层 hidden state 不通用（每层不同），存储量 36× 爆炸 |
+| Batch > 1 支持 | h^(0) 是序列级全局存储，多 batch token 顺序会混淆，暂未解决 |
+
+---
+
+### 设计哲学
+
+**Route 5 不是在论文上加"功能"。它是把论文的数学保证，翻译成工程系统中的真实能力。**
+
+论文给了 insight：h^(0) 可以重建一切。
+我们加了约束：只重建前缀、分块让出 GPU、pinned 保护、dedup 去重、monkey-patch 防御。
+
+结果是：
+
+> **scored\_pq 的速度 + h^(0) 的记忆 = 压缩了也找得回来。**
+
+这不是"压缩率更高"的故事。这是"有损变有底"的故事。
+
+---
+
+## 快速开始
+
+```python
+from mlx_lm import load
+from mlx_lm.models.expert_offload import patch_model_for_offload, FlashBatchGenerator
+
+model, tokenizer = load("your-moe-model-path")
+ctx = patch_model_for_offload(model, "your-moe-model-path")
+
+gen = FlashBatchGenerator(
+    model,
+    ctx,
+    max_tokens=512,
+    completion_batch_size=4,
+)
+```
+
+---
+
+## 路线图
+
+### Next
+- 更强的 fused compute path
+- 更成熟的 TurboQuant / backend strategy ladder
+- 更系统化的 batch policy tuning
+- 更明确的 API / packaging / docs 收口
+- 更进一步的 Apple Silicon 特化优化
+
+### Long-term
+**FlashMLX 的终局，不是一个优化集合。**  
+而是：
+
+# **Apple Silicon 的本地推理基础设施。**
 
 ## FlashMLX 到底牛在哪
 
@@ -407,325 +726,7 @@ FlashMLX 把这件事做成了真实系统实验，结论相反：**太大的 ch
 
 ---
 
-## 当前系统组成
 
-### Active Stack
-- **Chunked Interleaved Scheduling**
-- **Expert Offloading + Compact Pool**
-- **Attention Matching / Scored Eviction**
-- **Flat Buffer Quantization (bf16 / q8_0 / q4_0 / TurboQuant)**
-- **Budget Gating / Runtime Monitoring / Layer Scheduling**
-
-### Engineering Attitude
-- 保留 benchmark
-- 保留墓碑（dead approaches）
-- 明确降级策略
-- 不把实验结果包装成神话
-
----
-
-## Route 5: Context Recall — 基于 KV-Direct 的可恢复压缩
-
-> **核心命题：KV cache 压缩之后，丢掉的 token 真的就永远找不回来了吗？**
-
-### 论文基础
-
-Route 5 基于论文 [KV-Direct (arXiv: 2603.19664)](https://arxiv.org/abs/2603.19664) 的核心观察：
-
-> Transformer 中，所有层的 K/V 都是同一个输入 h^(0) = embed\_tokens(x) 经过逐层 forward 得到的。
-> 只要保存 h^(0)，就可以在任何时刻重新跑一遍 forward pass，精确重建出每一层的 K/V。
-
-这意味着：
-
-| 存储方式 | 每 token 代价 (Qwen3-8B) | 精确度 |
-|---------|:---:|:---:|
-| 完整 K/V (36层 × 8头 × 128维 × 2) | 147,456 字节 | 100% |
-| **h^(0) 存档 (4096维 × bf16)** | **8,192 字节** | **100% 可重建** |
-| 压缩比 | **18×** | — |
-
-**一句话：花 1/18 的内存，换回"随时可精确恢复"的能力。**
-
----
-
-### 为什么需要 Route 5
-
-FlashMLX v1.x 的 scored\_pq 已经很强：32K 上下文 TG +34%、内存 -89%。但它有一个结构性局限：
-
-**丢了就是丢了。**
-
-AM scoring 淘汰的 token，永远不会回来。对于单轮问答，这不是问题。但在这些场景下会暴露：
-
-- **多轮长对话**：第一轮的系统提示 token 被淘汰，第五轮的回答质量塌了
-- **多 Agent 共享上下文**：Agent A 用过的 token，Agent B 需要但已经丢了
-- **RAG + 长前缀**：前 8K 的检索文档被压缩淘汰，后面回答找不到依据
-
-Route 5 的回答不是"压得少一点"，而是：
-
-> **正常压缩，正常运行。但每个 token 的 h^(0) 都存着档。需要的时候，精确重建。**
-
----
-
-### 设计决策：我们做了什么，没做什么
-
-#### 决策 1：h^(0) 存档，不存完整 K/V
-
-论文的核心 insight 是 h^(0) 足够重建一切。我们没有选择存完整 K/V 的 checkpoint（太贵），也没有选择存中间层的 hidden state（不通用）。
-
-h^(0) = embed\_tokens(x)，一次计算、所有层共享、18× 压缩。这是唯一正确的存储粒度。
-
-#### 决策 2：只做连续前缀重建，不做稀疏补洞
-
-论文的重建依赖因果注意力机制：position 0 → position N 的 token 必须顺序经过每一层。这意味着：
-
-- **[0:N] 前缀重建** — 完全正确。RoPE 位置、因果 mask、KV cache offset 全对。
-- **[50:100] 稀疏补洞** — 不正确。跳过 [0:50] 会导致 RoPE 错位和注意力 mask 断裂。
-
-我们的 API 直接在接口层强制这个约束：
-
-```python
-def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
-    if start != 0:
-        raise NotImplementedError("Only prefix reconstruction (start=0) supported.")
-```
-
-**不给未来的自己留坑。**
-
-#### 决策 3：Monkey-patch，不改模型代码
-
-h^(0) capture 需要拦截 `embed_tokens` 的输出。两种做法：
-
-| 方案 | 优点 | 缺点 |
-|------|------|------|
-| 修改模型 forward 代码 | 干净 | 每个模型架构都要改，维护地狱 |
-| **`__class__` 动态替换** | **零侵入** | 需要防御机制 |
-
-我们选了 monkey-patch。代价是需要一套防御体系：
-
-- **双重 patch 检测**：`_KV_DIRECT_PATCHED` 哨兵，第二次 patch 直接 raise
-- **batch_size > 1 拦截**：h^(0) 是序列级存储，多 batch 会混淆 token 顺序
-- **`unpatch_model()`**：完整恢复原始 `__class__`，benchmark 切策略时必须
-
-#### 决策 4：Q8 h^(0) 是工程探索，不是论文承诺
-
-论文用 bf16 h^(0)，重建是 exact 的。我们提供 Q8/Q4 量化选项：
-
-| h^(0) 模式 | 精度 | 内存 (32K, d=4096) | 定位 |
-|------------|:---:|:---:|------|
-| bf16 | exact | 256 MB | **论文对齐，默认推荐** |
-| q8 | near-exact | 128 MB | 工程折中，长上下文友好 |
-| q4 | lossy | 64 MB | 实验性，不推荐 |
-
-**量化后的 h^(0) 重建出来的 K/V 不再是 exact 的。** 我们在代码和文档中严格区分这一点。
-
-#### 决策 5：与 scored\_pq 融合，不是替代
-
-Route 5 不是一个独立策略。它是 scored\_pq 的**上层能力**：
-
-```
-scored_pq          = AM scoring + flat buffer Q8 → 快速推理，token 淘汰不可逆
-scored_kv_direct   = scored_pq + h^(0) capture  → 同样快，但淘汰 token 可精确重建
-```
-
-`apply_h0_capture_only()` 在 scored\_pq 之上安装 h^(0) 采集，不影响任何热路径逻辑。h^(0) 只是安静地存着，直到有人需要。
-
----
-
-### 超越论文：五个关键改进
-
-#### 改进 1：N Crossover 验证 — 论文 4B 以下，我们验到 8B
-
-论文在 135M–4B 模型上验证，预测 N ≈ 50 时重建比标准 prefill 更快。我们实测：
-
-| 模型 | 参数量 | Crossover N | 含义 |
-|------|:------:|:----------:|------|
-| 论文范围 | 135M–4B | ~50 | 50 token 以上重建比 prefill 快 |
-| **Qwen3-8B** | **8B** | **8** | **8 个 token 就值得重建** |
-| Qwen3-1.7B | 1.7B | 100 | 小模型重建开销相对大 |
-
-**8B 模型 36 层，重建时每层共享同一份 h^(0)，层数越多重建越划算。** 这个发现直接把 Route 5 从"大 N 才划算"变成"几乎任何 N 都划算"。
-
-#### 改进 2：分块重建 — 让出 GPU 给其他 Agent
-
-论文的重建是一次性跑完所有 token。在多 Agent 场景下，一次重建 500 个 token 可能锁住 GPU 500ms，其他 Agent 的 decode 全部等待。
-
-我们引入 **chunked reconstruction**：
-
-```python
-RECON_CHUNK_SIZE = 64  # 每块 64 token，约 25-30ms
-
-for chunk_start in range(0, end, chunk_size):
-    h_chunk = h0_store.get_range(chunk_start, chunk_end)
-    for layer in inner_model.layers:
-        h = layer(h_chunk, mask, temp_cache)
-    mx.eval(h)  # 强制 evaluate，让出 GPU
-```
-
-**效果：GPU 最大阻塞时间从 ~500ms 降到 ~30ms。** 多 Agent 调度器可以在 chunk 间插入其他 Agent 的 decode step。
-
-#### 改进 3：Pinned Prefix — 系统提示永不被淘汰
-
-论文没有讨论系统提示保护。但在实际使用中，前 N 个 token（系统提示）被 AM scoring 淘汰是灾难性的。
-
-我们在 AM scoring 的三条路径中都加入了 pinned 保护：
-
-```
-_scored_compress_prefix:  [pinned | scorable | recent]  — pinned 无条件保留
-_scored_prefill_evict:    [pinned | scorable | recent]  — pinned 不参与打分
-_am_compress_prefix:      [pinned | scorable | recent]  — pinned 跳过压缩
-```
-
-从 `CacheConfig.pinned_tokens` 一路穿透到 `TripleLayerKVCache.__init__`，全链路支持。
-
-#### 改进 4：Dedup — 重建注入不产生重复 token
-
-当 recall 重建 [0:N] 并注入 cache 时，flat buffer 中已有的前缀时代 token（pinned + hot scored）会和重建结果重叠。重复 token 会稀释注意力权重。
-
-我们追踪 `_flat_prefix_token_count`，注入时跳过重叠部分：
-
-```
-注入前: flat buffer = [pinned + hot scored | recent | TG appended]
-注入后: attention sees = [reconstructed 0:N] + [non-prefix part of flat] + [recent + TG]
-```
-
-**不重不漏，精确拼接。**
-
-#### 改进 5：h^(0) 采集零成本 — 实测验证
-
-这是最重要的发现。很多人会问：每个 token 都存 h^(0)，不会拖慢推理吗？
-
-| 指标 | scored\_pq | scored\_kv\_direct | 差异 |
-|------|:---:|:---:|:---:|
-| PP tok/s (32K) | 409.5 | 409.5 | **+0.0%** |
-| TG tok/s (32K) | 21.6 | 21.6 | **-0.0%** |
-| 输出 | ✅ | ✅ | **完全一致** |
-| 额外内存 | — | +32M (bf16) | h^(0) 存储 |
-
-**原因**：`embed_tokens(x)` 是 forward pass 的第一步，scored\_pq 本来就要算。h^(0) capture 只是把已经算好的结果 `.append()` 到一个列表里。**没有额外计算，只有一次内存拷贝。**
-
----
-
-### 实测性能基线 (Official v2.0)
-
-**Qwen3-8B-MLX (4-bit) / 32K context / Apple M4 Max 64GB**
-
-| 指标 | Standard | scored\_pq + Q8 | 变化 |
-|------|:---:|:---:|:---:|
-| PP 吞吐 | 269.5 tok/s | **409.5 tok/s** | **+51.9%** |
-| TG 吞吐 | 16.1 tok/s | **21.6 tok/s** | **+34.2%** |
-| TTFT | 121.6s | **80.0s** | **-34.2%** |
-| PP Peak 内存 | 4,840 MB | **526 MB** | **-89.1%** |
-| TG 内存 | 4,647 MB | **529 MB** | **-88.6%** |
-| 质量 | PASS | **PASS** | **无损** |
-
-> 所有参数固化在 `model_cards/qwen3-8b-mlx-4bit.json`，一行代码加载：
-> ```python
-> card = load_card("/path/to/model")
-> cache = make_prompt_cache(model, **card.to_cache_kwargs())
-> ```
-
----
-
-### 架构总图
-
-```
-Text Input
-   │
-   ▼
-┌──────────────────────────────────────────────────┐
-│  embed_tokens(x) → h^(0)                        │
-│     │                                            │
-│     ├─── h0_store.append(h^(0))  ← 存档 (零成本) │
-│     │                                            │
-│     ▼                                            │
-│  Forward through 36 layers                       │
-│     │                                            │
-│     ├─── scored_pq: AM scoring → flat buffer Q8  │
-│     │    (正常压缩，正常淘汰)                      │
-│     │                                            │
-│     └─── TG decode (热路径，不受影响)              │
-└──────────────────────────────────────────────────┘
-                    │
-                    │ (需要时，冷路径)
-                    ▼
-┌──────────────────────────────────────────────────┐
-│  Context Recall (按需触发)                        │
-│                                                  │
-│  h0_store.get_range(0, N)                        │
-│     │                                            │
-│     ▼ 分块重建 (64 token/chunk, ~30ms/chunk)      │
-│  for chunk in [0:64, 64:128, ...]:               │
-│     h = h0_store[chunk]                          │
-│     for layer in model.layers:                   │
-│         h = layer(h, mask, temp_cache)           │
-│     mx.eval(h)  # 让出 GPU                       │
-│     │                                            │
-│     ▼                                            │
-│  精确 K/V → inject into scored cache (with dedup) │
-└──────────────────────────────────────────────────┘
-```
-
----
-
-### 墓碑：Route 5 中被杀掉的路线
-
-| 路线 | 为什么被杀 |
-|------|----------|
-| 稀疏补洞重建 [50:100] | RoPE 位置错位 + 因果 mask 断裂，不是"暂时不支持"，是"物理上不成立" |
-| Q4 h^(0) 作为默认 | 量化误差逐层放大，重建出来的 K/V 偏差不可控 |
-| 每步 TG 都自动触发重建 | 重建是冷路径操作，塞进热路径会杀死 TG 吞吐 |
-| h^(0) 存完整 hidden state 而非 embed\_tokens | 中间层 hidden state 不通用（每层不同），存储量 36× 爆炸 |
-| Batch > 1 支持 | h^(0) 是序列级全局存储，多 batch token 顺序会混淆，暂未解决 |
-
----
-
-### 设计哲学
-
-**Route 5 不是在论文上加"功能"。它是把论文的数学保证，翻译成工程系统中的真实能力。**
-
-论文给了 insight：h^(0) 可以重建一切。
-我们加了约束：只重建前缀、分块让出 GPU、pinned 保护、dedup 去重、monkey-patch 防御。
-
-结果是：
-
-> **scored\_pq 的速度 + h^(0) 的记忆 = 压缩了也找得回来。**
-
-这不是"压缩率更高"的故事。这是"有损变有底"的故事。
-
----
-
-## 快速开始
-
-```python
-from mlx_lm import load
-from mlx_lm.models.expert_offload import patch_model_for_offload, FlashBatchGenerator
-
-model, tokenizer = load("your-moe-model-path")
-ctx = patch_model_for_offload(model, "your-moe-model-path")
-
-gen = FlashBatchGenerator(
-    model,
-    ctx,
-    max_tokens=512,
-    completion_batch_size=4,
-)
-```
-
----
-
-## 路线图
-
-### Next
-- 更强的 fused compute path
-- 更成熟的 TurboQuant / backend strategy ladder
-- 更系统化的 batch policy tuning
-- 更明确的 API / packaging / docs 收口
-- 更进一步的 Apple Silicon 特化优化
-
-### Long-term
-**FlashMLX 的终局，不是一个优化集合。**  
-而是：
-
-# **Apple Silicon 的本地推理基础设施。**
 
 ---
 
