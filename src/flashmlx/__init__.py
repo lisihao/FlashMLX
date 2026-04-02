@@ -53,6 +53,19 @@ from .model_cards import ModelCard, ModeConfig, load_card, load_card_or_detect, 
 # ---------------------------------------------------------------------------
 from mlx_lm.models.quantization_strategies import get_quantizer, QuantizationStrategy
 
+# ---------------------------------------------------------------------------
+# Reconstruction Controller (programmatic h^(0) → K/V reconstruction API)
+# ---------------------------------------------------------------------------
+from .reconstruction import (
+    ReconstructionController,
+    NullReconstructionController,
+    ReconState,
+    ReconStrategy,
+    ReconResult,
+    ReconCostEstimate,
+    ReconStats,
+)
+
 __all__ = [
     "__version__",
     # Model loading
@@ -83,4 +96,12 @@ __all__ = [
     # Quantization
     "get_quantizer",
     "QuantizationStrategy",
+    # Reconstruction Controller
+    "ReconstructionController",
+    "NullReconstructionController",
+    "ReconState",
+    "ReconStrategy",
+    "ReconResult",
+    "ReconCostEstimate",
+    "ReconStats",
 ]

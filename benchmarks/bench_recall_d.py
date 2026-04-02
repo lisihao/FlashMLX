@@ -30,11 +30,7 @@ from mlx_lm import load
 from mlx_lm.generate import generate_step
 from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm.models.cache_factory import get_cache_info
-from mlx_lm.models.kv_direct_cache import (
-    _find_inner_model,
-    _run_reconstruction,
-    unpatch_model,
-)
+from mlx_lm.models.kv_direct_cache import unpatch_model
 from mlx_lm.sample_utils import make_sampler
 
 GREEDY = make_sampler(temp=0.0)
@@ -201,64 +197,30 @@ def ask_question(model, tokenizer, haystack, question, cache_kwargs, label,
 
 
 def _trigger_reconstruction(model, cache, targeted=False):
-    """Trigger h^(0) reconstruction for evicted tokens.
+    """Trigger h^(0) reconstruction via ReconstructionController API.
 
     Args:
         targeted: If True, use probe importance scores for depth reduction.
     """
-    # Find h0_store from cache objects (stored by cache_factory on each layer)
-    h0_store = None
-    for c in cache:
-        h0_store = getattr(c, "_h0_store", None)
-        if h0_store is not None:
-            break
+    from flashmlx import ReconstructionController
 
-    if h0_store is None:
-        print("    [recon] No h0_store found on any cache layer")
+    recon = ReconstructionController.from_cache(cache, model)
+    if not recon.available:
+        print("    [recon] Controller: reconstruction not available")
         return
 
-    try:
-        inner_model = _find_inner_model(model)
-    except ValueError:
-        print("    [recon] Cannot find inner model")
-        return
+    stats = recon.stats
+    strategy = "targeted" if targeted else "full"
+    print(f"    [recon] Controller: {strategy} reconstruction of "
+          f"{stats.h0_tokens} tokens (probe={stats.probe_available})...")
 
-    # All layers can receive reconstruction
-    caches = list(cache)
-    kv_direct_indices = list(range(len(caches)))
-    n_evicted = h0_store.count
+    result = recon.reconstruct(strategy=strategy)
 
-    if n_evicted <= 0:
-        print("    [recon] No h0 tokens to reconstruct")
-        return
-
-    # Get probe importance scores for targeted reconstruction
-    importance_scores = None
-    if targeted:
-        from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
-        probe = TripleLayerKVCache._shared_probe
-        if probe is not None:
-            print(f"    [recon] Running probe for targeted reconstruction...")
-            importance_scores = probe.score_tokens(h0_store)
-            print(f"    [recon] Probe done, {len(importance_scores)} token scores")
-        else:
-            print("    [recon] No probe available, falling back to full reconstruction")
-
-    first_cache = cache[0]
-    flat_prefix = getattr(first_cache, '_flat_prefix_token_count', 0)
-    mode = "targeted" if importance_scores is not None else "full"
-    print(f"    [recon] Reconstructing {n_evicted} tokens ({mode}) from h^(0) "
-          f"(h0 has {h0_store.count}, flat_prefix={flat_prefix})...")
-
-    _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
-                        importance_scores=importance_scores)
-    recon_arrays = [c._recon_keys for c in caches if getattr(c, '_recon_keys', None) is not None]
-    if recon_arrays:
-        mx.eval(*recon_arrays)
-    for c in caches:
-        if getattr(c, '_recon_keys', None) is not None:
-            c._flat_prefix_token_count = max(c._flat_prefix_token_count, n_evicted)
-    print(f"    [recon] Done — injected into {len(recon_arrays)} layers, dedup updated to {n_evicted}")
+    if result.success:
+        print(f"    [recon] Controller: done — {result.tokens_reconstructed} tokens, "
+              f"{result.layers_injected} layers, {result.time_ms:.0f}ms")
+    else:
+        print(f"    [recon] Controller: FAILED — {result.error}")
 
 
 def score_answer(answer, expected_keywords):
