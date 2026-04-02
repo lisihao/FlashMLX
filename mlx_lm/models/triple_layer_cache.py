@@ -90,6 +90,10 @@ class TripleLayerKVCache(_BaseCache):
     _shared_attn_importance = None      # np.ndarray from probe
     _shared_attn_importance_tag = None  # freshness tag
 
+    # Auto-reconstruction: stored by cache_factory for auto-reconstruct trigger
+    _shared_inner_model = None          # inner model reference
+    _shared_cache_list = None           # all TripleLayerKVCache instances
+
     def __init__(
         self,
         memory_budget_mb: float = 10.0,  # Memory budget in MB (legacy, secondary)
@@ -239,8 +243,11 @@ class TripleLayerKVCache(_BaseCache):
         # Route 5: Scored KV-Direct fusion — h^(0) archive reference
         self._h0_store = None  # Set by cache_factory for scored_kv_direct strategy
 
-        # H0Probe attention-based eviction (replaces key-norm surprise when enabled)
+        # H0Probe attention-based eviction
         self._probe_eviction_enabled = False  # Set by cache_factory
+
+        # Auto-reconstruction: trigger h^(0) reconstruction after prefill
+        self._auto_reconstruct = False  # Set by cache_factory
 
         # Route 5: Reconstructed K/V injection
         self._recon_keys = None
@@ -709,6 +716,11 @@ class TripleLayerKVCache(_BaseCache):
                 self._scored_compress_prefix(full_keys, full_values, recent_len)
                 del full_keys, full_values
             self._scored_active = True
+
+            # Auto-reconstruction: layer 0 triggers h^(0) → K/V for all layers
+            if self.layer_idx == 0:
+                self._auto_reconstruct_if_enabled()
+
             return self._fetch_flat(self._flat_offset)
 
         # 3b. First TG token (non-scored): reorganize accumulated tokens into layers
@@ -1324,9 +1336,33 @@ class TripleLayerKVCache(_BaseCache):
         Returns:
             mask: np.ndarray of shape (chunk_len,) where True = important (PQ4)
         """
-        # H2O-style attention scoring: top-K by cumulative attention importance.
-        # When available, this completely replaces AM calibration — attention
-        # scores reflect actual content importance, not position.
+        # Hybrid path: attention ranking + surprise protection.
+        # When BOTH are available, attention provides base ranking (top-K)
+        # and surprise provides protection overlay (z >= 2.0 tokens are kept).
+        if (attention_scores is not None and len(attention_scores) >= chunk_len
+                and surprise_scores is not None):
+            surprise_threshold = 2.0
+            surprise_mask = surprise_scores >= surprise_threshold
+            n_surprise = int(surprise_mask.sum())
+
+            if 0 < n_surprise <= budget:
+                # Surprise tokens get guaranteed slots; fill rest with attention top-K
+                remaining = budget - n_surprise
+                attn_copy = attention_scores[:chunk_len].copy()
+                attn_copy[surprise_mask] = -np.inf  # don't double-count
+                attn_top = np.argsort(-attn_copy)[:remaining]
+                importance_mask = surprise_mask.copy()
+                importance_mask[attn_top] = True
+                return importance_mask
+            elif n_surprise > budget:
+                # Even surprise alone exceeds budget; take top-K by z-score
+                top_idx = np.argsort(-surprise_scores)[:budget]
+                importance_mask = np.zeros(chunk_len, dtype=bool)
+                importance_mask[top_idx] = True
+                return importance_mask
+            # n_surprise == 0: no surprising tokens, fall through to pure attention
+
+        # Pure attention path (no surprise tokens, or surprise not available).
         if attention_scores is not None and len(attention_scores) >= chunk_len:
             top_k_idx = np.argsort(-attention_scores[:chunk_len])[:budget]
             importance_mask = np.zeros(chunk_len, dtype=bool)
@@ -1465,9 +1501,10 @@ class TripleLayerKVCache(_BaseCache):
                   TripleLayerKVCache._shared_attn_importance is not None):
                 attn_importance = TripleLayerKVCache._shared_attn_importance
 
-        # Fallback: cross-layer key-norm surprise scoring (when probe not available)
+        # Cross-layer key-norm surprise scoring.
+        # Always computed (even when probe available) for hybrid eviction.
         surprise_all = None
-        if attn_importance is None and scorable_len > 0:
+        if scorable_len > 0:
             if self.layer_idx == 0:
                 kn = mx.linalg.norm(scorable_k.astype(mx.float32), axis=-1)
                 kn = kn.mean(axis=1).squeeze(0)
@@ -1556,6 +1593,60 @@ class TripleLayerKVCache(_BaseCache):
         self.recent_keys = None
         self.recent_values = None
         self._eval_flat_buffer()
+
+    def _auto_reconstruct_if_enabled(self):
+        """Trigger h^(0) reconstruction after prefill, if enabled.
+
+        Called by layer 0 only, after flat mode transition. Reconstructs
+        evicted tokens from h^(0) and injects K/V into ALL layers' caches.
+        """
+        if not self._auto_reconstruct:
+            return
+        if self._h0_store is None or self._h0_store.count <= 0:
+            return
+
+        inner_model = TripleLayerKVCache._shared_inner_model
+        if inner_model is None:
+            return
+
+        import time as _time
+        n_evicted = self._h0_store.count
+
+        # Use probe importance scores for targeted reconstruction if available
+        importance_scores = None
+        probe = TripleLayerKVCache._shared_probe
+        if probe is not None:
+            importance_scores = probe.score_tokens(self._h0_store)
+
+        mode = "targeted" if importance_scores is not None else "full"
+        print(f"[AutoRecon] Reconstructing {n_evicted} tokens ({mode}) from h^(0)...")
+        t0 = _time.perf_counter()
+
+        from mlx_lm.models.kv_direct_cache import _run_reconstruction
+
+        caches = TripleLayerKVCache._shared_cache_list
+        if caches is None:
+            return
+
+        kv_direct_indices = list(range(len(caches)))
+        _run_reconstruction(inner_model, caches, self._h0_store, n_evicted,
+                            kv_direct_indices, importance_scores=importance_scores)
+
+        # Eval recon arrays and update prefix counts
+        recon_arrays = []
+        for c in caches:
+            if getattr(c, '_recon_keys', None) is not None:
+                recon_arrays.extend([c._recon_keys, c._recon_values])
+        if recon_arrays:
+            mx.eval(*recon_arrays)
+        for c in caches:
+            if getattr(c, '_recon_keys', None) is not None:
+                c._flat_prefix_token_count = max(
+                    getattr(c, '_flat_prefix_token_count', 0), n_evicted)
+
+        recon_ms = (_time.perf_counter() - t0) * 1000
+        print(f"[AutoRecon] Done in {recon_ms:.0f}ms — injected into "
+              f"{len(recon_arrays) // 2} layers")
 
     def _scored_compress_prefix(
         self,

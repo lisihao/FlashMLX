@@ -654,7 +654,8 @@ def apply_h0_capture_only(model, h0_store):
 # Route 5: On-demand reconstruction from h^(0)
 # ---------------------------------------------------------------------------
 
-def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
+def reconstruct_prefix_kv(inner_model, h0_store, start, end,
+                           chunk_size=0, eval_every=4):
     """Reconstruct K/V for a continuous prefix [0:end] from h^(0).
 
     Runs a forward pass through all layers using h^(0) as input,
@@ -671,9 +672,9 @@ def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
         start: Must be 0 (prefix reconstruction only).
         end: End token index (exclusive).
         chunk_size: If > 0, process h^(0) in chunks of this size.
-            Between chunks, mx.eval() is called to yield GPU to other tasks.
-            This reduces max block time from ~500ms (full) to ~30ms (per chunk).
             Default: 0 (no chunking, process all at once).
+        eval_every: GPU sync every N chunks instead of every chunk.
+            Reduces sync overhead by batching computation. Default: 4.
 
     Returns:
         List of (keys, values) tuples per layer, each (B, n_kv_heads, N, head_dim).
@@ -681,6 +682,8 @@ def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
     Raises:
         NotImplementedError: If start != 0 (sparse reconstruction not supported).
     """
+    import time as _time
+
     if start != 0:
         raise NotImplementedError(
             "Only prefix reconstruction (start=0) is supported. "
@@ -700,42 +703,59 @@ def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
             h = layer(h, mask, tc)
         return [tc.state for tc in temp_caches]
 
-    # Chunked path: process in chunks, yielding GPU between chunks.
-    # Temp KVCaches accumulate across chunks (like chunked prefill).
-    # Each chunk attends to all previous tokens via causal mask.
+    # Dequant-once: fetch full h^(0) range upfront, then slice per chunk.
+    # Avoids per-chunk dequantization overhead (128→1 dequant for q8/q4).
+    t0 = _time.perf_counter()
+    h0_full = h0_store.get_range(start, end)
+    mx.eval(h0_full)
+    t_dequant = (_time.perf_counter() - t0) * 1000
+
+    # Chunked path with batched eval.
     temp_caches = [KVCache() for _ in range(num_layers)]
+    n_chunks = 0
+    n_evals = 0
 
     for chunk_start in range(start, end, chunk_size):
         chunk_end = min(chunk_start + chunk_size, end)
-        h_chunk = h0_store.get_range(chunk_start, chunk_end)
+        h_chunk = h0_full[:, chunk_start:chunk_end, :]  # slice, no dequant
         mask = create_attention_mask(h_chunk, temp_caches[0])
 
         h = h_chunk
         for layer, tc in zip(inner_model.layers, temp_caches):
             h = layer(h, mask, tc)
 
-        # Force evaluation to yield GPU between chunks.
-        # This allows other agents' TG steps to interleave.
+        n_chunks += 1
+        # Batch eval: sync every eval_every chunks to reduce GPU overhead.
+        if n_chunks % eval_every == 0:
+            mx.eval(h)
+            n_evals += 1
+
+    # Final eval for any remaining un-evaluated chunks.
+    if n_chunks % eval_every != 0:
         mx.eval(h)
+        n_evals += 1
+
+    t_total = (_time.perf_counter() - t0) * 1000
+    logger.info(f"reconstruct_prefix_kv: {n_tokens} tokens, {n_chunks} chunks, "
+                f"{n_evals} evals, dequant={t_dequant:.0f}ms, total={t_total:.0f}ms")
 
     return [tc.state for tc in temp_caches]
 
 
-# Default chunk size for reconstruction (64 tokens ≈ 25-30ms on 8B).
+# Default chunk size for reconstruction (256 tokens).
+# Larger chunks = fewer mx.eval() calls = faster reconstruction.
 # Set to 0 to disable chunking (process all at once).
-RECON_CHUNK_SIZE = 64
+RECON_CHUNK_SIZE = 256
 
 
 def reconstruct_targeted(inner_model, h0_store, max_end,
                          importance_scores=None,
-                         min_coverage=0.95, chunk_size=512):
+                         min_coverage=0.95, chunk_size=512, eval_every=4):
     """Importance-guided depth-reduced reconstruction.
 
     Uses probe attention scores to find the minimal prefix [0:actual_end]
     that covers min_coverage of total importance. If all important tokens
     are in [0:M] where M < max_end, only reconstructs [0:M].
-
-    Large chunk_size (512 vs default 64) reduces mx.eval overhead for speed.
 
     Args:
         inner_model: Inner model with .layers.
@@ -744,6 +764,7 @@ def reconstruct_targeted(inner_model, h0_store, max_end,
         importance_scores: np.ndarray (max_end,) from H0Probe.score_tokens().
         min_coverage: Fraction of total importance to cover (default 0.95).
         chunk_size: Chunk size for reconstruction (default 512 for speed).
+        eval_every: GPU sync every N chunks (default 4).
 
     Returns:
         (kv_list, actual_end) — kv_list as from reconstruct_prefix_kv,
@@ -765,13 +786,15 @@ def reconstruct_targeted(inner_model, h0_store, max_end,
                         f"coverage={min_coverage:.0%})")
 
     kv_list = reconstruct_prefix_kv(
-        inner_model, h0_store, 0, actual_end, chunk_size=chunk_size
+        inner_model, h0_store, 0, actual_end,
+        chunk_size=chunk_size, eval_every=eval_every
     )
     return kv_list, actual_end
 
 
 def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
-                        chunk_size=RECON_CHUNK_SIZE, importance_scores=None):
+                        chunk_size=RECON_CHUNK_SIZE, importance_scores=None,
+                        eval_every=4):
     """Run reconstruction forward pass to produce evicted K/V.
 
     Creates FRESH temp KVCaches each call, feeds h^(0)[0:n_evicted] through
@@ -782,16 +805,19 @@ def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indi
         chunk_size: If > 0, process in chunks to yield GPU for concurrent agents.
         importance_scores: If provided, uses reconstruct_targeted for depth
             reduction (faster reconstruction of important regions only).
+        eval_every: GPU sync every N chunks (default 4).
     """
     if importance_scores is not None:
         kv_list, actual_end = reconstruct_targeted(
             inner_model, h0_store, n_evicted,
             importance_scores=importance_scores,
             chunk_size=max(chunk_size, 512),
+            eval_every=eval_every,
         )
     else:
         kv_list = reconstruct_prefix_kv(
-            inner_model, h0_store, 0, n_evicted, chunk_size=chunk_size
+            inner_model, h0_store, 0, n_evicted,
+            chunk_size=chunk_size, eval_every=eval_every
         )
 
     kv_direct_set = set(kv_direct_indices)

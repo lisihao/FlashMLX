@@ -141,6 +141,7 @@ def make_optimized_cache(
     density_mode: Optional[str] = None,
     density_scale: float = 0.0,
     probe_layers: int = 0,
+    auto_reconstruct: bool = False,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -354,11 +355,15 @@ def make_optimized_cache(
               f"recon_budget=({recon_budget.max_recall_per_turn}/turn, "
               f"cd={recon_budget.cooldown_turns})")
 
-        # H0Probe: attention-based eviction scoring (replaces key-norm surprise)
-        if probe_layers > 0:
-            from mlx_lm.models.h0_probe import H0Probe
-            from mlx_lm.models.kv_direct_cache import _find_inner_model
+        # H0Probe: attention-based eviction scoring
+        from mlx_lm.models.kv_direct_cache import _find_inner_model
+        try:
             inner = _find_inner_model(model)
+        except ValueError:
+            inner = None
+
+        if probe_layers > 0 and inner is not None:
+            from mlx_lm.models.h0_probe import H0Probe
             probe = H0Probe(inner, n_probe_layers=probe_layers)
             TripleLayerKVCache._shared_probe = probe
             for c in caches:
@@ -366,6 +371,18 @@ def make_optimized_cache(
                     c._probe_eviction_enabled = True
             print(f"[CacheFactory] H0Probe installed: {probe_layers} layers, "
                   f"attention-based eviction enabled")
+
+        # Auto-reconstruction: store refs for automatic h^(0) → K/V after prefill
+        if inner is not None:
+            TripleLayerKVCache._shared_inner_model = inner
+            TripleLayerKVCache._shared_cache_list = [
+                c for c in caches if isinstance(c, TripleLayerKVCache)
+            ]
+        if auto_reconstruct:
+            for c in caches:
+                if isinstance(c, TripleLayerKVCache):
+                    c._auto_reconstruct = True
+            print(f"[CacheFactory] Auto-reconstruction enabled")
 
     return caches
 

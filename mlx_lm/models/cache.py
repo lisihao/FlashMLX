@@ -37,6 +37,7 @@ def make_prompt_cache(
     density_mode: Optional[str] = None,
     density_scale: float = 0.0,
     probe_layers: int = 0,
+    auto_reconstruct: bool = False,
 ) -> List[Any]:
     """
     Construct the model's cache for use in generation.
@@ -105,6 +106,8 @@ def make_prompt_cache(
             kwargs["density_scale"] = density_scale
         if probe_layers > 0:
             kwargs["probe_layers"] = probe_layers
+        if auto_reconstruct:
+            kwargs["auto_reconstruct"] = auto_reconstruct
         return make_optimized_cache(model, **kwargs)
 
     # Model-specific cache (hybrid models like Qwen3.5 define make_cache())
