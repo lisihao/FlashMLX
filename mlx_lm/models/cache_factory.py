@@ -384,6 +384,22 @@ def make_optimized_cache(
                     c._auto_reconstruct = True
             print(f"[CacheFactory] Auto-reconstruction enabled")
 
+        # Create ReconstructionController for programmatic access
+        tlkvc_caches = [c for c in caches if isinstance(c, TripleLayerKVCache)]
+        try:
+            from flashmlx.reconstruction import ReconstructionController
+            recon_ctrl = ReconstructionController(
+                inner_model=inner,
+                cache_list=tlkvc_caches,
+                h0_store=h0_store,
+                probe=getattr(TripleLayerKVCache, "_shared_probe", None),
+                recon_budget=recon_budget,
+            )
+            for c in tlkvc_caches:
+                c._reconstruction_controller = recon_ctrl
+        except ImportError:
+            pass  # flashmlx SDK not installed
+
     return caches
 
 
