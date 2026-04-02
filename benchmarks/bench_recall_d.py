@@ -115,7 +115,7 @@ def get_mem_mb():
 
 
 def ask_question(model, tokenizer, haystack, question, cache_kwargs, label,
-                 tg_tokens=200, trigger_recon=False):
+                 tg_tokens=200, trigger_recon=False, targeted_recon=False):
     """Ask a question about the haystack and return the answer.
 
     When trigger_recon=True, uses a two-phase approach:
@@ -169,7 +169,7 @@ def ask_question(model, tokenizer, haystack, question, cache_kwargs, label,
 
         # Phase 2: Reconstruct from h^(0)
         recon_start = time.perf_counter()
-        _trigger_reconstruction(model, cache)
+        _trigger_reconstruction(model, cache, targeted=targeted_recon)
         recon_ms = (time.perf_counter() - recon_start) * 1000
 
         # Phase 3: Process question with reconstructed context + generate
@@ -200,8 +200,12 @@ def ask_question(model, tokenizer, haystack, question, cache_kwargs, label,
     }
 
 
-def _trigger_reconstruction(model, cache):
-    """Trigger h^(0) reconstruction for evicted tokens."""
+def _trigger_reconstruction(model, cache, targeted=False):
+    """Trigger h^(0) reconstruction for evicted tokens.
+
+    Args:
+        targeted: If True, use probe importance scores for depth reduction.
+    """
     # Find h0_store from cache objects (stored by cache_factory on each layer)
     h0_store = None
     for c in cache:
@@ -222,29 +226,35 @@ def _trigger_reconstruction(model, cache):
     # All layers can receive reconstruction
     caches = list(cache)
     kv_direct_indices = list(range(len(caches)))
-
-    # Reconstruct as much as possible from h0 archive.
-    # _flat_prefix_token_count only covers the first eviction batch,
-    # but needles may be at any position. Use min(h0_count, budget).
-    first_cache = cache[0]
-    flat_prefix = getattr(first_cache, '_flat_prefix_token_count', 0)
-
-    # Reconstruct up to the full context (limited by h0 archive size)
-    # For this benchmark, we ignore budget limits to test max recall capability.
-    n_evicted = h0_store.count  # reconstruct full h0 archive
+    n_evicted = h0_store.count
 
     if n_evicted <= 0:
         print("    [recon] No h0 tokens to reconstruct")
         return
 
-    print(f"    [recon] Reconstructing {n_evicted} tokens from h^(0) "
+    # Get probe importance scores for targeted reconstruction
+    importance_scores = None
+    if targeted:
+        from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+        probe = TripleLayerKVCache._shared_probe
+        if probe is not None:
+            print(f"    [recon] Running probe for targeted reconstruction...")
+            importance_scores = probe.score_tokens(h0_store)
+            print(f"    [recon] Probe done, {len(importance_scores)} token scores")
+        else:
+            print("    [recon] No probe available, falling back to full reconstruction")
+
+    first_cache = cache[0]
+    flat_prefix = getattr(first_cache, '_flat_prefix_token_count', 0)
+    mode = "targeted" if importance_scores is not None else "full"
+    print(f"    [recon] Reconstructing {n_evicted} tokens ({mode}) from h^(0) "
           f"(h0 has {h0_store.count}, flat_prefix={flat_prefix})...")
-    _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices)
+
+    _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
+                        importance_scores=importance_scores)
     recon_arrays = [c._recon_keys for c in caches if getattr(c, '_recon_keys', None) is not None]
     if recon_arrays:
         mx.eval(*recon_arrays)
-    # Update flat_prefix_token_count for proper dedup in _fetch_flat.
-    # Without this, tokens between old_prefix and n_evicted would be duplicated.
     for c in caches:
         if getattr(c, '_recon_keys', None) is not None:
             c._flat_prefix_token_count = max(c._flat_prefix_token_count, n_evicted)
@@ -280,6 +290,7 @@ def main():
         ("ultra_long (10x)", card.to_cache_kwargs(mode="ultra_long")),
         ("recall_first (10x+h0)", card.to_cache_kwargs(mode="recall_first")),
         ("recall_first+RECON", card.to_cache_kwargs(mode="recall_first")),
+        ("recall_first+TARGETED", card.to_cache_kwargs(mode="recall_first")),
     ]
 
     # Build haystack
@@ -308,7 +319,8 @@ def main():
 
         results = []
         for label, kwargs in configs:
-            trigger_recon = "+RECON" in label
+            trigger_recon = "+RECON" in label or "+TARGETED" in label
+            targeted_recon = "+TARGETED" in label
             print(f"  Testing {label}...")
             try:
                 r = ask_question(
@@ -316,6 +328,7 @@ def main():
                     cache_kwargs=kwargs, label=label,
                     tg_tokens=args.tg_tokens,
                     trigger_recon=trigger_recon,
+                    targeted_recon=targeted_recon,
                 )
                 hits, total = score_answer(r["answer"], needle["expected_keywords"])
                 r["score"] = f"{hits}/{total}"

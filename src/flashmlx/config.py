@@ -155,6 +155,12 @@ class CacheConfig(BaseModel):
         description="Additive bias in log2 space. +1 = double compression, -1 = halve.",
     )
 
+    # H0Probe: attention-based eviction
+    probe_layers: int = Field(
+        default=0,
+        description="Attention probe depth for eviction (0=disabled, 3=recommended)",
+    )
+
     @field_validator("density_mode")
     @classmethod
     def validate_density_mode(cls, v: str) -> str:
@@ -222,6 +228,8 @@ class CacheConfig(BaseModel):
         if self.density_mode != "off":
             kwargs["density_mode"] = self.density_mode
             kwargs["density_scale"] = self.density_scale
+        if self.probe_layers > 0:
+            kwargs["probe_layers"] = self.probe_layers
         return kwargs
 
     def to_factory_kwargs(self) -> dict[str, Any]:
@@ -253,6 +261,8 @@ class CacheConfig(BaseModel):
         if self.density_mode != "off":
             kwargs["density_mode"] = self.density_mode
             kwargs["density_scale"] = self.density_scale
+        if self.probe_layers > 0:
+            kwargs["probe_layers"] = self.probe_layers
         return kwargs
 
     def effective_density_scale(self) -> float:
