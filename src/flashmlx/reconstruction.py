@@ -301,8 +301,8 @@ class ReconstructionController:
         strategy: str = "full",
         max_tokens: Optional[int] = None,
         coverage: float = 0.95,
-        chunk_size: int = 256,
-        eval_every: int = 4,
+        chunk_size: int = 512,
+        eval_every: int = 8,
     ) -> ReconResult:
         """Trigger KV cache reconstruction from h^(0).
 
@@ -471,6 +471,132 @@ class ReconstructionController:
                 c.clear_reconstruction()
         self._state = ReconState.IDLE
 
+    # ---- 3PIR Async API (non-blocking, chunk-at-a-time) ----
+
+    def reconstruct_async_start(
+        self,
+        strategy: str = "full",
+        coverage: float = 0.95,
+        chunk_size: int = 512,
+        seq_id: Optional[str] = None,
+    ) -> Optional[Any]:
+        """Start a non-blocking reconstruction, returning an RCSequenceState.
+
+        Unlike reconstruct() which blocks until completion, this returns
+        immediately with a state object that can be advanced one chunk at
+        a time via reconstruct_async_step().
+
+        This is the entry point for 3PIR integration with ThunderOMLX's
+        scheduler — RC chunks are processed in TG idle windows.
+
+        Args:
+            strategy: "full" or "targeted" (importance-guided depth reduction).
+            coverage: For "targeted", importance coverage threshold.
+            chunk_size: Tokens per chunk (default 512).
+            seq_id: Optional sequence identifier for logging.
+
+        Returns:
+            RCSequenceState if reconstruction is available, None otherwise.
+        """
+        if not self.available:
+            return None
+
+        from .rc_engine import RCEngine
+
+        # Determine importance scores for targeted strategy
+        importance_scores = None
+        if strategy == "targeted" and self._probe is not None:
+            importance_scores = self._probe.score_tokens(self._h0_store)
+
+        engine = RCEngine(chunk_size=chunk_size)
+        state = engine.register_sequence(
+            seq_id=seq_id or f"recon_{self._reconstruction_count}",
+            h0_store=self._h0_store,
+            inner_model=self._inner_model,
+            target_cache_list=self._cache_list,
+            importance_scores=importance_scores,
+            min_coverage=coverage,
+        )
+
+        # Store engine reference on state for step/complete calls
+        state._rc_engine = engine
+        self._state = ReconState.RECONSTRUCTING
+
+        logger.info(
+            f"[ReconController] Async start: {state.total_tokens} tokens, "
+            f"strategy={strategy}, chunk_size={chunk_size}"
+        )
+        return state
+
+    def reconstruct_async_step(self, state: Any) -> Any:
+        """Process one chunk of the async reconstruction.
+
+        Call this repeatedly (e.g., once per scheduler step) until
+        state.is_complete is True.
+
+        Args:
+            state: RCSequenceState from reconstruct_async_start().
+
+        Returns:
+            RCChunkResult with timing and progress info.
+        """
+        engine = getattr(state, "_rc_engine", None)
+        if engine is None:
+            raise ValueError("State has no _rc_engine — was it created by reconstruct_async_start()?")
+        return engine.process_chunk(state)
+
+    def reconstruct_async_complete(self, state: Any) -> ReconResult:
+        """Inject completed async reconstruction into target caches.
+
+        Call this after state.is_complete is True. Injects all accumulated
+        K/V into the target caches and returns a ReconResult.
+
+        Args:
+            state: Completed RCSequenceState.
+
+        Returns:
+            ReconResult with full stats.
+        """
+        engine = getattr(state, "_rc_engine", None)
+        if engine is None:
+            raise ValueError("State has no _rc_engine — was it created by reconstruct_async_start()?")
+
+        # Clear existing reconstruction before injecting new
+        for c in self._cache_list:
+            if hasattr(c, "clear_reconstruction"):
+                c.clear_reconstruction()
+
+        layers_injected, memory_mb = engine.inject_completed(state)
+
+        if self._recon_budget:
+            self._recon_budget.record_reconstruction(
+                state.reconstructed_tokens, state.total_time_ms
+            )
+
+        result = ReconResult(
+            success=True,
+            strategy="async",
+            tokens_requested=state.effective_end or state.total_tokens,
+            tokens_reconstructed=state.reconstructed_tokens,
+            layers_injected=layers_injected,
+            time_ms=state.total_time_ms,
+            memory_delta_mb=memory_mb,
+            h0_tokens_available=state.total_tokens,
+        )
+
+        self._state = ReconState.COMPLETED
+        self._last_result = result
+        self._reconstruction_count += 1
+
+        logger.info(
+            f"[ReconController] Async complete: "
+            f"{state.reconstructed_tokens} tokens, "
+            f"{layers_injected} layers, "
+            f"{state.chunks_processed} chunks, "
+            f"{state.total_time_ms:.0f}ms total"
+        )
+        return result
+
 
 # ---------------------------------------------------------------------------
 # Null Object — safe no-op when reconstruction is not available
@@ -518,6 +644,25 @@ class NullReconstructionController(ReconstructionController):
             memory_mb_est=0.0,
             strategy="none",
             probe_available=False,
+        )
+
+    def reconstruct_async_start(self, **kwargs):
+        return None
+
+    def reconstruct_async_step(self, state):
+        return None
+
+    def reconstruct_async_complete(self, state):
+        return ReconResult(
+            success=False,
+            strategy="none",
+            tokens_requested=0,
+            tokens_reconstructed=0,
+            layers_injected=0,
+            time_ms=0.0,
+            memory_delta_mb=0.0,
+            h0_tokens_available=0,
+            error="Reconstruction not available (no h^(0) store)",
         )
 
     def clear(self):

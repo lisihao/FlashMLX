@@ -66,6 +66,11 @@ from .reconstruction import (
     ReconStats,
 )
 
+# ---------------------------------------------------------------------------
+# 3PIR: RC Engine (chunk-level non-blocking reconstruction)
+# ---------------------------------------------------------------------------
+from .rc_engine import RCEngine, RCSequenceState, RCChunkResult
+
 __all__ = [
     "__version__",
     # Model loading
@@ -104,4 +109,8 @@ __all__ = [
     "ReconResult",
     "ReconCostEstimate",
     "ReconStats",
+    # 3PIR RC Engine
+    "RCEngine",
+    "RCSequenceState",
+    "RCChunkResult",
 ]
