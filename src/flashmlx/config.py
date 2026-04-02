@@ -161,6 +161,12 @@ class CacheConfig(BaseModel):
         description="Attention probe depth for eviction (0=disabled, 3=recommended)",
     )
 
+    # Auto-reconstruction: automatically reconstruct from h^(0) after prefill
+    auto_reconstruct: bool = Field(
+        default=False,
+        description="Auto-trigger h^(0) reconstruction after prefill completes",
+    )
+
     @field_validator("density_mode")
     @classmethod
     def validate_density_mode(cls, v: str) -> str:
@@ -230,6 +236,8 @@ class CacheConfig(BaseModel):
             kwargs["density_scale"] = self.density_scale
         if self.probe_layers > 0:
             kwargs["probe_layers"] = self.probe_layers
+        if self.auto_reconstruct:
+            kwargs["auto_reconstruct"] = self.auto_reconstruct
         return kwargs
 
     def to_factory_kwargs(self) -> dict[str, Any]:
@@ -263,6 +271,8 @@ class CacheConfig(BaseModel):
             kwargs["density_scale"] = self.density_scale
         if self.probe_layers > 0:
             kwargs["probe_layers"] = self.probe_layers
+        if self.auto_reconstruct:
+            kwargs["auto_reconstruct"] = self.auto_reconstruct
         return kwargs
 
     def effective_density_scale(self) -> float:
