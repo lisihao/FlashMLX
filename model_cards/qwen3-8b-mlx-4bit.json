@@ -85,8 +85,9 @@
     "recall_first": {
       "density_scale": 2.5,
       "strategy": "scored_kv_direct",
-      "description": "Maximum compression + Route 5 recall. Best for detail retrieval.",
-      "probe_layers": 3
+      "description": "Maximum compression + Route 5 auto-recall. Best for detail retrieval.",
+      "probe_layers": 3,
+      "auto_reconstruct": true
     }
   },
   "notes": "v2.0 Official Baseline (2026-04-01). scored_pq+Q8 optimal. 32K: PP +52%, TG +34%, Mem -89% vs standard. Q4 flat kills TG (-45%). Route 5 h^(0) capture zero-cost. Route 0 modes: balanced/ultra_long/recall_first."

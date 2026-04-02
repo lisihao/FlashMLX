@@ -66,6 +66,7 @@ class ModeConfig(BaseModel):
     strategy: str = Field(default="scored_pq", description="Cache strategy for this mode")
     description: str = Field(default="", description="Human-readable description")
     probe_layers: int = Field(default=0, description="Attention probe depth (0=disabled)")
+    auto_reconstruct: bool = Field(default=False, description="Auto-trigger reconstruction after prefill")
 
 
 class ModelCard(BaseModel):
@@ -139,6 +140,8 @@ class ModelCard(BaseModel):
                 kwargs["kv_cache"] = mc.strategy
             if mc.probe_layers > 0:
                 kwargs["probe_layers"] = mc.probe_layers
+            if mc.auto_reconstruct:
+                kwargs["auto_reconstruct"] = mc.auto_reconstruct
         return kwargs
 
     def is_hybrid(self) -> bool:

@@ -284,13 +284,18 @@ def main():
     print(f"Card: {card.model_name}")
 
     # Build configs
+    # recall_first mode now has auto_reconstruct=true in model card,
+    # but for non-AUTO configs we disable it to test manual paths.
+    recall_kwargs = card.to_cache_kwargs(mode="recall_first")
+    recall_manual = {k: v for k, v in recall_kwargs.items() if k != "auto_reconstruct"}
     configs = [
         ("standard (no compress)", {"kv_cache": "standard"}),
         ("baseline (scored_pq)", card.to_cache_kwargs()),
         ("ultra_long (10x)", card.to_cache_kwargs(mode="ultra_long")),
-        ("recall_first (10x+h0)", card.to_cache_kwargs(mode="recall_first")),
-        ("recall_first+RECON", card.to_cache_kwargs(mode="recall_first")),
-        ("recall_first+TARGETED", card.to_cache_kwargs(mode="recall_first")),
+        ("recall_first (10x+h0)", recall_manual),
+        ("recall_first+RECON", recall_manual),
+        ("recall_first+TARGETED", recall_manual),
+        ("recall_first+AUTO", recall_kwargs),
     ]
 
     # Build haystack
