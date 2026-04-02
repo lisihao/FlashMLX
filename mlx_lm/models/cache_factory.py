@@ -140,6 +140,7 @@ def make_optimized_cache(
     pinned_tokens: int = 0,
     density_mode: Optional[str] = None,
     density_scale: float = 0.0,
+    probe_layers: int = 0,
 ) -> List[Any]:
     """
     Create optimized KV cache list for model.
@@ -352,6 +353,19 @@ def make_optimized_cache(
               f"{n_layers} layers, h^(0) archive active, h0_quant={quant_label}, "
               f"recon_budget=({recon_budget.max_recall_per_turn}/turn, "
               f"cd={recon_budget.cooldown_turns})")
+
+        # H0Probe: attention-based eviction scoring (replaces key-norm surprise)
+        if probe_layers > 0:
+            from mlx_lm.models.h0_probe import H0Probe
+            from mlx_lm.models.kv_direct_cache import _find_inner_model
+            inner = _find_inner_model(model)
+            probe = H0Probe(inner, n_probe_layers=probe_layers)
+            TripleLayerKVCache._shared_probe = probe
+            for c in caches:
+                if isinstance(c, TripleLayerKVCache):
+                    c._probe_eviction_enabled = True
+            print(f"[CacheFactory] H0Probe installed: {probe_layers} layers, "
+                  f"attention-based eviction enabled")
 
     return caches
 

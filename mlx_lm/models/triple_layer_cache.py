@@ -85,6 +85,11 @@ class TripleLayerKVCache(_BaseCache):
     _shared_surprise = None   # np.ndarray of windowed z-scores
     _shared_surprise_tag = None  # (eviction_count, scorable_len) freshness check
 
+    # Attention probe sharing: layer 0 runs probe, all layers use scores
+    _shared_probe = None                # H0Probe instance (set by cache_factory)
+    _shared_attn_importance = None      # np.ndarray from probe
+    _shared_attn_importance_tag = None  # freshness tag
+
     def __init__(
         self,
         memory_budget_mb: float = 10.0,  # Memory budget in MB (legacy, secondary)
@@ -233,6 +238,9 @@ class TripleLayerKVCache(_BaseCache):
 
         # Route 5: Scored KV-Direct fusion — h^(0) archive reference
         self._h0_store = None  # Set by cache_factory for scored_kv_direct strategy
+
+        # H0Probe attention-based eviction (replaces key-norm surprise when enabled)
+        self._probe_eviction_enabled = False  # Set by cache_factory
 
         # Route 5: Reconstructed K/V injection
         self._recon_keys = None
@@ -1303,22 +1311,27 @@ class TripleLayerKVCache(_BaseCache):
     # ── Architecture D: Scored Differential Compression ──────────────────
 
     def _get_importance_mask(self, chunk_len: int, budget: int, prefix_len: int,
-                             surprise_scores: "np.ndarray | None" = None) -> np.ndarray:
+                             surprise_scores: "np.ndarray | None" = None,
+                             attention_scores: "np.ndarray | None" = None) -> np.ndarray:
         """
-        Get boolean importance mask from AM calibration + surprise protection.
+        Get boolean importance mask from AM calibration + surprise/attention protection.
 
-        Uses the same selected_indices as pipeline AM, but instead of deleting
-        unselected tokens, returns a mask for differential bit allocation.
-        When surprise_scores are provided, tokens with high z-scores are
-        protected from eviction regardless of AM ranking.
-
-        Args:
-            surprise_scores: optional (chunk_len,) z-score array from key norms.
-                Tokens with z-score >= 2.0 are unconditionally protected.
+        Priority order:
+        1. attention_scores (H2O-style, from H0Probe) — if available, top-K wins
+        2. surprise_scores (key-norm z-scores) — merged with AM calibration
+        3. AM calibration only — position-based fallback
 
         Returns:
             mask: np.ndarray of shape (chunk_len,) where True = important (PQ4)
         """
+        # H2O-style attention scoring: top-K by cumulative attention importance.
+        # When available, this completely replaces AM calibration — attention
+        # scores reflect actual content importance, not position.
+        if attention_scores is not None and len(attention_scores) >= chunk_len:
+            top_k_idx = np.argsort(-attention_scores[:chunk_len])[:budget]
+            importance_mask = np.zeros(chunk_len, dtype=bool)
+            importance_mask[top_k_idx] = True
+            return importance_mask
         layer_calib = None
         if self._am_calibration is not None:
             layer_calib = self._am_calibration.get(self.layer_idx)
@@ -1428,32 +1441,47 @@ class TripleLayerKVCache(_BaseCache):
         chunk_size = self.cold_batch_threshold  # 512
         budget = int(chunk_size / effective_ratio)
 
-        # Cross-layer surprise scoring: layer 0 computes key-norm z-scores with
-        # ±16 window expansion, then shares via class attribute so all 36 layers
-        # protect the same tokens. Without sharing, needle tokens might survive
-        # at some layers but get evicted at others, breaking attention.
-        surprise_all = None
+        # Attention probe scoring: if probe is available and enabled, use
+        # H2O-style cumulative attention scores instead of key-norm surprise.
+        # Layer 0 runs the probe once, shares results with all layers.
+        attn_importance = None
         evict_tag = (self._prefill_eviction_count + 1, scorable_len)
-        if scorable_len > 0:
+        if self._probe_eviction_enabled and scorable_len > 0:
+            if self.layer_idx == 0:
+                probe = TripleLayerKVCache._shared_probe
+                if probe is not None and self._h0_store is not None:
+                    attn_scores = probe.score_tokens(self._h0_store)
+                    # Slice to scorable range (skip pinned prefix)
+                    if len(attn_scores) >= scorable_start + scorable_len:
+                        attn_importance = attn_scores[scorable_start:scorable_start + scorable_len]
+                    else:
+                        attn_importance = attn_scores[:scorable_len]
+                    TripleLayerKVCache._shared_attn_importance = attn_importance
+                    TripleLayerKVCache._shared_attn_importance_tag = evict_tag
+                    if self.num_cold_compressions == 0:
+                        print(f"[Probe] Scored {len(attn_importance)} tokens via "
+                              f"{probe._n_layers}-layer attention probe")
+            elif (TripleLayerKVCache._shared_attn_importance_tag == evict_tag and
+                  TripleLayerKVCache._shared_attn_importance is not None):
+                attn_importance = TripleLayerKVCache._shared_attn_importance
+
+        # Fallback: cross-layer key-norm surprise scoring (when probe not available)
+        surprise_all = None
+        if attn_importance is None and scorable_len > 0:
             if self.layer_idx == 0:
                 kn = mx.linalg.norm(scorable_k.astype(mx.float32), axis=-1)
                 kn = kn.mean(axis=1).squeeze(0)
                 kn_np = np.array(kn)
-                # Per-chunk z-score: normalize within each 512-token chunk so
-                # needle tokens stand out from LOCAL filler, not diluted by
-                # AM-selected survivors from previous evictions.
                 per_chunk_z = np.zeros(scorable_len, dtype=np.float32)
                 for ci in range(0, scorable_len, chunk_size):
                     ce = min(ci + chunk_size, scorable_len)
                     chunk = kn_np[ci:ce]
                     c_mean, c_std = chunk.mean(), chunk.std() + 1e-8
                     per_chunk_z[ci:ce] = np.abs(chunk - c_mean) / c_std
-                # Window max-pool: expand surprise to ±16 tokens around outliers
                 half_w = 16
                 padded = np.pad(per_chunk_z, (half_w, half_w), constant_values=0)
                 from numpy.lib.stride_tricks import sliding_window_view
                 surprise_all = sliding_window_view(padded, 2 * half_w + 1).max(axis=-1)
-                # Share with other layers
                 TripleLayerKVCache._shared_surprise = surprise_all
                 TripleLayerKVCache._shared_surprise_tag = evict_tag
             elif (TripleLayerKVCache._shared_surprise_tag == evict_tag and
@@ -1466,8 +1494,10 @@ class TripleLayerKVCache(_BaseCache):
             chunk_len = chunk_end - offset
             if chunk_len == chunk_size:
                 chunk_surprise = surprise_all[offset:chunk_end] if surprise_all is not None else None
+                chunk_attn = attn_importance[offset:chunk_end] if attn_importance is not None else None
                 imp_mask = self._get_importance_mask(chunk_len, budget, chunk_size,
-                                                    surprise_scores=chunk_surprise)
+                                                    surprise_scores=chunk_surprise,
+                                                    attention_scores=chunk_attn)
                 global_indices.append(np.where(imp_mask)[0] + offset)
             else:
                 # Partial chunk: keep all tokens

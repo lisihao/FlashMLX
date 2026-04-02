@@ -26,8 +26,12 @@ by FlashMLX benchmarks but outside paper's verification range.
 Technique: __class__ swapping on inner model (zero model code changes).
 """
 
+import json
 import logging
+import os
+
 import mlx.core as mx
+import numpy as np
 
 from .base import create_attention_mask
 from .cache import _BaseCache, KVCache
@@ -273,6 +277,69 @@ class H0Store:
         # Interleave: stack [high, low] on last axis → (B, L, half_d, 2) → reshape (B, L, d)
         result = mx.stack([high, low], axis=-1).reshape(B, L, half_d * 2)
         return (result * scales / 7.0).astype(mx.bfloat16)
+
+    # --- Disk persistence ---
+
+    def save(self, path, metadata=None):
+        """Save h^(0) archive to disk as NPZ with self-describing metadata.
+
+        Args:
+            path: File path (e.g. '/Volumes/toshiba/flashmlx/h0_cache/run1.npz').
+            metadata: Optional dict with model_name, session_id, etc.
+        """
+        from datetime import datetime
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        if self._h0 is not None:
+            mx.eval(self._h0)
+        if self._scales is not None:
+            mx.eval(self._scales)
+
+        meta = {
+            "quant": self._quant or "bf16",
+            "count": self._count,
+            "format_version": 1,
+            "created_at": datetime.now().isoformat(),
+            **(metadata or {}),
+        }
+
+        save_dict = {"meta": np.array(json.dumps(meta))}
+        if self._h0 is not None:
+            save_dict["h0"] = np.array(self._h0)
+        if self._scales is not None:
+            save_dict["scales"] = np.array(self._scales)
+
+        np.savez(path, **save_dict)
+        size_mb = os.path.getsize(path + ".npz" if not path.endswith(".npz") else path) / (1024 * 1024)
+        logger.info(f"H0Store saved: {path} ({size_mb:.1f} MB, {self._count} tokens, quant={meta['quant']})")
+
+    @classmethod
+    def load(cls, path):
+        """Load h^(0) archive from disk.
+
+        Returns:
+            (H0Store, metadata_dict) tuple.
+        """
+        if not path.endswith(".npz"):
+            path = path + ".npz"
+        data = np.load(path, allow_pickle=False)
+        meta = json.loads(str(data["meta"]))
+
+        quant = meta.get("quant", "bf16")
+        store = cls(quant=quant if quant != "bf16" else None)
+
+        dtype_map = {"bf16": mx.bfloat16, "q8": mx.int8, "q4": mx.uint8}
+
+        if "h0" in data:
+            target_dtype = dtype_map.get(quant, mx.bfloat16)
+            store._h0 = mx.array(data["h0"]).astype(target_dtype)
+            store._count = store._h0.shape[1]
+        if "scales" in data:
+            store._scales = mx.array(data["scales"]).astype(mx.float16)
+
+        logger.info(f"H0Store loaded: {path} ({store._count} tokens, quant={quant})")
+        return store, meta
 
 
 # ---------------------------------------------------------------------------
@@ -659,26 +726,73 @@ def reconstruct_prefix_kv(inner_model, h0_store, start, end, chunk_size=0):
 RECON_CHUNK_SIZE = 64
 
 
+def reconstruct_targeted(inner_model, h0_store, max_end,
+                         importance_scores=None,
+                         min_coverage=0.95, chunk_size=512):
+    """Importance-guided depth-reduced reconstruction.
+
+    Uses probe attention scores to find the minimal prefix [0:actual_end]
+    that covers min_coverage of total importance. If all important tokens
+    are in [0:M] where M < max_end, only reconstructs [0:M].
+
+    Large chunk_size (512 vs default 64) reduces mx.eval overhead for speed.
+
+    Args:
+        inner_model: Inner model with .layers.
+        h0_store: H0Store with archived embeddings.
+        max_end: Maximum reconstruction depth.
+        importance_scores: np.ndarray (max_end,) from H0Probe.score_tokens().
+        min_coverage: Fraction of total importance to cover (default 0.95).
+        chunk_size: Chunk size for reconstruction (default 512 for speed).
+
+    Returns:
+        (kv_list, actual_end) — kv_list as from reconstruct_prefix_kv,
+        actual_end = tokens actually reconstructed.
+    """
+    actual_end = max_end
+
+    if importance_scores is not None and len(importance_scores) > 0:
+        scores = importance_scores[:max_end]
+        cumsum = np.cumsum(scores)
+        total = cumsum[-1]
+        if total > 0:
+            threshold = total * min_coverage
+            cut = int(np.searchsorted(cumsum, threshold)) + 1
+            actual_end = min(max_end, cut + 256)   # safety margin
+            actual_end = max(actual_end, max_end // 2)  # minimum 50%
+            logger.info(f"reconstruct_targeted: {max_end} → {actual_end} "
+                        f"({actual_end / max_end * 100:.0f}% depth, "
+                        f"coverage={min_coverage:.0%})")
+
+    kv_list = reconstruct_prefix_kv(
+        inner_model, h0_store, 0, actual_end, chunk_size=chunk_size
+    )
+    return kv_list, actual_end
+
+
 def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
-                        chunk_size=RECON_CHUNK_SIZE):
+                        chunk_size=RECON_CHUNK_SIZE, importance_scores=None):
     """Run reconstruction forward pass to produce evicted K/V.
 
     Creates FRESH temp KVCaches each call, feeds h^(0)[0:n_evicted] through
     all layers, extracts K/V and injects into real caches. Temp caches are
     freed after use — only h^(0) persists (paper-faithful, memory-efficient).
 
-    Correctness:
-      - Evicted tokens are always the oldest (positions 0..n_evicted-1)
-      - They only attend to each other (causal mask) — no need for recent K/V
-      - Temp caches start at offset=0 → RoPE positions 0..n_evicted-1 (correct)
-
     Args:
         chunk_size: If > 0, process in chunks to yield GPU for concurrent agents.
-            Default: RECON_CHUNK_SIZE (64 tokens).
+        importance_scores: If provided, uses reconstruct_targeted for depth
+            reduction (faster reconstruction of important regions only).
     """
-    kv_list = reconstruct_prefix_kv(
-        inner_model, h0_store, 0, n_evicted, chunk_size=chunk_size
-    )
+    if importance_scores is not None:
+        kv_list, actual_end = reconstruct_targeted(
+            inner_model, h0_store, n_evicted,
+            importance_scores=importance_scores,
+            chunk_size=max(chunk_size, 512),
+        )
+    else:
+        kv_list = reconstruct_prefix_kv(
+            inner_model, h0_store, 0, n_evicted, chunk_size=chunk_size
+        )
 
     kv_direct_set = set(kv_direct_indices)
     num_layers = len(inner_model.layers)
