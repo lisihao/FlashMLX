@@ -65,6 +65,7 @@ class ModeConfig(BaseModel):
     density_scale: float = Field(description="Additive bias in log2 space")
     strategy: str = Field(default="scored_pq", description="Cache strategy for this mode")
     description: str = Field(default="", description="Human-readable description")
+    probe_layers: int = Field(default=0, description="Attention probe depth (0=disabled)")
 
 
 class ModelCard(BaseModel):
@@ -136,6 +137,8 @@ class ModelCard(BaseModel):
             kwargs["density_scale"] = mc.density_scale
             if mc.strategy != self.optimal.strategy:
                 kwargs["kv_cache"] = mc.strategy
+            if mc.probe_layers > 0:
+                kwargs["probe_layers"] = mc.probe_layers
         return kwargs
 
     def is_hybrid(self) -> bool:
