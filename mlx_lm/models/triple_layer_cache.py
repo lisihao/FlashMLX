@@ -402,6 +402,148 @@ class TripleLayerKVCache(_BaseCache):
         recent_size = self.recent_keys.shape[2] if self.recent_keys is not None else 0
         return cold_size + warm_size + recent_size
 
+    # ------------------------------------------------------------------
+    # State serialization (ThunderOMLX paged cache integration)
+    # ------------------------------------------------------------------
+
+    @property
+    def state(self):
+        """Return full cache state for serialization.
+
+        In flat mode: returns dequantized bf16 K/V (compatible with KVCache.state).
+        In slow path: returns recent keys/values.
+        """
+        if self._flat_mode:
+            return self._fetch_flat(self._flat_offset)
+        if self.recent_keys is not None:
+            return self.recent_keys, self.recent_values
+        return ()
+
+    @state.setter
+    def state(self, v):
+        """Restore cache state from bf16 K/V (will re-quantize into flat buffer)."""
+        if not v or len(v) < 2:
+            return
+        keys, values = v
+        B, n_heads, seq_len, head_dim = keys.shape
+        alloc_len = ((seq_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
+        self._alloc_flat_buffer(B, n_heads, alloc_len, head_dim)
+        self._write_flat(0, seq_len, keys, values)
+        self._flat_offset = seq_len
+        self._true_offset = seq_len
+        self._flat_mode = True
+
+    @property
+    def meta_state(self):
+        """Return metadata for cache reconstruction."""
+        return (
+            str(self._flat_quant or 'bf16'),
+            str(self._flat_offset),
+            str(self._true_offset),
+            str(self._flat_prefix_token_count),
+            str(int(self._flat_mode)),
+            str(self._flat_pq_head_dim or 0),
+        )
+
+    @meta_state.setter
+    def meta_state(self, v):
+        """Restore metadata from serialized state."""
+        if not v or len(v) < 4:
+            return
+        flat_quant_str = v[0]
+        self._flat_quant = None if flat_quant_str == 'bf16' else flat_quant_str
+        self._flat_offset = int(v[1])
+        self._true_offset = int(v[2])
+        self._flat_prefix_token_count = int(v[3])
+        self._flat_mode = bool(int(v[4])) if len(v) > 4 else True
+        if len(v) > 5 and self._flat_quant == 'turboquant':
+            self._flat_pq_head_dim = int(v[5])
+
+    def export_flat_state(self) -> Optional[Dict]:
+        """Export flat buffer in compressed form (no dequant round-trip).
+
+        Returns the raw quantized arrays preserving the original dtype.
+        ThunderOMLX can store these directly to SSD for ~50-75% savings
+        vs bf16, and restore without re-quantization.
+
+        Returns:
+            Dict with flat_keys, flat_values, scales, metadata.
+            None if not in flat mode.
+        """
+        if not self._flat_mode or self._flat_keys is None:
+            return None
+
+        end = self._flat_offset
+        result = {
+            'flat_keys': self._flat_keys[..., :end, :],
+            'flat_values': self._flat_values[..., :end, :],
+            'flat_quant': self._flat_quant,
+            'flat_offset': self._flat_offset,
+            'true_offset': self._true_offset,
+            'flat_prefix_token_count': self._flat_prefix_token_count,
+        }
+
+        if self._flat_quant in ('q8_0', 'q4_0', 'turboquant') and self._flat_keys_scales is not None:
+            result['flat_keys_scales'] = self._flat_keys_scales[..., :end, :]
+            result['flat_values_scales'] = self._flat_values_scales[..., :end, :]
+
+        if self._flat_quant == 'turboquant':
+            result['head_dim'] = self._flat_pq_head_dim
+
+        return result
+
+    def import_flat_state(self, state: Dict) -> bool:
+        """Import compressed flat buffer state (no re-quantization).
+
+        Restores the flat buffer to the exact quantized state that was
+        exported, preserving the original compressed format bit-exact.
+
+        Args:
+            state: Dict from export_flat_state().
+
+        Returns:
+            True if import succeeded.
+        """
+        flat_keys = state['flat_keys']
+        flat_values = state['flat_values']
+        flat_quant = state.get('flat_quant')
+
+        B, n_heads, seq_len = flat_keys.shape[:3]
+        packed_dim = flat_keys.shape[3]
+        alloc_len = ((seq_len + self._flat_step - 1) // self._flat_step + 1) * self._flat_step
+
+        # Set quant mode
+        self._flat_quant = flat_quant
+        if flat_quant == 'turboquant':
+            from mlx_lm.models.quantization_strategies import PolarQuantizer
+            self._flat_pq = PolarQuantizer(bits=4, norm_correction=False)
+            self._flat_pq_head_dim = state.get('head_dim')
+
+        # Allocate buffer with correct dtype
+        self._flat_keys = mx.zeros((B, n_heads, alloc_len, packed_dim), dtype=flat_keys.dtype)
+        self._flat_values = mx.zeros((B, n_heads, alloc_len, packed_dim), dtype=flat_values.dtype)
+
+        # Copy compressed data
+        self._flat_keys[..., :seq_len, :] = flat_keys
+        self._flat_values[..., :seq_len, :] = flat_values
+
+        # Restore scales if quantized
+        if 'flat_keys_scales' in state and state['flat_keys_scales'] is not None:
+            scale_dim = state['flat_keys_scales'].shape[3]
+            scale_dtype = state['flat_keys_scales'].dtype
+            self._flat_keys_scales = mx.zeros((B, n_heads, alloc_len, scale_dim), dtype=scale_dtype)
+            self._flat_values_scales = mx.zeros((B, n_heads, alloc_len, scale_dim), dtype=scale_dtype)
+            self._flat_keys_scales[..., :seq_len, :] = state['flat_keys_scales']
+            self._flat_values_scales[..., :seq_len, :] = state['flat_values_scales']
+
+        # Restore metadata
+        self._flat_offset = state.get('flat_offset', seq_len)
+        self._true_offset = state.get('true_offset', self._flat_offset)
+        self._flat_prefix_token_count = state.get('flat_prefix_token_count', 0)
+        self._flat_mode = True
+
+        return True
+
     def update_and_fetch(self, keys: mx.array, values: mx.array) -> Tuple[mx.array, mx.array]:
         """
         Update cache with new keys/values and return full cache.

@@ -278,6 +278,116 @@ class H0Store:
         result = mx.stack([high, low], axis=-1).reshape(B, L, half_d * 2)
         return (result * scales / 7.0).astype(mx.bfloat16)
 
+    # --- Block-aligned serialization (ThunderOMLX SSD integration) ---
+
+    def export_blocks(self, block_size: int = 64) -> list:
+        """Export H0Store as block-aligned chunks for paged SSD storage.
+
+        Each block contains raw h^(0) data (preserving quantization) for
+        exactly `block_size` tokens, matching ThunderOMLX's paged cache
+        block granularity.  The last block may be shorter.
+
+        Args:
+            block_size: Tokens per block (match ThunderOMLX block_size).
+
+        Returns:
+            List of dicts, each representing one block::
+
+                {
+                    'h0': mx.array,          # (B, <=block_size, dim)
+                    'scales': mx.array|None,  # (B, <=block_size, 1) if quantized
+                    'block_idx': int,
+                    'token_start': int,
+                    'token_end': int,
+                    'quant': str,             # 'bf16' | 'q8' | 'q4'
+                }
+        """
+        if self._h0 is None or self._count == 0:
+            return []
+
+        blocks = []
+        n_blocks = (self._count + block_size - 1) // block_size
+
+        for i in range(n_blocks):
+            start = i * block_size
+            end = min(start + block_size, self._count)
+
+            block = {
+                'h0': self._h0[:, start:end, :],
+                'block_idx': i,
+                'token_start': start,
+                'token_end': end,
+                'quant': self._quant or 'bf16',
+            }
+            if self._scales is not None:
+                block['scales'] = self._scales[:, start:end, :]
+            else:
+                block['scales'] = None
+
+            blocks.append(block)
+
+        return blocks
+
+    def import_blocks(self, blocks: list) -> int:
+        """Import H0Store from block-aligned chunks.
+
+        Restores internal state from a list of blocks produced by
+        ``export_blocks()``.  Blocks are sorted by ``block_idx`` before
+        concatenation so order in the input list does not matter.
+
+        Args:
+            blocks: List of block dicts from export_blocks().
+
+        Returns:
+            Total token count restored.
+        """
+        if not blocks:
+            return 0
+
+        sorted_blocks = sorted(blocks, key=lambda b: b['block_idx'])
+
+        quant = sorted_blocks[0].get('quant', 'bf16')
+        self._quant = None if quant == 'bf16' else quant
+
+        h0_parts = []
+        scales_parts = []
+        has_scales = sorted_blocks[0].get('scales') is not None
+
+        for block in sorted_blocks:
+            h0_parts.append(block['h0'])
+            if has_scales and block.get('scales') is not None:
+                scales_parts.append(block['scales'])
+
+        self._h0 = mx.concatenate(h0_parts, axis=1)
+        if has_scales and scales_parts:
+            self._scales = mx.concatenate(scales_parts, axis=1)
+        else:
+            self._scales = None
+
+        self._count = self._h0.shape[1]
+        return self._count
+
+    @staticmethod
+    def block_hash_key(parent_hash: bytes, block_idx: int) -> bytes:
+        """Compute SHA-256 hash key for an H0 block on SSD.
+
+        Uses a ``h0:`` prefix to ensure H0 block hashes never collide
+        with KV block hashes in the same SSD directory.
+
+        Args:
+            parent_hash: Hash of the parent KV block (or sequence prefix).
+            block_idx: Block index within this sequence's H0 data.
+
+        Returns:
+            32-byte SHA-256 digest.
+        """
+        import hashlib
+        h = hashlib.sha256()
+        h.update(b"h0:")
+        h.update(parent_hash)
+        h.update(block_idx.to_bytes(8, 'little'))
+        return h.digest()
+
     # --- Disk persistence ---
 
     def save(self, path, metadata=None):
@@ -506,13 +616,16 @@ def apply_h0_capture(model, caches, h0_store):
 
     def _make_patched_call(h0s, kv_indices, orig_call):
         def __call__(self, inputs, cache=None, input_embeddings=None):
-            # Guard: batch_size > 1 is unsupported
+            # Guard: batch_size > 1 is unsupported for h^(0) CAPTURE.
+            # Exception: _batched_rc_mode bypasses this for reconstruction-only
+            # passes where h^(0) is sourced via BatchedH0View (B>1 safe).
             B = inputs.shape[0] if input_embeddings is None else input_embeddings.shape[0]
-            if B > 1:
+            if B > 1 and not getattr(self, "_batched_rc_mode", False):
                 raise RuntimeError(
                     f"KV-Direct h^(0) capture requires batch_size=1, got {B}. "
                     f"h^(0) storage is sequence-global — multi-batch would corrupt "
-                    f"token ordering. Use standard KV cache for batched inference."
+                    f"token ordering. Use standard KV cache for batched inference, "
+                    f"or set model.model._batched_rc_mode=True for RC batch passes."
                 )
 
             # Phase 0: Compute h^(0)
@@ -618,13 +731,16 @@ def apply_h0_capture_only(model, h0_store):
 
     def _make_capture_call(h0s, orig_call):
         def __call__(self, inputs, cache=None, input_embeddings=None):
-            # Guard: batch_size > 1 is unsupported
+            # Guard: batch_size > 1 is unsupported for h^(0) CAPTURE.
+            # Exception: _batched_rc_mode bypasses this for reconstruction-only
+            # passes where h^(0) is sourced via BatchedH0View (B>1 safe).
             B = inputs.shape[0] if input_embeddings is None else input_embeddings.shape[0]
-            if B > 1:
+            if B > 1 and not getattr(self, "_batched_rc_mode", False):
                 raise RuntimeError(
                     f"KV-Direct h^(0) capture requires batch_size=1, got {B}. "
                     f"h^(0) storage is sequence-global — multi-batch would corrupt "
-                    f"token ordering. Use standard KV cache for batched inference."
+                    f"token ordering. Use standard KV cache for batched inference, "
+                    f"or set model.model._batched_rc_mode=True for RC batch passes."
                 )
 
             # Compute h^(0) once
@@ -742,15 +858,182 @@ def reconstruct_prefix_kv(inner_model, h0_store, start, end,
     return [tc.state for tc in temp_caches]
 
 
-# Default chunk size for reconstruction (256 tokens).
-# Larger chunks = fewer mx.eval() calls = faster reconstruction.
-# Set to 0 to disable chunking (process all at once).
-RECON_CHUNK_SIZE = 256
+# Default chunk size for reconstruction (512 tokens).
+# Benchmarked: chunk=512/eval_every=8 is ~5% faster than chunk=256/eval_every=4.
+# Larger chunks = fewer mx.eval() syncs. Set to 0 for no chunking (fastest, OOM risk).
+RECON_CHUNK_SIZE = 512
+
+
+# ---------------------------------------------------------------------------
+# 3PIR: Stateful single-chunk reconstruction primitive
+# ---------------------------------------------------------------------------
+
+def reconstruct_prefix_kv_stateful(inner_model, h0_chunk, temp_caches):
+    """Process one chunk of h^(0) through all layers with persistent temp_caches.
+
+    This is the core primitive for 3PIR (Three-Phase Interleaved Reconstruction).
+    Unlike reconstruct_prefix_kv() which creates fresh temp_caches and processes
+    everything in one call, this function:
+
+    1. Accepts persistent temp_caches that accumulate K/V across multiple calls
+    2. Processes exactly one chunk per call (~512 tokens, ~1.3ms on M4 Max)
+    3. Returns immediately — caller controls scheduling and GPU budget
+
+    Causal correctness: temp_caches carry forward all K/V from previous chunks,
+    so chunk N's tokens correctly attend to tokens 0..N*chunk_size-1 via the
+    attention mask computed from temp_caches[0].offset.
+
+    Bit-exact guarantee: when called sequentially on consecutive chunks
+    [0:512], [512:1024], ..., the final temp_caches contain identical K/V
+    to a single reconstruct_prefix_kv(0, total_tokens) call, provided
+    h^(0) is bf16 (no quantization error).
+
+    Args:
+        inner_model: Inner model with .layers (e.g., model.model).
+        h0_chunk: (B, chunk_len, d_hidden) — one chunk of h^(0) embeddings.
+            B can be >1 for cross-sequence batched reconstruction.
+        temp_caches: List[KVCache] — one per layer, persistent across calls.
+            On first call, pass freshly created [KVCache() for _ in layers].
+            On subsequent calls, pass the same list (mutated in place by layer()).
+
+    Returns:
+        int — number of tokens processed in this chunk (= h0_chunk.shape[1]).
+             temp_caches are mutated in place with new K/V appended.
+
+    Example (3PIR chunk loop):
+        temp_caches = [KVCache() for _ in range(num_layers)]
+        h0_full = h0_store.get_range(0, 8192)
+        mx.eval(h0_full)
+
+        for offset in range(0, 8192, 512):
+            chunk = h0_full[:, offset:offset+512, :]
+            reconstruct_prefix_kv_stateful(inner_model, chunk, temp_caches)
+            mx.eval(temp_caches[-1].keys)  # sync this chunk
+            # ... yield to TG scheduling ...
+
+        kv_list = [tc.state for tc in temp_caches]  # final result
+    """
+    mask = create_attention_mask(h0_chunk, temp_caches[0])
+    h = h0_chunk
+    for layer, tc in zip(inner_model.layers, temp_caches):
+        h = layer(h, mask, tc)
+    return h0_chunk.shape[1]
+
+
+def extract_kv_from_temp_caches(temp_caches):
+    """Extract (keys, values) tuples from temp_caches after reconstruction.
+
+    Convenience function to convert completed temp_caches into the same
+    format as reconstruct_prefix_kv() returns.
+
+    Args:
+        temp_caches: List[KVCache] after all chunks have been processed.
+
+    Returns:
+        List of (keys, values) tuples, one per layer.
+        Each tuple is (B, n_kv_heads, N_total, head_dim).
+    """
+    return [tc.state for tc in temp_caches]
+
+
+# ---------------------------------------------------------------------------
+# 3PIR: BatchedH0View — cross-sequence B>1 virtual view
+# ---------------------------------------------------------------------------
+
+class BatchedH0View:
+    """Create a B>1 virtual view from multiple H0Stores for batched RC.
+
+    Each H0Store maintains B=1 independently. BatchedH0View pads and stacks
+    them into a temporary (B, T_max, d) tensor for a single batched forward
+    pass through the model layers.
+
+    This enables the KV-Direct paper's key insight: at medium batch sizes,
+    recomputing from h^(0) is 5x faster than reading full KV from memory,
+    because recomputation is compute-bound while KV read is bandwidth-bound.
+
+    Usage:
+        view = BatchedH0View(
+            stores=[agent_a.h0_store, agent_b.h0_store],
+            ranges=[(0, 512), (0, 512)]
+        )
+        batched_h0, lengths = view.get_batched_h0()
+        # batched_h0: (2, 512, d), lengths: [512, 512]
+
+        # After forward pass through layers with temp_caches:
+        per_seq_kv = view.split_kv_results(kv_list, lengths)
+    """
+
+    def __init__(self, stores, ranges):
+        """
+        Args:
+            stores: List[H0Store] — one per sequence in the batch.
+            ranges: List[Tuple[int, int]] — (start, end) per sequence.
+        """
+        self.stores = stores
+        self.ranges = ranges
+
+    def get_batched_h0(self):
+        """Return padded+stacked h^(0) for batch forward pass.
+
+        Returns:
+            (batched_h0, lengths):
+            - batched_h0: (B, T_max, d) mx.array
+            - lengths: List[int] — actual token count per sequence
+        """
+        chunks = []
+        lengths = []
+        max_len = 0
+
+        for store, (start, end) in zip(self.stores, self.ranges):
+            h0 = store.get_range(start, end)   # (1, L_i, d)
+            chunks.append(h0)
+            length = end - start
+            lengths.append(length)
+            max_len = max(max_len, length)
+
+        # Pad to max_len and stack
+        padded = []
+        for h0, length in zip(chunks, lengths):
+            if length < max_len:
+                pad = mx.zeros(
+                    (1, max_len - length, h0.shape[2]), dtype=h0.dtype
+                )
+                h0 = mx.concatenate([h0, pad], axis=1)
+            padded.append(h0)
+
+        batched = mx.concatenate(padded, axis=0)   # (B, T_max, d)
+        return batched, lengths
+
+    @staticmethod
+    def split_kv_results(kv_list, actual_lengths):
+        """Split batched K/V results back to per-sequence.
+
+        After a batched forward pass produces (B, H, T_max, D) K/V,
+        split into per-sequence results trimmed to actual lengths.
+
+        Args:
+            kv_list: List of (keys, values) per layer.
+                Each keys/values is (B, n_kv_heads, T_max, head_dim).
+            actual_lengths: List[int] — actual length per sequence.
+
+        Returns:
+            List[List[Tuple]] — results[seq_idx] = [(k, v), ...] per layer.
+        """
+        results = []
+        for i, length in enumerate(actual_lengths):
+            per_seq = []
+            for k, v in kv_list:
+                per_seq.append((
+                    k[i:i+1, :, :length, :],
+                    v[i:i+1, :, :length, :],
+                ))
+            results.append(per_seq)
+        return results
 
 
 def reconstruct_targeted(inner_model, h0_store, max_end,
                          importance_scores=None,
-                         min_coverage=0.95, chunk_size=512, eval_every=4):
+                         min_coverage=0.95, chunk_size=512, eval_every=8):
     """Importance-guided depth-reduced reconstruction.
 
     Uses probe attention scores to find the minimal prefix [0:actual_end]
@@ -794,7 +1077,7 @@ def reconstruct_targeted(inner_model, h0_store, max_end,
 
 def _run_reconstruction(inner_model, caches, h0_store, n_evicted, kv_direct_indices,
                         chunk_size=RECON_CHUNK_SIZE, importance_scores=None,
-                        eval_every=4):
+                        eval_every=8):
     """Run reconstruction forward pass to produce evicted K/V.
 
     Creates FRESH temp KVCaches each call, feeds h^(0)[0:n_evicted] through
