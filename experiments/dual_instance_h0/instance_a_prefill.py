@@ -165,22 +165,30 @@ def run_instance_a(
             _json.dumps(tokens.tolist()).encode()
         ).hexdigest()[:16]
         cache_path = os.path.join(h0_cache_dir, f"h0_{prompt_hash}")
+        # H0Store.save() uses np.array() which doesn't support bf16.
+        # Convert to float32 for saving; load() will .astype(bf16) back.
+        h0_f32 = h0.astype(mx.float32) if h0.dtype == mx.bfloat16 else h0
         h0_store_for_save = H0Store()
-        h0_store_for_save.append(h0)
+        h0_store_for_save.append(h0_f32)
         h0_store_for_save.save(cache_path, metadata={
             "prompt_hash": prompt_hash,
             "n_tokens": int(n_tokens),
             "d_hidden": int(d_hidden),
             "model_path": model_path,
+            "original_dtype": "bf16",
         })
         print(f"[A] Cached h^(0) to {cache_path}.npz (hash={prompt_hash})", file=sys.stderr)
 
-    # 6. Wait for B to read
-    print("[A] Waiting for Instance B to read...", file=sys.stderr)
-    if transport.wait_for_read(timeout_s=300.0):
+    # 6. Wait for B to read (shorter timeout if cache is enabled — B may skip SHM)
+    wait_timeout = 30.0 if h0_cache_dir else 300.0
+    print(f"[A] Waiting for Instance B to read (timeout={wait_timeout:.0f}s)...", file=sys.stderr)
+    if transport.wait_for_read(timeout_s=wait_timeout):
         print("[A] Instance B confirmed read.", file=sys.stderr)
     else:
-        print("[A] WARNING: Timeout waiting for Instance B", file=sys.stderr)
+        if h0_cache_dir:
+            print("[A] Instance B likely used cache, skipping SHM wait.", file=sys.stderr)
+        else:
+            print("[A] WARNING: Timeout waiting for Instance B", file=sys.stderr)
 
     # Cleanup
     transport.close()
