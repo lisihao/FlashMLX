@@ -7,10 +7,11 @@ Provides:
 """
 
 from .protocol import FlashMLXProvider
-from .thunderomlx import setup_flashmlx, flashmlx_settings_schema
+from .thunderomlx import setup_flashmlx, flashmlx_settings_schema, ThunderOMLXAdapter
 
 __all__ = [
     "FlashMLXProvider",
+    "ThunderOMLXAdapter",
     "setup_flashmlx",
     "flashmlx_settings_schema",
 ]

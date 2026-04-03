@@ -14,7 +14,7 @@ Usage in ThunderOMLX:
 
 from __future__ import annotations
 
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 import mlx.nn as nn
 
@@ -99,5 +99,53 @@ class FlashMLXProvider(Protocol):
 
         Returns:
             Path to the generated calibration .pkl file.
+        """
+        ...
+
+    # ------------------------------------------------------------------
+    # Cache bridge (Tier 1: compressed SSD storage)
+    # ------------------------------------------------------------------
+
+    def export_compressed_cache_state(self, cache_list: list) -> Optional[Dict]:
+        """Export compressed cache state for SSD storage.
+
+        Returns per-layer compressed flat buffer state (int8/uint8 + scales)
+        without dequantizing. ThunderOMLX stores these directly to SSD.
+
+        Args:
+            cache_list: List of cache objects from create_cache().
+
+        Returns:
+            Dict with 'layers' list and 'h0_store' metadata, or None.
+        """
+        ...
+
+    def import_compressed_cache_state(
+        self, cache_list: list, state: Dict
+    ) -> bool:
+        """Import compressed cache state from SSD storage.
+
+        Restores flat buffer state without re-quantization round-trip.
+
+        Args:
+            cache_list: Target cache objects.
+            state: Dict from export_compressed_cache_state().
+
+        Returns:
+            True if import succeeded.
+        """
+        ...
+
+    def export_h0_blocks(
+        self, cache_list: list, block_size: int = 64
+    ) -> Optional[Dict]:
+        """Export H0Store as block-aligned chunks for paged SSD.
+
+        Args:
+            cache_list: List of cache objects (must contain H0Store).
+            block_size: Tokens per block (match ThunderOMLX block_size).
+
+        Returns:
+            Dict with 'blocks' list and metadata, or None if no H0Store.
         """
         ...

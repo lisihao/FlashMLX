@@ -74,20 +74,196 @@
 > 这不是“省内存但变慢”，而是 **更省内存，还更快**。根因不是魔法，而是更好的 cache locality 和对 GPU↔CPU sync 的消灭。
 
 ---
-## 当前系统组成
+## 系统架构总览
 
-### Active Stack
-- **Chunked Interleaved Scheduling**
-- **Expert Offloading + Compact Pool**
-- **Attention Matching / Scored Eviction**
-- **Flat Buffer Quantization (bf16 / q8_0 / q4_0 / TurboQuant)**
-- **Budget Gating / Runtime Monitoring / Layer Scheduling**
+FlashMLX 实现 5 条优化路线，不是互相替代，而是**层层组合**：
 
-### Engineering Attitude
-- 保留 benchmark
-- 保留墓碑（dead approaches）
-- 明确降级策略
-- 不把实验结果包装成神话
+| Route | 名称 | 优化目标 | 核心技术 |
+|:-----:|------|---------|---------|
+| **0** | Density Router | 压缩控制面 | 离散压缩级别 + Model Card 模式切换 |
+| **1** | Expert Offloading | 参数内存 | 三级 GPU/CPU/SSD 专家池 |
+| **3** | Scored P2 + Flat Buffer | KV cache 内存 | AM 打分 + 可插拔量化 |
+| **4** | Chunked Prefill | PP 峰值内存 | 流式淘汰 + 交错调度 |
+| **5** | Context Recall (KV-Direct) | 压缩后召回 | h^(0) 存档 + 按需重建 |
+
+```
+Route 0 (控制面 — 选择压缩策略)
+    ├─ Route 3 (KV 压缩基座)
+    │   ├─ Route 4 (PP 阶段分块 prefill + 流式淘汰)
+    │   └─ Route 5 (h^(0) 备份，召回时重建)
+    └─ Route 1 (Expert Offloading，正交独立)
+```
+
+### 代码仓库结构
+
+**FlashMLX SDK** (`/src/flashmlx/`)
+
+| 文件 | 行数 | 职责 |
+|------|:---:|------|
+| `config.py` | 362 | `CacheConfig`, `FlashMLXConfig`, `DensityLevel`, `snap_to_nearest()` |
+| `model_cards.py` | 267 | `ModelCard`, `ModeConfig` — 每模型 JSON 配置，单一数据源 |
+| `reconstruction.py` | 525 | `ReconstructionController` — h^(0) → K/V 重建编程接口 |
+| `capabilities.py` | ~80 | `detect_capabilities()`, `recommend_config()` |
+| `integration/thunderomlx.py` | 159 | `setup_flashmlx()` 入口 + ThunderOMLX 适配器 |
+
+**mlx-lm 核心引擎** (`/mlx-lm-source/mlx_lm/models/`)
+
+| 文件 | 行数 | 职责 |
+|------|:---:|------|
+| **`cache_factory.py`** | 497 | 智能工厂：按策略自动创建 cache、检测混合架构 |
+| **`triple_layer_cache.py`** | 2034 | **Route 3 核心**：Recent/Warm/Cold 三层 + Flat Buffer + Scored 模式 |
+| **`kv_direct_cache.py`** | 863 | **Route 5 核心**：`H0Store`, `reconstruct_prefix_kv()`, monkey-patch |
+| `quantization_strategies.py` | 1088 | Q4\_0, PolarQuant, TurboQuant 量化后端 |
+| `expert_offload.py` | 3084 | **Route 1 核心**：三级专家管理 (GPU→CPU→SSD) |
+
+---
+
+## 端到端数据流
+
+```
+User Prompt (text)
+    │
+    ▼
+tokenizer.encode() → token_ids
+    │
+    ▼
+╔══════════════════════════════════════════════════════════════════╗
+║  PREFILL (多 token 输入)                                        ║
+║                                                                  ║
+║  embed_tokens(token_ids) → h^(0)  ← [Route 5: 零成本存入 H0Store]║
+║      │                                                           ║
+║      ▼                                                           ║
+║  Layer 0..N-1 forward (with TripleLayerKVCache)                  ║
+║      │                                                           ║
+║      ├─ 每层: Q, K, V = proj(h)                                  ║
+║      ├─ Cache: K, V → TripleLayerKVCache.update_and_fetch()      ║
+║      │   ├─ Recent (L0, bf16, 512 tokens)                       ║
+║      │   ├─ 溢出 → Warm (L1, Q4_0)  ← [Route 4: 流式淘汰]       ║
+║      │   └─ 溢出 → Cold (L2, AM 打分压缩)  ← [Route 3]          ║
+║      │                                                           ║
+║      └─ Attention(Q, K_all, V_all) → h_next                     ║
+║                                                                  ║
+║  [Route 4: chunk=512, 每块之间淘汰冷 token]                      ║
+╚══════════════════════════════════════════════════════════════════╝
+    │
+    ▼
+╔══════════════════════════════════════════════════════════════════╗
+║  PP→TG 过渡 (首个 TG token)                                     ║
+║                                                                  ║
+║  Scored Fast Promotion (scored_mode):                            ║
+║      AM 在 bf16 上打分 → 只保留热 token                           ║
+║      分配 Flat Buffer (Q8_0/Q4_0/bf16)                           ║
+║      热 token → flat buffer (量化写入)                            ║
+║      释放 L0/L1/L2 暂存缓存                                      ║
+║                                                                  ║
+║  [可选 Route 5: auto_reconstruct → 注入 h^(0) 重建的 K/V]        ║
+╚══════════════════════════════════════════════════════════════════╝
+    │
+    ▼
+╔══════════════════════════════════════════════════════════════════╗
+║  TOKEN GENERATION (每步)                                         ║
+║                                                                  ║
+║  Flat Fast Path:                                                 ║
+║      写入新 K,V → flat[offset]       ← O(1) slice assignment    ║
+║      读取 flat[0:offset+1]           ← 按需反量化               ║
+║      Attention(Q_new, K_flat, V_flat) → logits → 采样           ║
+║      offset++                                                    ║
+╚══════════════════════════════════════════════════════════════════╝
+    │
+    ▼ (按需触发，冷路径)
+╔══════════════════════════════════════════════════════════════════╗
+║  RECONSTRUCTION (由 ReconstructionController 触发)               ║
+║                                                                  ║
+║  h0_store.get_range(0, N) → h^(0)                               ║
+║      │                                                           ║
+║      ▼ 分块重放 (64 tok/chunk, ~30ms/chunk)                      ║
+║  for chunk in [0:64, 64:128, ...]:                               ║
+║      for layer in model.layers:                                  ║
+║          h = layer(h_chunk, mask, temp_cache)                    ║
+║      mx.eval(h)  ← 每块间让出 GPU                                ║
+║      │                                                           ║
+║      ▼                                                           ║
+║  精确 K/V → inject_reconstruction() (dedup 去重)                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+### 函数调用链
+
+```
+generate_step()                          # mlx_lm/generate.py
+  └─ model(tokens, cache=cache_list)     # Model.__call__
+      └─ embed_tokens(tokens) → h        # (Route 5: h0_store.append)
+      └─ for layer in self.layers:
+          └─ layer(h, mask, cache=cache[i])
+              └─ self_attn(h, mask, cache)
+                  └─ cache.update_and_fetch(keys, values)
+                      ├─ [prefill] _update_slow_path()
+                      │   ├─ append to Recent (L0)
+                      │   ├─ _manage_aging() → Warm (L1, Q4)
+                      │   └─ _manage_aging() → Cold (L2, AM)
+                      │
+                      └─ [decode] _update_flat_path()
+                          ├─ _write_flat(k, v)   ← 量化写入
+                          └─ _fetch_flat()        ← 反量化读取
+```
+
+---
+
+## Route 3: Scored P2 + Flat Buffer — KV Cache 压缩引擎
+
+> **核心命题：不是"压得更狠"，而是"在 PP 和 TG 两个阶段用完全不同的数据结构。"**
+
+### TripleLayerKVCache 架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ TripleLayerKVCache (每个 Attention 层一个实例)                 │
+│                                                              │
+│  PP 阶段: 三层缓存                                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  │
+│  │ Recent (L0)  │→ │  Warm (L1)   │→ │    Cold (L2)      │  │
+│  │ bf16, 精确   │  │ Q4_0 压缩    │  │ AM 打分压缩        │  │
+│  │ 512 tokens   │  │ 2048 tokens  │  │ 可变长度           │  │
+│  └──────────────┘  └──────────────┘  └───────────────────┘  │
+│                                                              │
+│  TG 阶段: Flat Buffer (替换上面三层)                          │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │ Flat Buffer                                          │    │
+│  │ Q8_0 / Q4_0 / TurboQuant / bf16                     │    │
+│  │ 预分配, O(1) 写入, 读时反量化                          │    │
+│  └──────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**PP→TG 过渡** 是整个系统最关键的一步：在 bf16 精确数据上做一次性 AM 打分，把热 token 压入预分配的量化 flat buffer，释放三层暂存。从此 TG 走 O(1) slice assignment，和标准 KVCache 一样快。
+
+### Flat Buffer 量化选项
+
+| `flat_quant` | 存储方式 | 反量化成本 | 压缩率 | 推荐 |
+|-------------|---------|:---:|:---:|:---:|
+| `None` (bf16) | 原始浮点 | 0 | 0% | 最快速度 |
+| **`q8_0`** | **int8 + per-token scales** | **低** | **~50%** | **默认推荐** |
+| `q4_0` | uint8 nibble-packed + per-group scales | 中等 | ~75% | 极限内存 |
+| `turboquant` | PolarQuant packed | 中等 | ~75% | 实验性 |
+
+### AM 打分流程 (Attention Matching)
+
+在 PP→TG 过渡时 (scored\_mode=True)：
+
+1. 用最后一个 query 计算注意力权重: `W = softmax(Q @ K^T / sqrt(d))`
+2. 按聚合注意力权重给每个 token 打分
+3. 保留 top-K 热 token（基于 compression\_ratio）
+4. 应用 pinned 保护（前 N 个 token 永不淘汰）
+5. 热 token 量化后写入 flat buffer
+
+### 量化后端类层次
+
+```
+QuantizationStrategy (ABC)
+├── Q4_0Quantizer       # 对称 4-bit, group_size=32, nibble-packed
+├── PolarQuantizer      # 2-4 bit, 随机旋转 + Lloyd-Max (数据无关)
+└── TurboQuantizer      # PolarQuant + 阻尼 QJL 残差校正
+```
 
 ---
 
@@ -292,43 +468,25 @@ _am_compress_prefix:      [pinned | scorable | recent]  — pinned 跳过压缩
 
 ---
 
-### 架构总图
+### Route 5 数据流
 
 ```
-Text Input
-   │
-   ▼
-┌──────────────────────────────────────────────────┐
-│  embed_tokens(x) → h^(0)                        │
-│     │                                            │
-│     ├─── h0_store.append(h^(0))  ← 存档 (零成本) │
-│     │                                            │
-│     ▼                                            │
-│  Forward through 36 layers                       │
-│     │                                            │
-│     ├─── scored_pq: AM scoring → flat buffer Q8  │
-│     │    (正常压缩，正常淘汰)                      │
-│     │                                            │
-│     └─── TG decode (热路径，不受影响)              │
-└──────────────────────────────────────────────────┘
-                    │
-                    │ (需要时，冷路径)
-                    ▼
-┌──────────────────────────────────────────────────┐
-│  Context Recall (按需触发)                        │
-│                                                  │
-│  h0_store.get_range(0, N)                        │
-│     │                                            │
-│     ▼ 分块重建 (64 token/chunk, ~30ms/chunk)      │
-│  for chunk in [0:64, 64:128, ...]:               │
-│     h = h0_store[chunk]                          │
-│     for layer in model.layers:                   │
-│         h = layer(h, mask, temp_cache)           │
-│     mx.eval(h)  # 让出 GPU                       │
-│     │                                            │
-│     ▼                                            │
-│  精确 K/V → inject into scored cache (with dedup) │
-└──────────────────────────────────────────────────┘
+热路径 (零成本采集):                    冷路径 (按需触发):
+
+embed_tokens(x) → h^(0)              ReconstructionController.reconstruct()
+     │                                    │
+     ├─ h0_store.append(h^(0))            ├─ h0_store.get_range(0, N)
+     │  (只是内存拷贝，无额外计算)           │
+     ▼                                    ▼
+Forward 36 layers                     分块重放 (64 tok/chunk, ~30ms)
+     │                                for chunk in [0:64, 64:128, ...]:
+     ├─ scored_pq: 压缩、淘汰              for layer in model.layers:
+     └─ TG decode: flat buffer 热路径         h = layer(h_chunk, mask, temp_cache)
+                                          mx.eval(h)  # 让出 GPU
+                                              │
+                                              ▼
+                                     inject_reconstruction() + dedup
+                                     → 精确 K/V 注入 cache
 ```
 
 ---
@@ -360,7 +518,219 @@ Text Input
 
 ---
 
+## Route 0: Product Modes — 一行代码切换压缩策略
+
+> **核心命题：压缩不应该是一个开关，而是一组场景预设。**
+
+Route 0 把 scored\_pq（Route 3）和 KV-Direct（Route 5）封装成三个**产品模式**，通过 Model Card 一行代码切换：
+
+```python
+from flashmlx import load_card_or_detect, make_prompt_cache
+
+card = load_card_or_detect(model, model_path)
+
+# 一行切换模式
+cache = make_prompt_cache(model, **card.to_cache_kwargs(mode="balanced"))      # 日常
+cache = make_prompt_cache(model, **card.to_cache_kwargs(mode="ultra_long"))    # 超长上下文
+cache = make_prompt_cache(model, **card.to_cache_kwargs(mode="recall_first")) # 细节召回
+```
+
+### 三种模式
+
+| 模式 | 压缩力度 | 策略 | h^(0) 备份 | 最佳场景 |
+|------|:---:|:---|:---:|:---|
+| `balanced` | 2-3x | scored\_pq | 无 | **日常使用**，最快 TG，最低延迟 |
+| `ultra_long` | 5-10x | scored\_pq | 无 | **32K+ 超长上下文**，最低内存 |
+| `recall_first` | 10x+ | scored\_kv\_direct | 有 + 按需重建 | **细节召回**，压得最狠但丢了能找回来 |
+
+### 8K Context 吞吐矩阵 (Qwen3-8B / M4 Max 64GB)
+
+| Mode | PP tok/s | TG tok/s | TG Memory | vs Standard |
+|------|:---:|:---:|:---:|:---:|
+| standard (baseline) | 395 | 23.9 | 1,193 MB | — |
+| **balanced** (scored\_pq) | **417** (+6%) | **24.6** (+3%) | **242 MB** | **-80% mem** |
+| **ultra\_long** (10x) | **409** (+4%) | **26.0** (+9%) | **152 MB** | **-87% mem** |
+| **recall\_first** (10x+h0) | 338 (-14%) | 26.1 (+9%) | 217 MB | -82% mem |
+
+### Recall Quality Scorecard (8K, 3 needles × 2 keywords each)
+
+| Mode | early | mid | late | Total |
+|------|:---:|:---:|:---:|:---:|
+| standard | PASS | PASS | PASS | **6/6** |
+| balanced (scored\_pq 3x) | PASS | PASS | PASS | **6/6** |
+| ultra\_long (10x) | PASS | 0/2 | PASS | 4/6 |
+| recall\_first (10x, no recon) | PASS | 0/2 | PASS | 4/6 |
+| **recall\_first + RECON** | **PASS** | **PASS** | **PASS** | **6/6** |
+| **recall\_first + TARGETED** | **PASS** | **PASS** | **PASS** | **6/6** |
+
+> **关键发现**：10x 压缩会丢掉中间位置的细节（4/6）。触发 h^(0) 重建后，完整恢复到 6/6。这验证了"前端敢压、后端能救"的设计论点。
+
+---
+
+## ReconstructionController — 重建编程接口
+
+> **核心命题：重建不应该是个哑开关。它应该由上层调度器按需触发。**
+
+`auto_reconstruct=True` 是一个简单开关：prefill 结束后无条件全量重建。但真实场景中，重建应该是**按需的、可控的、有预算的**：
+
+- 检测到乱码/质量下降 → 触发重建
+- 上下文压缩后需要回补数据 → 按需部分重建
+- 内存充裕时 → 后台批量重建
+
+`ReconstructionController` 是面向 ThunderOMLX 等上层调度器的编程接口：
+
+```python
+from flashmlx import ReconstructionController
+
+# 1. 从 cache 自动发现（零配置）
+cache_list = make_prompt_cache(model, **cache_kwargs)
+recon = ReconstructionController.from_cache(cache_list, model)
+
+# 2. 查询能力和成本
+if recon.available:
+    stats = recon.stats       # h0_tokens, h0_bytes, probe_available, ...
+    cost = recon.estimate_cost(n_tokens=4096)  # time_ms_est, memory_mb_est
+
+# 3. 按需重建（三种策略）
+result = recon.reconstruct()                                    # 全量重建
+result = recon.reconstruct(strategy="partial", max_tokens=4096) # 前 4096 tokens
+result = recon.reconstruct(strategy="targeted", coverage=0.95)  # 探针导向
+
+# 4. 检查结果
+if result.success:
+    print(f"重建 {result.tokens_reconstructed} tokens, "
+          f"{result.layers_injected} layers, {result.time_ms:.0f}ms")
+
+# 5. 释放内存
+recon.clear()
+```
+
+### 设计要点
+
+| 设计 | 为什么 |
+|------|--------|
+| **Null Object 模式** | `from_cache()` 找不到 h^(0) 时返回 `NullReconstructionController`，所有操作安全空操作，调用方永不判空 |
+| **非阻塞锁** | 重建进行中再次调用立即返回 `success=False`，不阻塞调度器 |
+| **Frozen 结果** | `ReconStats`、`ReconResult` 都是冻结数据类，线程安全，可跨线程传递 |
+| **不改 make\_prompt\_cache** | 通过 `from_cache()` 工厂方法发现 controller，零 API 破坏 |
+
+> 详细架构文档见 `docs/ARCHITECTURE.md`
+
+---
+
+## Cache 工厂：策略选择
+
+`make_optimized_cache()` 根据 strategy 参数自动创建对应的 cache 组合：
+
+| 策略 | Warm 层 | Cold 层 | Flat Buffer | 内存节省 | 定位 |
+|------|--------|--------|:---:|:---:|------|
+| `standard` | 无 | 无 | bf16 | 0% | 基线 |
+| `triple` | Q4\_0 | Q4\_0 | 无 | ~48% | 质量优先 |
+| `triple_am` | Q4\_0 | AM 压缩 | 无 | ~50% | 平衡 |
+| `triple_pq` | PolarQuant | Q4\_0 | 无 | ~72% | 无校准压缩 |
+| **`scored_pq`** | **(跳过)** | **AM 打分** | **Q8\_0** | **~81%** | **生产推荐** |
+| `scored_kv_direct` | (跳过) | AM 打分 | Q8\_0 | ~81% + h^(0) | Route 5: 极限压缩 + 重建 |
+
+### Model Cards：每模型配置的单一数据源
+
+```json
+{
+  "model_id": "qwen3-8b-mlx-4bit",
+  "architecture": { "num_layers": 36, "head_dim": 128, "num_kv_heads": 8 },
+  "optimal": { "strategy": "scored_pq", "flat_quant": "q8_0" },
+  "modes": {
+    "balanced":     { "density_scale": 0.0, "strategy": "scored_pq" },
+    "ultra_long":   { "density_scale": 1.5 },
+    "recall_first": { "density_scale": 2.5, "strategy": "scored_kv_direct", "probe_layers": 3 }
+  }
+}
+```
+
+一行加载：`cache = make_prompt_cache(model, **card.to_cache_kwargs(mode="balanced"))`
+
+---
+
+## 集成架构
+
+```
+┌──────────────────────────────────────────────────────┐
+│ ThunderOMLX (调度器 / 编排器)                          │
+│                                                       │
+│  batched.py:   _apply_flashmlx() → FlashMLXConfig    │
+│  scheduler.py: _make_flashmlx_cache() → cache_list   │
+│  scheduler.py: _recover_from_cache_error()            │
+│                                                       │
+│  NEW: ReconstructionController.from_cache(cache, model)│
+│       → recon.reconstruct(strategy="targeted")        │
+└───────────────────────┬──────────────────────────────┘
+                        │ imports
+                        ▼
+┌──────────────────────────────────────────────────────┐
+│ FlashMLX SDK (/src/flashmlx/)                         │
+│                                                       │
+│  config.py        → CacheConfig, FlashMLXConfig      │
+│  model_cards.py   → load_card(), to_cache_kwargs()   │
+│  reconstruction.py → ReconstructionController        │
+│  capabilities.py  → recommend_config()                │
+└───────────────────────┬──────────────────────────────┘
+                        │ imports
+                        ▼
+┌──────────────────────────────────────────────────────┐
+│ mlx-lm-source (/mlx_lm/models/)                      │
+│                                                       │
+│  cache_factory.py      → make_optimized_cache()      │
+│  triple_layer_cache.py → TripleLayerKVCache          │
+│  kv_direct_cache.py    → H0Store, reconstruct_*     │
+│  quantization_strategies.py → Q4/Q8/Polar/Turbo     │
+│  expert_offload.py     → ExpertOffloadManager        │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+## 关键架构决策
+
+| 决策 | 选择 | 为什么 | 被否决的方案 |
+|------|------|--------|-------------|
+| TG 过渡时 flat buffer | 一次性晋升 | 避免 PP 双缓冲；TG O(1) 写入 | Pipeline L0→L1→L2 (PP 内存 2x) |
+| Q8\_0 作为默认 flat 量化 | 速度/内存平衡 | Q4 nibble-unpack 开销 > 省下的带宽 | Q4\_0 (TG -45%) |
+| Scored 模式在 bf16 上打分 | 打分质量 | 对量化后数据打分 = 噪声打分 | AM on Q4 (精度损失) |
+| Monkey-patch 采集 h^(0) | 零模型改动 | 适配任意模型架构 | 修改模型代码 (维护地狱) |
+| 只做前缀重建 | 因果正确性 | RoPE + 因果 mask 要求 start=0 | 稀疏 [50:100] (位置错乱) |
+| 非阻塞重建锁 | 调度器自由度 | 20s 重建不阻塞其他 Agent | 阻塞锁 (stall 调度器) |
+| NullController 空对象 | API 简洁 | ThunderOMLX 永不判空 | Optional 返回 (到处判空) |
+
+---
+
 ## 快速开始
+
+### KV Cache 压缩（Route 0/3/5）
+
+```python
+import mlx.core as mx
+from mlx_lm import load
+from flashmlx import load_card_or_detect, make_prompt_cache
+from mlx_lm.generate import generate_step
+
+model, tokenizer = load("your-model-path")
+card = load_card_or_detect(model, "your-model-path")
+
+# 一行加载优化配置
+cache = make_prompt_cache(model, **card.to_cache_kwargs(mode="balanced"))
+
+# 正常 generate（cache 内部自动压缩）
+prompt = mx.array(tokenizer.encode("Your prompt here"))
+for token, _ in generate_step(prompt, model, prompt_cache=cache):
+    print(tokenizer.decode([token]), end="", flush=True)
+
+# 需要召回细节时，触发重建
+from flashmlx import ReconstructionController
+recon = ReconstructionController.from_cache(cache, model)
+if recon.available:
+    result = recon.reconstruct(strategy="targeted", coverage=0.95)
+```
+
+### Expert Offloading（Route 1，MoE 模型）
 
 ```python
 from mlx_lm import load
@@ -726,7 +1096,15 @@ FlashMLX 把这件事做成了真实系统实验，结论相反：**太大的 ch
 
 ---
 
+## 文档
 
+| 文档 | 内容 |
+|------|------|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 完整系统架构、数据流、文件结构、所有 Route 详解 |
+| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | API 参考 |
+| [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | 使用指南 |
+| `model_cards/*.json` | 每模型的优化配置（单一数据源） |
+| `benchmarks/` | 性能基准测试套件 |
 
 ---
 

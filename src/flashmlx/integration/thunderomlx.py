@@ -15,7 +15,7 @@ Usage in ThunderOMLX engine_core.py:
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 import mlx.nn as nn
 
@@ -156,3 +156,94 @@ class ThunderOMLXAdapter:
         from mlx_lm.models.am_calibrator import auto_calibrate
         path = auto_calibrate(model, tokenizer, compression_ratio=compression_ratio)
         return str(path) if path else None
+
+    # ------------------------------------------------------------------
+    # Cache bridge (Tier 1-2)
+    # ------------------------------------------------------------------
+
+    def export_compressed_cache_state(self, cache_list: list) -> Optional[Dict]:
+        """Export all layers' compressed flat state + H0Store metadata."""
+        try:
+            from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+        except ImportError:
+            return None
+
+        result = {'layers': [], 'h0_store': None, 'format': 'flashmlx_compressed_v1'}
+        h0_store = None
+
+        for i, cache in enumerate(cache_list):
+            if isinstance(cache, TripleLayerKVCache):
+                flat_state = cache.export_flat_state()
+                result['layers'].append({
+                    'layer_idx': i,
+                    'type': 'TripleLayerKVCache',
+                    'flat_state': flat_state,
+                    'meta_state': cache.meta_state,
+                })
+                if h0_store is None:
+                    h0_store = getattr(cache, '_h0_store', None)
+            else:
+                result['layers'].append({
+                    'layer_idx': i,
+                    'type': type(cache).__name__,
+                    'state': cache.state if hasattr(cache, 'state') else None,
+                    'meta_state': getattr(cache, 'meta_state', None),
+                })
+
+        if h0_store is not None and h0_store.count > 0:
+            result['h0_store'] = {
+                'count': h0_store.count,
+                'quant': h0_store._quant or 'bf16',
+                'nbytes': h0_store.nbytes,
+            }
+
+        return result
+
+    def import_compressed_cache_state(
+        self, cache_list: list, state: Dict
+    ) -> bool:
+        """Import compressed cache state into target cache objects."""
+        try:
+            from mlx_lm.models.triple_layer_cache import TripleLayerKVCache
+        except ImportError:
+            return False
+
+        if state.get('format') != 'flashmlx_compressed_v1':
+            return False
+
+        for layer_info in state.get('layers', []):
+            idx = layer_info['layer_idx']
+            if idx >= len(cache_list):
+                continue
+
+            cache = cache_list[idx]
+            if isinstance(cache, TripleLayerKVCache) and layer_info.get('flat_state'):
+                cache.import_flat_state(layer_info['flat_state'])
+                if layer_info.get('meta_state'):
+                    cache.meta_state = layer_info['meta_state']
+            elif hasattr(cache, 'state') and layer_info.get('state'):
+                cache.state = layer_info['state']
+
+        return True
+
+    def export_h0_blocks(
+        self, cache_list: list, block_size: int = 64
+    ) -> Optional[Dict]:
+        """Export H0Store as block-aligned chunks for ThunderOMLX SSD."""
+        h0_store = None
+        for c in cache_list:
+            h0_store = getattr(c, '_h0_store', None)
+            if h0_store is not None and h0_store.count > 0:
+                break
+
+        if h0_store is None:
+            return None
+
+        blocks = h0_store.export_blocks(block_size=block_size)
+        return {
+            'blocks': blocks,
+            'total_tokens': h0_store.count,
+            'quant': h0_store._quant or 'bf16',
+            'nbytes_per_token': h0_store.nbytes / max(h0_store.count, 1),
+            'format': 'h0_blocks_v1',
+        }

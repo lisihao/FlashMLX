@@ -231,6 +231,59 @@ class RCEngine:
 
         return state
 
+    def register_from_h0_blocks(
+        self,
+        seq_id: str,
+        h0_blocks: list,
+        inner_model: Any,
+        target_cache_list: List[Any],
+        h0_quant: Optional[str] = None,
+        importance_scores: Optional[Any] = None,
+        min_coverage: float = 0.95,
+    ) -> RCSequenceState:
+        """Register a sequence for reconstruction from SSD-loaded H0 blocks.
+
+        This is the Tier 3 (3PIR Cold Cache Restoration) entry point:
+        ThunderOMLX loads H0 blocks from SSD on a cold prefix hit,
+        then calls this to begin non-blocking KV reconstruction.
+
+        Args:
+            seq_id: Unique identifier for this reconstruction.
+            h0_blocks: List of block dicts from H0Store.export_blocks().
+            inner_model: Inner model with .layers.
+            target_cache_list: Caches to inject K/V into when complete.
+            h0_quant: Override quantization mode ('q8'|'q4'|None for bf16).
+                If None, inferred from the first block's 'quant' field.
+            importance_scores: Optional importance scores for depth reduction.
+            min_coverage: Importance coverage threshold.
+
+        Returns:
+            RCSequenceState ready for process_chunk() calls.
+        """
+        from mlx_lm.models.kv_direct_cache import H0Store
+
+        if h0_quant is None and h0_blocks:
+            raw_quant = h0_blocks[0].get('quant', 'bf16')
+            h0_quant = None if raw_quant == 'bf16' else raw_quant
+
+        store = H0Store(quant=h0_quant)
+        n_tokens = store.import_blocks(h0_blocks)
+
+        logger.info(
+            f"[RCEngine] register_from_h0_blocks {seq_id}: "
+            f"{n_tokens} tokens from {len(h0_blocks)} blocks, "
+            f"quant={h0_quant or 'bf16'}"
+        )
+
+        return self.register_sequence(
+            seq_id=seq_id,
+            h0_store=store,
+            inner_model=inner_model,
+            target_cache_list=target_cache_list,
+            importance_scores=importance_scores,
+            min_coverage=min_coverage,
+        )
+
     def process_chunk(self, state: RCSequenceState) -> RCChunkResult:
         """Process one chunk of reconstruction for a sequence.
 

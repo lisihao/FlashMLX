@@ -167,6 +167,24 @@ class CacheConfig(BaseModel):
         description="Auto-trigger h^(0) reconstruction after prefill completes",
     )
 
+    # --- ThunderOMLX SSD Cache Bridge (Tiers 1-3) ---
+    enable_compressed_ssd: bool = Field(
+        default=True,
+        description="Tier 1: Store compressed flat buffer blocks to SSD (50-75% space savings)",
+    )
+    enable_h0_ssd: bool = Field(
+        default=True,
+        description="Tier 2: Store H0 blocks to SSD alongside KV blocks",
+    )
+    h0_ssd_quant: Optional[str] = Field(
+        default="q8",
+        description="Tier 2: H0 block quantization for SSD: None (bf16), 'q8', 'q4'",
+    )
+    enable_cold_restoration: bool = Field(
+        default=True,
+        description="Tier 3: Enable 3PIR cold cache restoration from H0-only SSD blocks",
+    )
+
     @field_validator("density_mode")
     @classmethod
     def validate_density_mode(cls, v: str) -> str:
@@ -194,7 +212,7 @@ class CacheConfig(BaseModel):
             raise ValueError(f"Unknown flat_quant: {v!r}. Use: None, 'q8_0', 'q4_0', 'turboquant'")
         return v
 
-    @field_validator("h0_quant")
+    @field_validator("h0_quant", "h0_ssd_quant")
     @classmethod
     def validate_h0_quant(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and v not in ("q8", "q4"):

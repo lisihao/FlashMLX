@@ -464,6 +464,62 @@ class ReconstructionController:
             logger.error(f"[ReconController] Failed: {e}")
             return result
 
+    def reconstruct_from_h0_blocks(
+        self,
+        h0_blocks: list,
+        h0_quant: Optional[str] = None,
+        strategy: str = "full",
+        coverage: float = 0.95,
+        chunk_size: int = 512,
+        eval_every: int = 8,
+    ) -> ReconResult:
+        """Reconstruct KV cache from SSD-loaded H0 blocks (blocking).
+
+        Tier 3 entry point for blocking cold-cache restoration.
+        For non-blocking 3PIR, use RCEngine.register_from_h0_blocks()
+        with the async step API instead.
+
+        Args:
+            h0_blocks: List of block dicts from H0Store.export_blocks().
+            h0_quant: Override quantization ('q8'|'q4'|None for bf16).
+                If None, inferred from blocks.
+            strategy: "full" or "targeted".
+            coverage: Importance coverage for targeted strategy.
+            chunk_size: Tokens per GPU batch.
+            eval_every: GPU sync every N chunks.
+
+        Returns:
+            ReconResult with reconstruction stats.
+        """
+        from mlx_lm.models.kv_direct_cache import H0Store
+
+        if h0_quant is None and h0_blocks:
+            raw_quant = h0_blocks[0].get('quant', 'bf16')
+            h0_quant = None if raw_quant == 'bf16' else raw_quant
+
+        store = H0Store(quant=h0_quant)
+        n_tokens = store.import_blocks(h0_blocks)
+
+        if n_tokens == 0:
+            return ReconResult(
+                success=False, strategy=strategy,
+                tokens_requested=0, tokens_reconstructed=0,
+                layers_injected=0, time_ms=0.0, memory_delta_mb=0.0,
+                h0_tokens_available=0,
+                error="No tokens in H0 blocks",
+            )
+
+        # Temporarily swap in the reconstructed H0Store
+        original_store = self._h0_store
+        self._h0_store = store
+        try:
+            return self.reconstruct(
+                strategy=strategy, coverage=coverage,
+                chunk_size=chunk_size, eval_every=eval_every,
+            )
+        finally:
+            self._h0_store = original_store
+
     def clear(self):
         """Clear all reconstructed K/V from caches. Frees memory."""
         for c in self._cache_list:
