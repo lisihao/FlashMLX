@@ -35,7 +35,9 @@ from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm.models.kv_direct_cache import (
     H0Store,
     _find_inner_model,
+    extract_kv_from_temp_caches,
     reconstruct_prefix_kv,
+    reconstruct_prefix_kv_stateful,
 )
 from mlx_lm.sample_utils import make_sampler
 
@@ -51,8 +53,17 @@ def run_instance_b(
     max_tg_tokens: int = 200,
     timeout_s: float = 120.0,
     recon_chunk_size: int = 512,
+    h0_cache_dir: str | None = None,
+    prompt_hash: str | None = None,
+    fan_out_reader: bool = False,
+    streaming: bool = False,
 ) -> dict:
     """Run Instance B: read h^(0) + reconstruct + decode.
+
+    Args:
+        h0_cache_dir: If set, check for cached h^(0) on disk before SHM.
+        prompt_hash: Cache key for h^(0) lookup (from orchestrator).
+        fan_out_reader: If True, read without ACK (for multi-reader fan-out).
 
     Returns:
         dict with status, answer, and metrics.
@@ -71,51 +82,105 @@ def run_instance_b(
     model(warm)
     mx.eval(model.parameters())
 
-    # 2. Read h^(0) from shared memory (retry connection if A hasn't created it yet)
-    print("[B] Connecting to shared memory...", file=sys.stderr)
+    # 2. Read h^(0) — try disk cache first, then fall back to SHM
+    h0 = None
+    t_read = 0.0
+    cache_hit = False
+
+    if h0_cache_dir and prompt_hash:
+        import os
+        cache_path = os.path.join(h0_cache_dir, f"h0_{prompt_hash}")
+        npz_path = cache_path if cache_path.endswith(".npz") else cache_path + ".npz"
+        if os.path.exists(npz_path):
+            print(f"[B] Cache HIT: loading h^(0) from {npz_path}", file=sys.stderr)
+            t_read_start = time.perf_counter()
+            loaded_store, meta = H0Store.load(cache_path)
+            h0 = loaded_store.get_range(0, loaded_store.count)
+            mx.eval(h0)
+            t_read = (time.perf_counter() - t_read_start) * 1000
+            cache_hit = True
+            print(f"[B] Loaded from cache in {t_read:.1f}ms ({loaded_store.count} tokens)", file=sys.stderr)
+        else:
+            print(f"[B] Cache MISS: {npz_path} not found", file=sys.stderr)
+
+    # Connect to SHM (needed for both normal and streaming modes if no cache hit)
     transport = None
-    for attempt in range(int(timeout_s)):
-        try:
-            transport = SharedH0Transport(create=False, shm_name=shm_name)
-            break
-        except FileNotFoundError:
-            if attempt % 10 == 0:
-                print(f"[B] Shared memory not yet available, retrying... ({attempt}s)", file=sys.stderr)
-            time.sleep(1.0)
-    if transport is None:
-        raise TimeoutError(f"Could not connect to shared memory '{shm_name}' after {timeout_s}s")
+    if h0 is None:
+        print("[B] Connecting to shared memory...", file=sys.stderr)
+        for attempt in range(int(timeout_s)):
+            try:
+                transport = SharedH0Transport(create=False, shm_name=shm_name)
+                break
+            except FileNotFoundError:
+                if attempt % 10 == 0:
+                    print(f"[B] Shared memory not yet available, retrying... ({attempt}s)", file=sys.stderr)
+                time.sleep(1.0)
+        if transport is None:
+            raise TimeoutError(f"Could not connect to shared memory '{shm_name}' after {timeout_s}s")
 
-    print("[B] Waiting for h^(0) from Instance A...", file=sys.stderr)
-    t_read_start = time.perf_counter()
-    h0 = transport.read_h0(timeout_s=timeout_s)
-    t_read = (time.perf_counter() - t_read_start) * 1000
-    transport.close()
-
-    n_prefix_tokens = h0.shape[1]
-    d_hidden = h0.shape[2]
-    print(f"[B] Received h^(0): shape={h0.shape}, dtype={h0.dtype} in {t_read:.1f}ms", file=sys.stderr)
-
-    # 3. Create H0Store and populate
-    h0_store = H0Store()
-    h0_store.append(h0)
-    assert h0_store.count == n_prefix_tokens
-
-    # 4. Reconstruct K/V from h^(0)
-    print(f"[B] Reconstructing K/V for {n_prefix_tokens} tokens...", file=sys.stderr)
     inner_model = _find_inner_model(model)
-    t_recon_start = time.perf_counter()
-    kv_pairs = reconstruct_prefix_kv(
-        inner_model, h0_store, 0, h0_store.count,
-        chunk_size=recon_chunk_size, eval_every=8,
-    )
-    # kv_pairs: List[Tuple[mx.array, mx.array]], per-layer (keys, values)
-    mx.eval(*[k for k, v in kv_pairs] + [v for k, v in kv_pairs])
-    t_recon = (time.perf_counter() - t_recon_start) * 1000
-    n_layers = len(kv_pairs)
-    print(f"[B] Reconstructed {n_layers} layers in {t_recon:.0f}ms "
-          f"({n_prefix_tokens / t_recon * 1000:.0f} tok/s)", file=sys.stderr)
 
-    # 5. Create standard cache and inject K/V
+    if streaming and transport is not None:
+        # ---- Streaming Path: read + reconstruct chunk by chunk ----
+        print("[B] Streaming mode: reading and reconstructing chunks...", file=sys.stderr)
+        from mlx_lm.models.cache import KVCache
+        num_layers = len(inner_model.layers)
+        temp_caches = [KVCache() for _ in range(num_layers)]
+
+        t_read_start = time.perf_counter()
+        n_prefix_tokens = 0
+        n_chunks = 0
+        for h0_chunk in transport.read_h0_streaming(timeout_s=timeout_s):
+            chunk_tokens = h0_chunk.shape[1]
+            reconstruct_prefix_kv_stateful(inner_model, h0_chunk, temp_caches)
+            mx.eval(temp_caches[-1].keys)
+            n_prefix_tokens += chunk_tokens
+            n_chunks += 1
+        t_read = (time.perf_counter() - t_read_start) * 1000
+        transport.close()
+
+        d_hidden = h0_chunk.shape[2]
+        t_recon = t_read  # read + recon are interleaved
+        n_layers = num_layers
+        print(f"[B] Streamed {n_chunks} chunks, {n_prefix_tokens} tokens in {t_read:.0f}ms", file=sys.stderr)
+
+        # Extract KV from temp_caches
+        kv_pairs = extract_kv_from_temp_caches(temp_caches)
+    else:
+        # ---- Normal Path: read all h^(0), then reconstruct ----
+        if h0 is None:
+            print("[B] Waiting for h^(0) from Instance A...", file=sys.stderr)
+            t_read_start = time.perf_counter()
+            if fan_out_reader:
+                h0 = transport.read_h0_no_ack(timeout_s=timeout_s)
+            else:
+                h0 = transport.read_h0(timeout_s=timeout_s)
+            t_read = (time.perf_counter() - t_read_start) * 1000
+            transport.close()
+
+        n_prefix_tokens = h0.shape[1]
+        d_hidden = h0.shape[2]
+        print(f"[B] Received h^(0): shape={h0.shape}, dtype={h0.dtype} in {t_read:.1f}ms", file=sys.stderr)
+
+        # Create H0Store and populate
+        h0_store = H0Store()
+        h0_store.append(h0)
+        assert h0_store.count == n_prefix_tokens
+
+        # Reconstruct K/V from h^(0)
+        print(f"[B] Reconstructing K/V for {n_prefix_tokens} tokens...", file=sys.stderr)
+        t_recon_start = time.perf_counter()
+        kv_pairs = reconstruct_prefix_kv(
+            inner_model, h0_store, 0, h0_store.count,
+            chunk_size=recon_chunk_size, eval_every=8,
+        )
+        mx.eval(*[k for k, v in kv_pairs] + [v for k, v in kv_pairs])
+        t_recon = (time.perf_counter() - t_recon_start) * 1000
+        n_layers = len(kv_pairs)
+        print(f"[B] Reconstructed {n_layers} layers in {t_recon:.0f}ms "
+              f"({n_prefix_tokens / t_recon * 1000:.0f} tok/s)", file=sys.stderr)
+
+    # Inject K/V into standard cache
     print("[B] Injecting K/V into cache...", file=sys.stderr)
     cache = make_prompt_cache(model)
     for layer_idx, (keys, values) in enumerate(kv_pairs):
@@ -159,6 +224,7 @@ def run_instance_b(
         "tg_ms": round(t_tg, 2),
         "tg_tok_per_s": round(tg_tok_per_s, 1),
         "load_ms": round(t_load, 2),
+        "cache_hit": cache_hit,
     }
 
     return result
@@ -172,6 +238,14 @@ def main():
     parser.add_argument("--max-tg-tokens", type=int, default=200)
     parser.add_argument("--timeout", type=float, default=120.0, help="Timeout waiting for h^(0)")
     parser.add_argument("--recon-chunk-size", type=int, default=512)
+    parser.add_argument("--h0-cache-dir", default=None,
+                        help="Directory to check for cached h^(0)")
+    parser.add_argument("--prompt-hash", default=None,
+                        help="Prompt hash for cache lookup (from orchestrator)")
+    parser.add_argument("--fan-out-reader", action="store_true",
+                        help="Read without ACK (for multi-reader fan-out)")
+    parser.add_argument("--streaming", action="store_true",
+                        help="Read h^(0) in streaming chunks (pipeline with A)")
     args = parser.parse_args()
 
     result = run_instance_b(
@@ -181,6 +255,10 @@ def main():
         max_tg_tokens=args.max_tg_tokens,
         timeout_s=args.timeout,
         recon_chunk_size=args.recon_chunk_size,
+        h0_cache_dir=args.h0_cache_dir,
+        prompt_hash=args.prompt_hash,
+        fan_out_reader=args.fan_out_reader,
+        streaming=args.streaming,
     )
 
     # Output JSON to stdout for orchestrator to parse

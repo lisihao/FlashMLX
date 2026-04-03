@@ -351,15 +351,106 @@ compute sparse (MoE) + state tiered (h^(0) → 可淘汰 KV)，这才是 1T MoE 
 
 ---
 
-## 9. 关键 API 依赖
+## 9. v2 优化 — 5 项增强
+
+基于 v1 实验发现，实现了以下优化：
+
+### 9.1 OPT-0: Embed-Only Instance A (`--embed-only`)
+
+Instance A 不再需要完整 prefill，只需 `embed_tokens()`:
+
+```bash
+python instance_a_prefill.py --model /path/to/model --prompt @file.txt --embed-only
+```
+
+- **原理**: `h^(0) = embed_tokens(tokens)` 已在 perf_analysis_v2 验证 bit-exact
+- **加速**: 600ms → <1ms (686×)
+- **内存**: 5.2 GB → 100 MB (仅 embed_tokens 权重)
+
+### 9.2 OPT-1: h^(0) 持久化缓存 (`--h0-cache-dir`)
+
+h^(0) 写入磁盘，重复 prompt 直接从缓存加载：
+
+```bash
+# A 写缓存
+python instance_a_prefill.py --embed-only --h0-cache-dir /tmp/h0cache ...
+# B 读缓存 (跳过 SHM)
+python instance_b_decode.py --h0-cache-dir /tmp/h0cache --prompt-hash abc123 ...
+```
+
+- **API**: 复用 `H0Store.save()` / `H0Store.load()`
+- **缓存 key**: SHA-256(token_ids)[:16]
+- **磁盘占用**: 8 KB/token (bf16), 1TB SSD ≈ 6 万个 4K 上下文
+
+### 9.3 OPT-2: 增量 h^(0) (`--append`)
+
+多轮对话只传输新 tokens 的 h^(0)：
+
+```bash
+# Turn 1
+python instance_a_prefill.py --prompt "Turn 1 text" ...
+# Turn 2 (追加)
+python instance_a_prefill.py --prompt "Turn 2 text" --append ...
+```
+
+- **传输**: `write_h0_append()` 在已有数据后追加
+- **读取**: `read_h0_delta(n_existing)` 只读增量
+- **CRC**: 增量计算 `zlib.crc32(new, existing_crc)`
+
+### 9.4 OPT-3: 一对多扇出 (`--fan-out N`)
+
+同一文档服务多个 B 实例（不同问题）：
+
+```bash
+# 编排器启动 1 A + 3 B
+python run_experiment.py --model ... --fan-out 3
+```
+
+- **磁盘扇出**: 通过 OPT-1 缓存，多 B 读同一 .npz 文件
+- **SHM 扇出**: `read_h0_no_ack()` 读取不设 STATE_READ
+- **一致性**: greedy sampling 下所有 B 输出 EXACT MATCH
+
+### 9.5 OPT-4: 流水线化 (`--streaming`)
+
+A 分 chunk 写 h^(0)，B 边读边重建：
+
+```bash
+python instance_a_prefill.py --streaming --chunk-size 512 ...
+python instance_b_decode.py --streaming ...
+```
+
+- **协议**: header 扩展 `n_total_chunks`, `n_chunks_ready`, `chunk_size_tokens`
+- **B 端**: 逐 chunk 调 `reconstruct_prefix_kv_stateful()` (3PIR 原语)
+- **意义**: 对网络场景 (非 UMA) 可隐藏传输延迟
+
+### CLI 参数总览
+
+| 参数 | 适用 | 默认 | 说明 |
+|------|------|------|------|
+| `--embed-only` | A, 编排器 | False | 仅用 embed_tokens |
+| `--h0-cache-dir` | A, B, 编排器 | None | h^(0) 磁盘缓存 |
+| `--prompt-hash` | B | None | 缓存查找 key |
+| `--append` | A, B | False | 增量追加模式 |
+| `--fan-out N` | 编排器 | 1 | B 实例数 |
+| `--fan-out-reader` | B | False | 无 ACK 读取 |
+| `--streaming` | A, B | False | 分 chunk 流式 |
+| `--chunk-size N` | A, B | 512 | 流式 chunk 大小 |
+
+---
+
+## 10. 关键 API 依赖
 
 | 函数 | 文件 | 行号 | 用途 |
 |------|------|------|------|
 | `H0Store()` | kv_direct_cache.py | 149 | h^(0) 存储 |
 | `H0Store.append(h0)` | kv_direct_cache.py | 156 | 追加 h^(0) |
 | `H0Store.get_range(start, end)` | kv_direct_cache.py | 181 | 读取 h^(0) |
+| `H0Store.save(path, metadata)` | kv_direct_cache.py | 393 | **v2** 持久化保存 |
+| `H0Store.load(path)` | kv_direct_cache.py | 420 | **v2** 从磁盘加载 |
 | `apply_h0_capture_only(model, h0_store)` | kv_direct_cache.py | 706 | 安装 h^(0) 捕获 hook |
 | `reconstruct_prefix_kv(inner, h0_store, 0, end)` | kv_direct_cache.py | 773 | 从 h^(0) 重建 K/V |
+| `reconstruct_prefix_kv_stateful(inner, chunk, tc)` | kv_direct_cache.py | 871 | **v2** 逐 chunk 重建 (3PIR) |
+| `extract_kv_from_temp_caches(tc)` | kv_direct_cache.py | 923 | **v2** 从 temp_caches 提取 KV |
 | `_find_inner_model(model)` | kv_direct_cache.py | 685 | 找到 inner model (embed_tokens 所在) |
 | `KVCache.state setter` | cache.py | 561 | 注入重建的 K/V |
 | `make_prompt_cache(model)` | cache.py | 24 | 创建标准 cache |

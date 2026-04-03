@@ -135,6 +135,12 @@ def main():
     parser.add_argument("--max-tg-tokens", type=int, default=200)
     parser.add_argument("--skip-baseline", action="store_true",
                         help="Skip baseline (use for faster iteration)")
+    parser.add_argument("--embed-only", action="store_true",
+                        help="Instance A uses bare embed_tokens() instead of full prefill")
+    parser.add_argument("--h0-cache-dir", default=None,
+                        help="Directory for h^(0) persistence cache")
+    parser.add_argument("--fan-out", type=int, default=1,
+                        help="Number of Instance B's to launch (1=normal, >1=fan-out)")
     parser.add_argument("--shm-name", default="flashmlx_h0_bridge")
     args = parser.parse_args()
 
@@ -200,8 +206,21 @@ def main():
     except FileNotFoundError:
         pass
 
+    # Compute prompt hash for cache (if caching enabled)
+    prompt_hash = None
+    if args.h0_cache_dir:
+        import hashlib
+        # Tokenize to get token IDs for hashing
+        haystack_tokens = tokenizer.encode(prompt_text)
+        prompt_hash = hashlib.sha256(
+            json.dumps(haystack_tokens).encode()
+        ).hexdigest()[:16]
+        os.makedirs(args.h0_cache_dir, exist_ok=True)
+        print(f"[Orchestrator] h^(0) cache dir: {args.h0_cache_dir}, hash: {prompt_hash}", file=sys.stderr)
+
     # Launch Instance A (in background)
-    print("\n  Starting Instance A (prefill)...", file=sys.stderr)
+    a_mode = "embed-only" if args.embed_only else "full-prefill"
+    print(f"\n  Starting Instance A ({a_mode})...", file=sys.stderr)
     a_cmd = [
         sys.executable, os.path.join(EXPERIMENT_DIR, "instance_a_prefill.py"),
         "--model", args.model,
@@ -209,16 +228,20 @@ def main():
         "--shm-name", args.shm_name,
         "--max-tokens", str(args.prompt_tokens + 1024),
     ]
+    if args.embed_only:
+        a_cmd.append("--embed-only")
+    if args.h0_cache_dir:
+        a_cmd.extend(["--h0-cache-dir", args.h0_cache_dir])
     a_proc = subprocess.Popen(
         a_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=EXPERIMENT_DIR,
     )
 
     # Give A a moment to load model and start writing
-    # Then launch Instance B (which will poll for h^(0))
+    # Then launch Instance B(s) (which will poll for h^(0))
     time.sleep(2.0)
 
-    print("  Starting Instance B (reconstruct + decode)...", file=sys.stderr)
-    b_cmd = [
+    # Build Instance B base command
+    b_base_cmd = [
         sys.executable, os.path.join(EXPERIMENT_DIR, "instance_b_decode.py"),
         "--model", args.model,
         "--question", question,
@@ -226,19 +249,35 @@ def main():
         "--max-tg-tokens", str(args.max_tg_tokens),
         "--timeout", "300",
     ]
+    if args.h0_cache_dir and prompt_hash:
+        b_base_cmd.extend(["--h0-cache-dir", args.h0_cache_dir, "--prompt-hash", prompt_hash])
+
+    n_b_instances = args.fan_out
+    b_procs = []
     t_dual_start = time.perf_counter()
-    b_proc = subprocess.Popen(
-        b_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=EXPERIMENT_DIR,
-    )
 
-    # Wait for both to complete
-    print("  Waiting for both instances...", file=sys.stderr)
+    for b_idx in range(n_b_instances):
+        b_cmd = list(b_base_cmd)
+        if n_b_instances > 1:
+            b_cmd.append("--fan-out-reader")
+        label = f"B{b_idx}" if n_b_instances > 1 else "B"
+        print(f"  Starting Instance {label} (reconstruct + decode)...", file=sys.stderr)
+        b_proc = subprocess.Popen(
+            b_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=EXPERIMENT_DIR,
+        )
+        b_procs.append(b_proc)
 
-    try:
-        b_stdout, b_stderr = b_proc.communicate(timeout=600)
-    except subprocess.TimeoutExpired:
-        b_proc.kill()
-        b_stdout, b_stderr = b_proc.communicate()
+    # Wait for all B instances to complete
+    print(f"  Waiting for A + {n_b_instances} B instance(s)...", file=sys.stderr)
+
+    b_results_raw = []
+    for b_proc in b_procs:
+        try:
+            b_stdout, b_stderr = b_proc.communicate(timeout=600)
+        except subprocess.TimeoutExpired:
+            b_proc.kill()
+            b_stdout, b_stderr = b_proc.communicate()
+        b_results_raw.append((b_stdout, b_stderr))
 
     try:
         a_stdout, a_stderr = a_proc.communicate(timeout=60)
@@ -248,15 +287,17 @@ def main():
 
     t_dual = time.perf_counter() - t_dual_start
 
-    # Print stderr from both
+    # Print stderr from A and all B's
     a_stderr_text = a_stderr.decode(errors="replace").strip()
-    b_stderr_text = b_stderr.decode(errors="replace").strip()
     for line in a_stderr_text.split("\n"):
         if line:
             print(f"  {line}", file=sys.stderr)
-    for line in b_stderr_text.split("\n"):
-        if line:
-            print(f"  {line}", file=sys.stderr)
+    for b_idx, (b_stdout_raw, b_stderr_raw) in enumerate(b_results_raw):
+        b_label = f"B{b_idx}" if n_b_instances > 1 else "B"
+        b_stderr_text = b_stderr_raw.decode(errors="replace").strip()
+        for line in b_stderr_text.split("\n"):
+            if line:
+                print(f"  [{b_label}] {line}", file=sys.stderr)
 
     # Parse results
     def parse_json_output(stdout_bytes):
@@ -271,18 +312,27 @@ def main():
         return {"status": "parse_error", "raw": text[-500:]}
 
     a_result = parse_json_output(a_stdout)
-    b_result = parse_json_output(b_stdout)
+    b_results = [parse_json_output(raw[0]) for raw in b_results_raw]
+    b_result = b_results[0]  # primary B for backward compat
 
     if a_result.get("status") != "ok":
         print(f"\n  INSTANCE A FAILED: {a_result}")
-    if b_result.get("status") != "ok":
-        print(f"\n  INSTANCE B FAILED: {b_result}")
+    for b_idx, br in enumerate(b_results):
+        if br.get("status") != "ok":
+            label = f"B{b_idx}" if n_b_instances > 1 else "B"
+            print(f"\n  INSTANCE {label} FAILED: {br}")
 
     dual_answer = b_result.get("answer", "")
     dual_hits, dual_total = score_answer(dual_answer, NEEDLE["expected_keywords"])
 
     print(f"\n  Dual-instance answer ({dual_hits}/{dual_total}): {dual_answer[:150]}")
     print(f"  Total dual time: {t_dual:.1f}s")
+
+    # Fan-out consistency check
+    if n_b_instances > 1:
+        all_answers = [br.get("answer", "").strip() for br in b_results]
+        all_match = all(a == all_answers[0] for a in all_answers)
+        print(f"  Fan-out ({n_b_instances} B's): {'ALL MATCH' if all_match else 'MISMATCH!'}")
 
     # ===== Phase 3: Comparison =====
     print("\n" + "=" * 90)
@@ -306,11 +356,14 @@ def main():
         print(f"    Compression ratio:  {kv_bytes / h0_bytes:.1f}×")
     print(f"    Bandwidth saved:    {(kv_bytes - h0_bytes) / (1024*1024):.2f} MB ({(1 - h0_bytes/kv_bytes)*100:.1f}%)" if kv_bytes > 0 else "")
 
-    print(f"\n  Timing (Instance A):")
+    print(f"\n  Timing (Instance A — {a_result.get('mode', 'full_prefill')}):")
     if a_result.get("status") == "ok":
         print(f"    Model load:   {a_result.get('load_ms', 0):.0f} ms")
-        print(f"    Prefill:      {a_result.get('prefill_ms', 0):.0f} ms ({a_result.get('prefill_tok_per_s', 0):.0f} tok/s)")
+        label = "Embed" if a_result.get("mode") == "embed_only" else "Prefill"
+        print(f"    {label}:      {a_result.get('prefill_ms', 0):.2f} ms ({a_result.get('prefill_tok_per_s', 0):.0f} tok/s)")
         print(f"    SHM write:    {a_result.get('write_ms', 0):.1f} ms")
+        if a_result.get("prompt_hash"):
+            print(f"    Cache hash:   {a_result['prompt_hash']}")
 
     print(f"\n  Timing (Instance B):")
     if b_result.get("status") == "ok":

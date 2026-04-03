@@ -52,6 +52,14 @@ STATE_WRITING = 1
 STATE_READY = 2
 STATE_READ = 3
 STATE_ERROR = 4
+STATE_APPENDING = 5
+
+# Extended header format (lives in reserved region, bytes 32-63)
+# n_existing_tokens(u32), append_count(u32), n_total_chunks(u32),
+# n_chunks_ready(u32), chunk_size_tokens(u32)
+EXTENDED_FORMAT = "<IIIII"
+EXTENDED_OFFSET = HEADER_PACKED_SIZE  # 32
+EXTENDED_SIZE = struct.calcsize(EXTENDED_FORMAT)  # 20 bytes
 
 # Dtype codes
 DTYPE_BF16 = 0
@@ -158,6 +166,25 @@ class SharedH0Transport:
 
     def _set_state(self, state: int) -> None:
         self._shm.buf[:4] = struct.pack("<I", state)
+
+    def _write_extended(
+        self,
+        n_existing_tokens: int = 0,
+        append_count: int = 0,
+        n_total_chunks: int = 0,
+        n_chunks_ready: int = 0,
+        chunk_size_tokens: int = 0,
+    ) -> None:
+        packed = struct.pack(
+            EXTENDED_FORMAT,
+            n_existing_tokens, append_count, n_total_chunks,
+            n_chunks_ready, chunk_size_tokens,
+        )
+        self._shm.buf[EXTENDED_OFFSET:EXTENDED_OFFSET + EXTENDED_SIZE] = packed
+
+    def _read_extended(self) -> tuple[int, int, int, int, int]:
+        packed = bytes(self._shm.buf[EXTENDED_OFFSET:EXTENDED_OFFSET + EXTENDED_SIZE])
+        return struct.unpack(EXTENDED_FORMAT, packed)
 
     def write_h0(self, h0: "mx.array", first_token_id: int = 0) -> int:
         """Write h^(0) to shared memory.
@@ -305,6 +332,220 @@ class SharedH0Transport:
 
         return h0
 
+    def write_h0_append(self, h0_new: "mx.array", first_token_id: int = 0) -> int:
+        """Append new tokens' h^(0) to existing data in shared memory.
+
+        For incremental/multi-turn use: only the delta is transferred.
+        The header is updated with the new total token count.
+
+        Args:
+            h0_new: New h^(0) to append, shape (1, N_new, d_hidden) or (N_new, d_hidden).
+
+        Returns:
+            Number of new bytes written.
+        """
+        assert mx is not None, "MLX required"
+        assert self._create, "Only creator can write"
+        assert self._shm is not None
+
+        mx.eval(h0_new)
+
+        # Get shape
+        if h0_new.ndim == 3:
+            assert h0_new.shape[0] == 1
+            n_new = h0_new.shape[1]
+            d_hidden_new = h0_new.shape[2]
+        elif h0_new.ndim == 2:
+            n_new = h0_new.shape[0]
+            d_hidden_new = h0_new.shape[1]
+        else:
+            raise ValueError(f"Expected 2D or 3D h0_new, got {h0_new.ndim}D")
+
+        # Read current header to get existing state
+        _, dtype_code_existing, n_existing, d_hidden_existing, existing_nbytes, _, _ = (
+            self._read_header()
+        )
+        n_existing_before, append_count, _, _, _ = self._read_extended()
+
+        # Validate compatibility
+        if n_existing > 0:
+            assert d_hidden_new == d_hidden_existing, (
+                f"d_hidden mismatch: existing={d_hidden_existing}, new={d_hidden_new}"
+            )
+
+        # Determine dtype
+        if h0_new.dtype == mx.bfloat16:
+            dtype_code = DTYPE_BF16
+        elif h0_new.dtype == mx.float32:
+            dtype_code = DTYPE_F32
+        elif h0_new.dtype == mx.float16:
+            dtype_code = DTYPE_F16
+        else:
+            raise ValueError(f"Unsupported dtype: {h0_new.dtype}")
+        bpe = _CODE_TO_BYTES_PER_ELEM[dtype_code]
+
+        # Signal appending
+        self._set_state(STATE_APPENDING)
+
+        # Extract raw bytes for new data
+        new_flat = h0_new.reshape(-1)
+        new_bytes = bytes(new_flat)
+        new_nbytes = len(new_bytes)
+
+        # Write new payload after existing data
+        write_offset = HEADER_SIZE + existing_nbytes
+        capacity = len(self._shm.buf) - write_offset
+        if new_nbytes > capacity:
+            self._set_state(STATE_ERROR)
+            raise ValueError(
+                f"Append payload ({new_nbytes} bytes) exceeds remaining capacity ({capacity} bytes)"
+            )
+        self._shm.buf[write_offset:write_offset + new_nbytes] = new_bytes
+
+        # Update totals
+        total_nbytes = existing_nbytes + new_nbytes
+        total_tokens = n_existing + n_new
+        d_hidden = d_hidden_new if d_hidden_existing == 0 else d_hidden_existing
+
+        # Recompute checksum over entire payload (incremental CRC)
+        checksum = zlib.crc32(
+            bytes(self._shm.buf[HEADER_SIZE:HEADER_SIZE + total_nbytes])
+        ) & 0xFFFFFFFF
+
+        # Write updated header
+        self._write_header(
+            STATE_APPENDING, dtype_code, total_tokens, d_hidden,
+            total_nbytes, first_token_id, checksum,
+        )
+        # Write extended fields
+        self._write_extended(
+            n_existing_tokens=n_existing,
+            append_count=append_count + 1,
+        )
+        # Signal ready
+        self._set_state(STATE_READY)
+
+        return new_nbytes
+
+    def read_h0_delta(self, n_existing_tokens: int, timeout_s: float = 30.0) -> "mx.array":
+        """Read only the NEW tokens' h^(0) (delta since last read).
+
+        Args:
+            n_existing_tokens: Number of tokens the reader already has.
+            timeout_s: Maximum wait time.
+
+        Returns:
+            mx.array of shape (1, N_new, d_hidden) containing only new tokens.
+        """
+        assert mx is not None, "MLX required"
+        assert self._shm is not None
+
+        # Poll for READY state
+        start = time.monotonic()
+        while True:
+            state = self._get_state()
+            if state == STATE_READY:
+                break
+            if state == STATE_ERROR:
+                raise RuntimeError("Writer signaled error")
+            elapsed = time.monotonic() - start
+            if elapsed > timeout_s:
+                raise TimeoutError(f"Timed out after {timeout_s:.1f}s (state={state})")
+            time.sleep(0.001)
+
+        # Read header
+        _, dtype_code, n_total, d_hidden, total_nbytes, _, checksum = self._read_header()
+
+        if n_total <= n_existing_tokens:
+            # No new data
+            self._set_state(STATE_READ)
+            return None
+
+        n_new = n_total - n_existing_tokens
+        bpe = _CODE_TO_BYTES_PER_ELEM[dtype_code]
+        existing_data_bytes = n_existing_tokens * d_hidden * bpe
+        new_data_bytes = n_new * d_hidden * bpe
+
+        # Read only the delta
+        delta_start = HEADER_SIZE + existing_data_bytes
+        raw_bytes = bytes(self._shm.buf[delta_start:delta_start + new_data_bytes])
+
+        # Signal read
+        self._set_state(STATE_READ)
+
+        # Reconstruct mx.array
+        if dtype_code == DTYPE_BF16:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.uint16).reshape(1, n_new, d_hidden)
+            h0 = mx.array(np_arr).view(mx.bfloat16)
+        elif dtype_code == DTYPE_F32:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.float32).reshape(1, n_new, d_hidden)
+            h0 = mx.array(np_arr)
+        elif dtype_code == DTYPE_F16:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.float16).reshape(1, n_new, d_hidden)
+            h0 = mx.array(np_arr)
+        else:
+            raise ValueError(f"Unknown dtype code: {dtype_code}")
+
+        return h0
+
+    def read_h0_no_ack(self, timeout_s: float = 30.0) -> "mx.array":
+        """Read h^(0) without acknowledging — for multi-reader fan-out.
+
+        Same as read_h0() but does NOT set STATE_READ, so the data
+        stays in READY state for other readers. Used with --fan-out.
+        """
+        assert mx is not None, "MLX required"
+        assert self._shm is not None
+
+        # Poll for READY state
+        start = time.monotonic()
+        while True:
+            state = self._get_state()
+            if state == STATE_READY:
+                break
+            if state == STATE_ERROR:
+                raise RuntimeError("Writer signaled error")
+            elapsed = time.monotonic() - start
+            if elapsed > timeout_s:
+                raise TimeoutError(
+                    f"Timed out waiting for h^(0) after {timeout_s:.1f}s "
+                    f"(state={state})"
+                )
+            time.sleep(0.001)
+
+        # Read header
+        _, dtype_code, n_tokens, d_hidden, data_nbytes, first_token_id, checksum = (
+            self._read_header()
+        )
+
+        # Read payload
+        raw_bytes = bytes(self._shm.buf[HEADER_SIZE:HEADER_SIZE + data_nbytes])
+
+        # Verify checksum
+        actual_checksum = zlib.crc32(raw_bytes) & 0xFFFFFFFF
+        if actual_checksum != checksum:
+            raise RuntimeError(
+                f"Checksum mismatch: expected {checksum:#x}, got {actual_checksum:#x}"
+            )
+
+        # DO NOT set STATE_READ — leave READY for other readers
+
+        # Reconstruct mx.array (same as read_h0)
+        if dtype_code == DTYPE_BF16:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.uint16).reshape(1, n_tokens, d_hidden)
+            h0 = mx.array(np_arr)
+            h0 = h0.view(mx.bfloat16)
+        elif dtype_code == DTYPE_F32:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.float32).reshape(1, n_tokens, d_hidden)
+            h0 = mx.array(np_arr)
+        elif dtype_code == DTYPE_F16:
+            np_arr = np.frombuffer(raw_bytes, dtype=np.float16).reshape(1, n_tokens, d_hidden)
+            h0 = mx.array(np_arr)
+        else:
+            raise ValueError(f"Unknown dtype code: {dtype_code}")
+
+        return h0
+
     def wait_for_read(self, timeout_s: float = 300.0) -> bool:
         """Wait until the reader signals it has read the data.
 
@@ -324,6 +565,158 @@ class SharedH0Transport:
             if time.monotonic() - start > timeout_s:
                 return False
             time.sleep(0.01)
+
+    def begin_streaming(
+        self,
+        n_total_tokens: int,
+        d_hidden: int,
+        dtype_code: int,
+        chunk_size: int = 512,
+    ) -> None:
+        """Initialize header for chunked streaming mode.
+
+        Instance A calls this before writing chunks. Instance B polls
+        n_chunks_ready to know when each chunk is available.
+        """
+        assert self._create, "Only creator can begin streaming"
+        n_chunks = (n_total_tokens + chunk_size - 1) // chunk_size
+        self._set_state(STATE_WRITING)
+        # Write header with totals (payload will be filled chunk by chunk)
+        bpe = _CODE_TO_BYTES_PER_ELEM[dtype_code]
+        total_nbytes = n_total_tokens * d_hidden * bpe
+        self._write_header(
+            STATE_WRITING, dtype_code, n_total_tokens, d_hidden,
+            total_nbytes, 0, 0,  # checksum computed at end
+        )
+        self._write_extended(
+            n_existing_tokens=0,
+            append_count=0,
+            n_total_chunks=n_chunks,
+            n_chunks_ready=0,
+            chunk_size_tokens=chunk_size,
+        )
+
+    def write_h0_chunk(self, h0_chunk: "mx.array", chunk_idx: int, is_last: bool = False) -> int:
+        """Write one chunk of h^(0) to shared memory at the correct offset.
+
+        Args:
+            h0_chunk: Shape (1, chunk_tokens, d_hidden) or (chunk_tokens, d_hidden).
+            chunk_idx: 0-based chunk index.
+            is_last: If True, finalize the streaming (compute checksum, set READY).
+
+        Returns:
+            Number of bytes written for this chunk.
+        """
+        assert mx is not None
+        assert self._create
+        mx.eval(h0_chunk)
+
+        if h0_chunk.ndim == 3:
+            n_chunk_tokens = h0_chunk.shape[1]
+            d_hidden = h0_chunk.shape[2]
+        elif h0_chunk.ndim == 2:
+            n_chunk_tokens = h0_chunk.shape[0]
+            d_hidden = h0_chunk.shape[1]
+        else:
+            raise ValueError(f"Expected 2D or 3D, got {h0_chunk.ndim}D")
+
+        # Read extended to get chunk_size_tokens
+        _, _, n_total_chunks, n_chunks_ready, chunk_size_tokens = self._read_extended()
+        _, dtype_code, n_total, _, total_nbytes, _, _ = self._read_header()
+        bpe = _CODE_TO_BYTES_PER_ELEM[dtype_code]
+
+        # Compute offset
+        offset = HEADER_SIZE + chunk_idx * chunk_size_tokens * d_hidden * bpe
+        chunk_bytes = bytes(h0_chunk.reshape(-1))
+        self._shm.buf[offset:offset + len(chunk_bytes)] = chunk_bytes
+
+        # Update n_chunks_ready
+        new_ready = chunk_idx + 1
+        self._write_extended(
+            n_existing_tokens=0,
+            append_count=0,
+            n_total_chunks=n_total_chunks,
+            n_chunks_ready=new_ready,
+            chunk_size_tokens=chunk_size_tokens,
+        )
+
+        if is_last:
+            # Compute full checksum
+            all_raw = bytes(self._shm.buf[HEADER_SIZE:HEADER_SIZE + total_nbytes])
+            checksum = zlib.crc32(all_raw) & 0xFFFFFFFF
+            self._write_header(
+                STATE_READY, dtype_code, n_total, d_hidden,
+                total_nbytes, 0, checksum,
+            )
+
+        return len(chunk_bytes)
+
+    def read_h0_streaming(self, timeout_s: float = 30.0):
+        """Generator that yields h^(0) chunks as they become available.
+
+        Yields:
+            mx.array of shape (1, chunk_tokens, d_hidden) per chunk.
+        """
+        assert mx is not None
+        assert self._shm is not None
+
+        # Wait for header to be initialized (n_total_chunks > 0)
+        start = time.monotonic()
+        while True:
+            _, _, n_total_chunks, _, chunk_size_tokens = self._read_extended()
+            if n_total_chunks > 0:
+                break
+            if time.monotonic() - start > timeout_s:
+                raise TimeoutError("Timed out waiting for streaming header")
+            time.sleep(0.001)
+
+        _, dtype_code, n_total, d_hidden, total_nbytes, _, _ = self._read_header()
+        bpe = _CODE_TO_BYTES_PER_ELEM[dtype_code]
+
+        chunks_read = 0
+        while chunks_read < n_total_chunks:
+            # Poll for next chunk
+            while True:
+                _, _, _, n_chunks_ready, _ = self._read_extended()
+                if n_chunks_ready > chunks_read:
+                    break
+                if time.monotonic() - start > timeout_s:
+                    raise TimeoutError(
+                        f"Timed out waiting for chunk {chunks_read} "
+                        f"(ready={n_chunks_ready}/{n_total_chunks})"
+                    )
+                time.sleep(0.0005)  # 500us poll
+
+            # Read this chunk
+            chunk_offset = HEADER_SIZE + chunks_read * chunk_size_tokens * d_hidden * bpe
+            # Last chunk may be smaller
+            is_last_chunk = (chunks_read == n_total_chunks - 1)
+            if is_last_chunk:
+                remaining_tokens = n_total - chunks_read * chunk_size_tokens
+                chunk_tokens = remaining_tokens
+            else:
+                chunk_tokens = chunk_size_tokens
+            chunk_nbytes = chunk_tokens * d_hidden * bpe
+            raw_bytes = bytes(self._shm.buf[chunk_offset:chunk_offset + chunk_nbytes])
+
+            # Reconstruct mx.array
+            if dtype_code == DTYPE_BF16:
+                np_arr = np.frombuffer(raw_bytes, dtype=np.uint16).reshape(1, chunk_tokens, d_hidden)
+                h0_chunk = mx.array(np_arr).view(mx.bfloat16)
+            elif dtype_code == DTYPE_F32:
+                np_arr = np.frombuffer(raw_bytes, dtype=np.float32).reshape(1, chunk_tokens, d_hidden)
+                h0_chunk = mx.array(np_arr)
+            elif dtype_code == DTYPE_F16:
+                np_arr = np.frombuffer(raw_bytes, dtype=np.float16).reshape(1, chunk_tokens, d_hidden)
+                h0_chunk = mx.array(np_arr)
+            else:
+                raise ValueError(f"Unknown dtype code: {dtype_code}")
+
+            yield h0_chunk
+            chunks_read += 1
+
+        # After reading all chunks, ACK
+        self._set_state(STATE_READ)
 
     def reset(self) -> None:
         """Reset to empty state for next transfer."""
