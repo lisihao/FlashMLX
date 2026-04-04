@@ -1,0 +1,1154 @@
+[
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9757,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8141,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7786,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8302,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7918,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8566,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.812,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9677,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7761,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8319,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8085,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8056,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7975,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7985,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9715,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8134,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7945,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8062,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8273,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8243,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7865,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9746,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7928,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8455,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.807,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8128,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7893,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8188,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9689,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8217,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8682,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8206,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.784,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8583,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8285,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9594,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9899,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8656,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8373,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8835,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.85,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "code",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9033,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8691,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9864,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.835,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8853,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8682,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "math",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8635,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8593,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8503,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.988,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8737,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.848,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "creative",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8624,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8852,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.875,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8402,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.99,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8453,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "chinese",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.898,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8667,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8693,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8426,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8862,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9875,
+    "same_prompt": true
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "analysis",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8771,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9141,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8756,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8439,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9049,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8778,
+    "same_prompt": false
+  },
+  {
+    "ctx": 4096,
+    "prompt_a": "technical",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9831,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9752,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.831,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.792,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8321,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.803,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8531,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8251,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9695,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7904,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8364,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8136,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8116,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8112,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8126,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9722,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.819,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7997,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8132,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8288,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8297,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8002,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9752,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8019,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.846,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8127,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8291,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.7991,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8241,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9685,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8265,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "code",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8652,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "math",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8381,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "creative",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8009,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8596,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.8353,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "technical",
+    "pool_ratio": 0.5,
+    "hit_rate": 0.9576,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9894,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8805,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8506,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8886,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8609,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "code",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.903,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8784,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9871,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8512,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8883,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8718,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "math",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8722,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8663,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8615,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9884,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.875,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8512,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "creative",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8656,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8883,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8801,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8556,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9901,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8556,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "chinese",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9004,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8761,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.883,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8559,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8909,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9874,
+    "same_prompt": true
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "analysis",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8819,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "code",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9137,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "math",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8888,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "creative",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8629,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "chinese",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9065,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "analysis",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.8855,
+    "same_prompt": false
+  },
+  {
+    "ctx": 8192,
+    "prompt_a": "technical",
+    "prompt_b": "technical",
+    "pool_ratio": 0.6,
+    "hit_rate": 0.9826,
+    "same_prompt": true
+  }
+]

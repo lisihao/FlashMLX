@@ -15,7 +15,7 @@ import math
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -98,7 +98,24 @@ class CacheConfig(BaseModel):
         - "q8_0": int8 + per-group scales (-49% KV, minimal TG cost)
         - "q4_0": nibble-packed (-72% KV, moderate TG cost)
         - "turboquant": PolarQuant PQ4 (-74% KV, requires head_dim>=128)
+
+    Experimental features (require enable_experimental=True):
+        - "scored_kv_direct" / "kv_direct" strategies (Route 5 h^(0))
+        - H0Probe (attention-based eviction)
+        - Auto-reconstruction
+        - Density Router
+        - SSD Tier 2/3 (h0_ssd, cold_restoration)
     """
+
+    # --- Master experimental gate (default OFF) ---
+    enable_experimental: bool = Field(
+        default=False,
+        description=(
+            "Master switch for experimental features. When False, enforces "
+            "production strategies only and disables Route 5, H0Probe, "
+            "auto-reconstruction, density router, and SSD tier 2/3."
+        ),
+    )
 
     strategy: str = Field(
         default="standard",
@@ -167,6 +184,28 @@ class CacheConfig(BaseModel):
         description="Auto-trigger h^(0) reconstruction after prefill completes",
     )
 
+    # --- Route 6: MAC Decode Acceleration ---
+    mac_enabled: bool = Field(
+        default=False,
+        description="Enable MAC-Attention decode acceleration (Match-Amend-Complete)",
+    )
+    mac_window_k: int = Field(
+        default=1024,
+        description="Ring cache capacity K (slots per request)",
+    )
+    mac_band_r: int = Field(
+        default=256,
+        description="Rectification band width r (attention recompute window)",
+    )
+    mac_threshold: float = Field(
+        default=0.6,
+        description="L2 match threshold tau (0..1, higher = stricter matching)",
+    )
+    mac_max_requests: int = Field(
+        default=64,
+        description="Max concurrent requests R for ring cache allocation",
+    )
+
     # --- ThunderOMLX SSD Cache Bridge (Tiers 1-3) ---
     enable_compressed_ssd: bool = Field(
         default=True,
@@ -225,6 +264,36 @@ class CacheConfig(BaseModel):
         if v not in (2, 3, 4):
             raise ValueError(f"warm_bits must be 2, 3, or 4, got {v}")
         return v
+
+    # --- Experimental features: strategies and sub-features ---
+    _EXPERIMENTAL_STRATEGIES = frozenset({"scored_kv_direct", "kv_direct"})
+
+    @model_validator(mode="after")
+    def enforce_experimental_gate(self) -> "CacheConfig":
+        """When enable_experimental=False, force-disable all experimental features."""
+        if self.enable_experimental:
+            return self
+
+        # Gate experimental strategies
+        if self.strategy in self._EXPERIMENTAL_STRATEGIES:
+            import warnings
+            warnings.warn(
+                f"Strategy {self.strategy!r} is experimental but "
+                f"enable_experimental=False. Falling back to 'scored_pq'.",
+                stacklevel=2,
+            )
+            self.strategy = "scored_pq"
+
+        # Gate experimental sub-features
+        self.probe_layers = 0
+        self.auto_reconstruct = False
+        self.density_mode = "off"
+        self.density_scale = 0.0
+        self.enable_h0_ssd = False
+        self.enable_cold_restoration = False
+        self.h0_quant = None
+        self.mac_enabled = False
+        return self
 
     def to_cache_kwargs(self) -> dict[str, Any]:
         """Convert to make_prompt_cache() keyword arguments.

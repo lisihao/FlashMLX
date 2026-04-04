@@ -1,0 +1,338 @@
+{
+  "timestamp": "2026-03-30 20:55:14",
+  "model": "Qwen3.5-35B-A3B",
+  "model_memory_gb": 18.17,
+  "results": [
+    {
+      "label": "short-b1-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 1,
+      "prompt_lens": [
+        21
+      ],
+      "ttft_min": 2.697,
+      "ttft_avg": 2.697,
+      "ttft_max": 2.697,
+      "ttot": 3.35,
+      "tg": 91.8,
+      "avg_decode_ms": 11.1,
+      "mem_before": 18.17,
+      "mem_peak": 11.42,
+      "mem_after": 11.42,
+      "quality": "1/1",
+      "quality_pass": true,
+      "total_tokens": 60,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "short-b1-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 1,
+      "prompt_lens": [
+        21
+      ],
+      "ttft_min": 0.297,
+      "ttft_avg": 0.297,
+      "ttft_max": 0.297,
+      "ttot": 0.92,
+      "tg": 95.9,
+      "avg_decode_ms": 15.1,
+      "mem_before": 11.38,
+      "mem_peak": 11.42,
+      "mem_after": 11.42,
+      "quality": "1/1",
+      "quality_pass": true,
+      "total_tokens": 60,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "short-b2-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 2,
+      "prompt_lens": [
+        21,
+        23
+      ],
+      "ttft_min": 0.338,
+      "ttft_avg": 0.338,
+      "ttft_max": 0.338,
+      "ttot": 1.11,
+      "tg": 155.3,
+      "avg_decode_ms": 13.1,
+      "mem_before": 11.38,
+      "mem_peak": 11.47,
+      "mem_after": 11.45,
+      "quality": "2/2",
+      "quality_pass": true,
+      "total_tokens": 120,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "short-b2-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 2,
+      "prompt_lens": [
+        21,
+        23
+      ],
+      "ttft_min": 0.359,
+      "ttft_avg": 0.367,
+      "ttft_max": 0.376,
+      "ttot": 1.15,
+      "tg": 151.4,
+      "avg_decode_ms": 18.6,
+      "mem_before": 11.38,
+      "mem_peak": 11.47,
+      "mem_after": 11.42,
+      "quality": "2/2",
+      "quality_pass": true,
+      "total_tokens": 120,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "short-b4-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 4,
+      "prompt_lens": [
+        21,
+        23,
+        20,
+        23
+      ],
+      "ttft_min": 0.492,
+      "ttft_avg": 0.492,
+      "ttft_max": 0.492,
+      "ttot": 1.7,
+      "tg": 199.3,
+      "avg_decode_ms": 20.4,
+      "mem_before": 11.38,
+      "mem_peak": 11.55,
+      "mem_after": 11.53,
+      "quality": "4/4",
+      "quality_pass": true,
+      "total_tokens": 240,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "short-b4-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 4,
+      "prompt_lens": [
+        21,
+        23,
+        20,
+        23
+      ],
+      "ttft_min": 0.362,
+      "ttft_avg": 0.483,
+      "ttft_max": 0.572,
+      "ttot": 1.78,
+      "tg": 169.4,
+      "avg_decode_ms": 27.8,
+      "mem_before": 11.38,
+      "mem_peak": 11.55,
+      "mem_after": 11.42,
+      "quality": "4/4",
+      "quality_pass": true,
+      "total_tokens": 240,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b1-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 1,
+      "prompt_lens": [
+        808
+      ],
+      "ttft_min": 1.04,
+      "ttft_avg": 1.04,
+      "ttft_max": 1.04,
+      "ttot": 1.67,
+      "tg": 94.9,
+      "avg_decode_ms": 10.7,
+      "mem_before": 11.38,
+      "mem_peak": 11.44,
+      "mem_after": 11.43,
+      "quality": "1/1",
+      "quality_pass": true,
+      "total_tokens": 60,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b1-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 1,
+      "prompt_lens": [
+        808
+      ],
+      "ttft_min": 1.018,
+      "ttft_avg": 1.018,
+      "ttft_max": 1.018,
+      "ttot": 1.65,
+      "tg": 95.0,
+      "avg_decode_ms": 10.7,
+      "mem_before": 11.38,
+      "mem_peak": 11.44,
+      "mem_after": 11.43,
+      "quality": "1/1",
+      "quality_pass": true,
+      "total_tokens": 60,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b2-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 2,
+      "prompt_lens": [
+        808,
+        809
+      ],
+      "ttft_min": 1.707,
+      "ttft_avg": 1.707,
+      "ttft_max": 1.707,
+      "ttot": 2.5,
+      "tg": 152.0,
+      "avg_decode_ms": 13.4,
+      "mem_before": 11.38,
+      "mem_peak": 11.49,
+      "mem_after": 11.48,
+      "quality": "2/2",
+      "quality_pass": true,
+      "total_tokens": 120,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b2-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 2,
+      "prompt_lens": [
+        808,
+        809
+      ],
+      "ttft_min": 1.834,
+      "ttft_avg": 1.844,
+      "ttft_max": 1.853,
+      "ttot": 2.64,
+      "tg": 148.6,
+      "avg_decode_ms": 13.4,
+      "mem_before": 11.38,
+      "mem_peak": 11.52,
+      "mem_after": 11.43,
+      "quality": "2/2",
+      "quality_pass": true,
+      "total_tokens": 120,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b4-std",
+      "mode": "STD",
+      "interleaved": false,
+      "batch_size": 4,
+      "prompt_lens": [
+        808,
+        809,
+        811,
+        808
+      ],
+      "ttft_min": 3.135,
+      "ttft_avg": 3.135,
+      "ttft_max": 3.135,
+      "ttot": 4.36,
+      "tg": 196.1,
+      "avg_decode_ms": 20.7,
+      "mem_before": 11.38,
+      "mem_peak": 11.61,
+      "mem_after": 11.58,
+      "quality": "4/4",
+      "quality_pass": true,
+      "total_tokens": 240,
+      "prefill_skipped": 0
+    },
+    {
+      "label": "med-b4-int",
+      "mode": "INT",
+      "interleaved": true,
+      "batch_size": 4,
+      "prompt_lens": [
+        808,
+        809,
+        811,
+        808
+      ],
+      "ttft_min": 1.848,
+      "ttft_avg": 2.879,
+      "ttft_max": 3.515,
+      "ttot": 4.75,
+      "tg": 82.8,
+      "avg_decode_ms": 21.0,
+      "mem_before": 11.38,
+      "mem_peak": 11.64,
+      "mem_after": 11.43,
+      "quality": "4/4",
+      "quality_pass": true,
+      "total_tokens": 240,
+      "prefill_skipped": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "config": "short-b1",
+      "ttft_pct": -89.0,
+      "ttot_pct": -72.5,
+      "mem_delta_gb": 0.0,
+      "decode_std_ms": 11.1,
+      "decode_int_ms": 15.1
+    },
+    {
+      "config": "short-b2",
+      "ttft_pct": 6.2,
+      "ttot_pct": 3.6,
+      "mem_delta_gb": 0.0,
+      "decode_std_ms": 13.1,
+      "decode_int_ms": 18.6
+    },
+    {
+      "config": "short-b4",
+      "ttft_pct": -26.4,
+      "ttot_pct": 4.7,
+      "mem_delta_gb": 0.0,
+      "decode_std_ms": 20.4,
+      "decode_int_ms": 27.8
+    },
+    {
+      "config": "med-b1",
+      "ttft_pct": -2.1,
+      "ttot_pct": -1.2,
+      "mem_delta_gb": 0.0,
+      "decode_std_ms": 10.7,
+      "decode_int_ms": 10.7
+    },
+    {
+      "config": "med-b2",
+      "ttft_pct": 7.4,
+      "ttot_pct": 5.6,
+      "mem_delta_gb": 0.03,
+      "decode_std_ms": 13.4,
+      "decode_int_ms": 13.4
+    },
+    {
+      "config": "med-b4",
+      "ttft_pct": -41.1,
+      "ttot_pct": 8.9,
+      "mem_delta_gb": 0.03,
+      "decode_std_ms": 20.7,
+      "decode_int_ms": 21.0
+    }
+  ],
+  "all_quality_pass": true
+}

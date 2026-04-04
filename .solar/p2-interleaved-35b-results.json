@@ -1,0 +1,80 @@
+[
+  {
+    "label": "single-std",
+    "interleaved": false,
+    "batch_size": 1,
+    "ttft": 3.944531625000309,
+    "ttot": 5.035358250000172,
+    "tg": 91.67359661762247,
+    "mem_peak": 11.423464660532773,
+    "mem_before": 18.169012315571308,
+    "quality": "1/1",
+    "quality_pass": true,
+    "total_tokens": 100
+  },
+  {
+    "label": "single-int",
+    "interleaved": true,
+    "batch_size": 1,
+    "ttft": 0.32225245800054836,
+    "ttot": 1.392176166000354,
+    "tg": 93.46460803915392,
+    "mem_peak": 11.423462744802237,
+    "mem_before": 11.379461536183953,
+    "quality": "1/1",
+    "quality_pass": true,
+    "total_tokens": 100
+  },
+  {
+    "label": "batch2-std",
+    "interleaved": false,
+    "batch_size": 2,
+    "ttft": 0.35367191699970135,
+    "ttot": 1.3884509589997833,
+    "tg": 154.62238169294824,
+    "mem_peak": 11.465097954496741,
+    "mem_before": 11.379461536183953,
+    "quality": "2/2",
+    "quality_pass": true,
+    "total_tokens": 160
+  },
+  {
+    "label": "batch2-int",
+    "interleaved": true,
+    "batch_size": 2,
+    "ttft": 0.3664000830003715,
+    "ttot": 1.4168011669999032,
+    "tg": 152.32276740498045,
+    "mem_peak": 11.465164357796311,
+    "mem_before": 11.379461536183953,
+    "quality": "2/2",
+    "quality_pass": true,
+    "total_tokens": 160
+  },
+  {
+    "label": "batch4-std",
+    "interleaved": false,
+    "batch_size": 4,
+    "ttft": 2.1570054579997304,
+    "ttot": 3.166766749999624,
+    "tg": 198.06661394584438,
+    "mem_peak": 11.589924806728959,
+    "mem_before": 11.379461536183953,
+    "quality": "4/4",
+    "quality_pass": true,
+    "total_tokens": 200
+  },
+  {
+    "label": "batch4-int",
+    "interleaved": true,
+    "batch_size": 4,
+    "ttft": 1.313517249999677,
+    "ttot": 3.501820082999984,
+    "tg": 91.39502859656167,
+    "mem_peak": 11.603975368663669,
+    "mem_before": 11.379461536183953,
+    "quality": "4/4",
+    "quality_pass": true,
+    "total_tokens": 200
+  }
+]
