@@ -71,6 +71,11 @@ from .reconstruction import (
 # ---------------------------------------------------------------------------
 from .rc_engine import RCEngine, RCSequenceState, RCChunkResult
 
+# ---------------------------------------------------------------------------
+# MAC-Attention: Monkey Patch for mlx-lm (Route 6)
+# ---------------------------------------------------------------------------
+from .patch import patch_mlx_lm, unpatch_mlx_lm
+
 __all__ = [
     "__version__",
     # Model loading
@@ -113,4 +118,7 @@ __all__ = [
     "RCEngine",
     "RCSequenceState",
     "RCChunkResult",
+    # MAC-Attention Patch
+    "patch_mlx_lm",
+    "unpatch_mlx_lm",
 ]
