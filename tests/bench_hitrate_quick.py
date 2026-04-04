@@ -33,8 +33,8 @@ def test_config(cfg, drift, S=8192, n_test=10, seed=42):
 
     M = cfg.get("capacity", 512)
     wi = cfg.get("write_interval", 1)
-    # Minimal warmup: just enough to fill cache
-    n_warm = M * wi + 10
+    # Fast warmup: fixed 100 iterations (like minimal test)
+    n_warm = 100
 
     base_q = mx.random.normal((N, Hq, D)).astype(mx.bfloat16)
     mx.eval(base_q)
@@ -45,7 +45,7 @@ def test_config(cfg, drift, S=8192, n_test=10, seed=42):
         q = base_q + noise
         mac(q, k, v, req_ids)
         base_q = q
-        if step % 100 == 99:
+        if step % 50 == 49:
             mx.eval(q)
     mx.eval(base_q)
     sync()
@@ -121,13 +121,14 @@ def main():
     print(f"  {'config':>20} {'d=0.5':>12} {'d=0.7':>12} {'d=1.0':>12}")
     print("  " + "-" * 62)
 
-    for name, cfg in configs:
+    for i, (name, cfg) in enumerate(configs, 1):
+        print(f"  [{i}/{len(configs)}] Testing {name}...", end=" ", flush=True)
         results = []
         for drift in drifts:
             hr, cos = test_config(cfg, drift)
             results.append((hr, cos))
 
-        line = f"  {name:>20}"
+        line = f"\r  {name:>20}"
         for hr, cos in results:
             line += f"  {hr:>4.0%} ({cos:>5.3f})"
         print(line, flush=True)
