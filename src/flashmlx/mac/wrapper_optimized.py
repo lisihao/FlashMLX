@@ -11,9 +11,9 @@ from dataclasses import dataclass
 
 import mlx.core as mx
 
-from .attention import mac_partial_attention, mac_rectify_and_update
+from .attention import mac_fused_partial_attention, mac_rectify_and_update
 from .match import mac_ring_match
-from .merge_fused import merge_attention_states_fused  # ← 唯一改动
+from .merge_fused import merge_attention_states_fused
 from .ring_cache import MACRingCache
 
 
@@ -97,8 +97,8 @@ class MACDecodeWrapperOptimized:
             rows_per_tile=self.rows_per_tile,
         )
 
-        # Partial attention
-        fresh_o, fresh_lse = mac_partial_attention(
+        # Partial attention (fused Metal kernel)
+        fresh_o, fresh_lse = mac_fused_partial_attention(
             queries, keys, values, left_start, scale
         )
 
