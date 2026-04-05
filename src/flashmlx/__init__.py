@@ -51,7 +51,8 @@ from .model_cards import ModelCard, ModeConfig, load_card, load_card_or_detect, 
 # ---------------------------------------------------------------------------
 # Quantization strategies (re-export)
 # ---------------------------------------------------------------------------
-from mlx_lm.models.quantization_strategies import get_quantizer, QuantizationStrategy
+from mlx_lm.models.quantization_strategies import get_quantizer, QuantizationStrategy, TurboAngleQuantizerWrapper
+from mlx_lm.models.turboangle import TurboAngleQuantizer
 
 # ---------------------------------------------------------------------------
 # Reconstruction Controller (programmatic h^(0) → K/V reconstruction API)
@@ -73,6 +74,13 @@ from .rc_engine import RCEngine, RCSequenceState, RCChunkResult
 
 # ---------------------------------------------------------------------------
 # MAC-Attention: Monkey Patch for mlx-lm (Route 6)
+# ⚠️  EXPERIMENTAL - NOT RECOMMENDED FOR PRODUCTION USE
+#
+# MAC-Attention 在 MLX/Apple Silicon 上无法达到预期加速效果。
+# 实测：Hit 82%, Skip 66% → 加速比仅 0.92×-1.02×
+# 原因：MLX decode attention 对 partial 输入没有线性加速。
+#
+# 详见：MAC_ATTENTION_EXPERIMENTAL.md
 # ---------------------------------------------------------------------------
 from .patch import patch_mlx_lm, unpatch_mlx_lm, enable_profiling, disable_profiling, get_profiling_stats
 
@@ -106,6 +114,8 @@ __all__ = [
     # Quantization
     "get_quantizer",
     "QuantizationStrategy",
+    "TurboAngleQuantizer",
+    "TurboAngleQuantizerWrapper",
     # Reconstruction Controller
     "ReconstructionController",
     "NullReconstructionController",

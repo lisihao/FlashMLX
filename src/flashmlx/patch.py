@@ -1,10 +1,23 @@
 """
 Monkey Patch mlx-lm 以启用 MAC-Attention
 
+⚠️  实验性功能 - 不推荐使用 ⚠️
+
+MAC-Attention 在 MLX/Apple Silicon 上无法达到预期加速效果。
+原因：MLX 的 decode attention 路径对 partial 输入没有线性加速，
+即使跳过 66% 的计算，墙钟时间仍随 full context 长度增长。
+
+实测结果：
+- Hit rate: 82%
+- Skip ratio: 66%
+- 加速比: 0.92×-1.02× (几乎无加速)
+
+仅供研究用途。不推荐在生产环境使用。
+
 用法：
     import flashmlx
-    flashmlx.patch_mlx_lm()  # 一行启用 MAC
-    
+    flashmlx.patch_mlx_lm()  # 启用 MAC (不推荐)
+
     # 然后正常使用 mlx-lm
     from mlx_lm import load, generate
     model, tokenizer = load("Qwen/Qwen2.5-8B")
@@ -15,7 +28,7 @@ import sys
 from typing import Optional, Any
 import mlx.core as mx
 
-from .mac import MACDecodeWrapper
+from .mac_simplified import SimplifiedMACDecode
 
 # Global MAC instance (shared across all layers)
 _global_mac_wrapper = None
@@ -41,18 +54,15 @@ def _get_or_create_global_mac(n_heads: int, n_kv_heads: int, head_dim: int):
     global _global_mac_wrapper
 
     if _global_mac_wrapper is None:
-        _global_mac_wrapper = MACDecodeWrapper(
-            max_requests=4,        # 单用户场景，减小到4
-            capacity=8192,         # 增大capacity支持长上下文
+        _global_mac_wrapper = SimplifiedMACDecode(
+            cache_capacity=2048,   # Ring cache容量
             num_heads=n_heads,
             num_kv_heads=n_kv_heads,
             head_dim=head_dim,
-            threshold=0.3,         # 降低threshold，增加匹配率
-            band_r=512,            # 增大band，提升recall
-            window_left=512,       # 增大window
-            normalize_queries=True,
+            threshold=0.95,        # 官方推荐值
+            window_left=512,
         )
-        print(f"✅ Created global MAC: {n_heads}H/{n_kv_heads}KV/{head_dim}D (max_req=4, cap=8K, shared)")
+        print(f"✅ Created SimplifiedMAC (官方裁剪版): {n_heads}H/{n_kv_heads}KV/{head_dim}D")
 
     return _global_mac_wrapper
 
@@ -84,7 +94,7 @@ def _mac_attention_call(self, x, mask=None, cache=None):
     t_proj = _profile_start()
     queries, keys, values = self.q_proj(x), self.k_proj(x), self.v_proj(x)
     _profile_end(t_proj, 'qkv_proj')
-    
+
     # Reshape and normalize (Qwen3 specific)
     if hasattr(self, 'q_norm'):
         queries = self.q_norm(queries.reshape(B, L, self.n_heads, -1)).transpose(0, 2, 1, 3)
@@ -94,6 +104,10 @@ def _mac_attention_call(self, x, mask=None, cache=None):
         keys = keys.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
 
     values = values.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
+
+    # 【关键修复】保存 pre-RoPE query 用于 MAC matching
+    # 论文明确要求 pre-RoPE matching，因为 post-RoPE 会破坏相似性
+    queries_pre_rope = queries  # [B, H, L, D] - 保存给 MAC 用
 
     # Apply RoPE and update cache (follow original Qwen3 implementation)
     t_rope = _profile_start()
@@ -122,29 +136,31 @@ def _mac_attention_call(self, x, mask=None, cache=None):
     if cache is not None and L == 1:
         # Decode phase - 使用 MAC-Attention
 
-        # Prepare inputs for MAC (ring cache already warmed up from prefill)
+        # Prepare inputs for SimplifiedMAC
         t_convert = _profile_start()
-        # queries: [B, H, 1, D] -> [B, H, D]
-        q_mac = queries.squeeze(2)
+        # 【关键】使用 pre-RoPE query 做 matching
+        q_pre_rope_mac = queries_pre_rope.squeeze(2)  # [B, H, 1, D] -> [B, H, D]
+        # 但 attention 还是用 post-RoPE 的 query
+        q_post_rope_mac = queries.squeeze(2)  # [B, H, 1, D] -> [B, H, D]
         # keys, values: [B, Hkv, S, D] -> [B, S, Hkv, D]
         k_mac = keys.transpose(0, 2, 1, 3)
         v_mac = values.transpose(0, 2, 1, 3)
-
-        # 转换为 bf16 (MAC 需要)
-        q_mac = q_mac.astype(mx.bfloat16)
-        k_mac = k_mac.astype(mx.bfloat16)
-        v_mac = v_mac.astype(mx.bfloat16)
-
-        # Request IDs
-        req_ids = mx.arange(B, dtype=mx.int32)
         _profile_end(t_convert, 'mac_data_convert')
 
-        # Run MAC (using global shared wrapper)
+        # Run SimplifiedMAC (官方裁剪版)
+        # 传入 pre-RoPE query 用于 match，post-RoPE query 用于 attention
         t_mac = _profile_start()
-        output = mac_wrapper(q_mac, k_mac, v_mac, req_ids)  # [B, H, D]
+        output = mac_wrapper(
+            q_pre_rope=q_pre_rope_mac,
+            q_post_rope=q_post_rope_mac,
+            k=k_mac,
+            v=v_mac,
+            scale=self.scale
+        )  # [B, H, D]
         _profile_end(t_mac, 'mac_call')
 
-        output = output[:, None, :, :]  # [B, 1, H, D]
+        # [B, H, D] -> [B, 1, H, D]
+        output = output[:, None, :, :]
     else:
         # Prefill phase - 预热 MAC ring cache + 使用标准 attention
         from mlx_lm.models.base import scaled_dot_product_attention
@@ -195,6 +211,8 @@ def patch_mlx_lm():
     """
     Monkey patch mlx-lm 以启用 MAC-Attention
 
+    ⚠️  实验性功能 - 不推荐使用 ⚠️
+
     自动检测并 patch 所有支持的模型架构
     """
     global _patch_enabled
@@ -202,6 +220,18 @@ def patch_mlx_lm():
     if _patch_enabled:
         print("⚠️  MAC-Attention patch 已启用")
         return
+
+    # 实验性功能警告
+    print("=" * 80)
+    print("⚠️  警告：MAC-Attention 是实验性功能")
+    print("=" * 80)
+    print("在 MLX/Apple Silicon 上无法达到预期加速效果。")
+    print("实测：Hit 82%, Skip 66% → 加速比仅 0.92×-1.02×")
+    print()
+    print("原因：MLX decode attention 对 partial 输入没有线性加速。")
+    print("仅供研究用途，不推荐生产使用。")
+    print("=" * 80)
+    print()
 
     # Patch Qwen3
     try:
