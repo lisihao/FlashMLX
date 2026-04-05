@@ -74,7 +74,7 @@ from .rc_engine import RCEngine, RCSequenceState, RCChunkResult
 # ---------------------------------------------------------------------------
 # MAC-Attention: Monkey Patch for mlx-lm (Route 6)
 # ---------------------------------------------------------------------------
-from .patch import patch_mlx_lm, unpatch_mlx_lm
+from .patch import patch_mlx_lm, unpatch_mlx_lm, enable_profiling, disable_profiling, get_profiling_stats
 
 __all__ = [
     "__version__",
@@ -121,4 +121,7 @@ __all__ = [
     # MAC-Attention Patch
     "patch_mlx_lm",
     "unpatch_mlx_lm",
+    "enable_profiling",
+    "disable_profiling",
+    "get_profiling_stats",
 ]
