@@ -37,7 +37,7 @@ class BenchmarkConfig:
     # KV cache strategy
     kv_cache: str = "triple_pq"  # 'standard', 'triple_pq', etc.
     kv_warm_bits: Optional[int] = None
-    strategy: Optional[str] = None  # 'scored_pq', 'turboangle'
+    strategy: Optional[str] = None  # 'polarquant', 'turboangle'
 
     # TurboAngle specific
     n_k: Optional[int] = None
@@ -61,7 +61,7 @@ class BenchmarkConfig:
             kwargs["kv_warm_bits"] = self.kv_warm_bits
 
         if self.strategy is not None:
-            kwargs["strategy"] = self.strategy
+            kwargs["kv_warm_quantizer"] = self.strategy
 
         if self.n_k is not None and self.n_v is not None:
             from mlx_lm.models.turboangle import TurboAngleQuantizer
@@ -173,12 +173,12 @@ class FlashMLXMetaHarness:
         configs.append(BenchmarkConfig(kv_cache="standard"))
 
         if target in ['memory', 'balanced']:
-            # PolarQuant configurations
-            for bits in [2, 4, 8]:
+            # PolarQuant configurations (only supports 2, 3, 4 bits)
+            for bits in [2, 3, 4]:
                 configs.append(BenchmarkConfig(
                     kv_cache="triple_pq",
                     kv_warm_bits=bits,
-                    strategy="scored_pq",
+                    strategy="polarquant",
                 ))
 
             # Density router modes
@@ -186,7 +186,7 @@ class FlashMLXMetaHarness:
                 configs.append(BenchmarkConfig(
                     kv_cache="triple_pq",
                     kv_warm_bits=4,
-                    strategy="scored_pq",
+                    strategy="polarquant",
                     density_mode=mode,
                 ))
 
@@ -205,7 +205,7 @@ class FlashMLXMetaHarness:
             configs.append(BenchmarkConfig(
                 kv_cache="triple_pq",
                 kv_warm_bits=2,
-                strategy="scored_pq",
+                strategy="polarquant",
             ))
 
         # Deduplicate
@@ -229,7 +229,6 @@ class FlashMLXMetaHarness:
 
         # Clean state
         mx.clear_cache()
-        mx.metal.clear_cache()
         mx.reset_peak_memory()
 
         start_time = time.perf_counter()
@@ -260,10 +259,25 @@ class FlashMLXMetaHarness:
         shift_logits = logits[:, :-1, :]
         shift_tokens = self.test_tokens[:, 1:]
 
-        # Cross-entropy loss
-        loss = mx.mean(
-            -mx.log_softmax(shift_logits, axis=-1)[0, range(shift_tokens.shape[1]), shift_tokens[0]]
-        )
+        # Cross-entropy loss (simplified calculation)
+        # Take softmax, then compute negative log likelihood
+        probs = mx.softmax(shift_logits, axis=-1)
+
+        # For each position, gather the probability of the correct token
+        # Use a simpler approach: compute full cross-entropy
+        batch_size, seq_len, vocab_size = shift_logits.shape
+
+        # Reshape for easier indexing
+        probs_flat = probs.reshape(-1, vocab_size)
+        tokens_flat = shift_tokens.reshape(-1)
+
+        # Manual gather: sum of log probs for correct tokens
+        log_probs_sum = 0.0
+        for i in range(tokens_flat.shape[0]):
+            token_id = int(tokens_flat[i].item())
+            log_probs_sum += mx.log(probs_flat[i, token_id] + 1e-10)
+
+        loss = -log_probs_sum / tokens_flat.shape[0]
         perplexity = mx.exp(loss).item()
 
         # Compute speed (tokens/sec)

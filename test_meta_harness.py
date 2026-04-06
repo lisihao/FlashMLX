@@ -23,8 +23,8 @@ def main():
 
     configs = [
         BenchmarkConfig(kv_cache="standard"),
-        BenchmarkConfig(kv_cache="triple_pq", kv_warm_bits=4, strategy="scored_pq"),
-        BenchmarkConfig(kv_cache="triple_pq", kv_warm_bits=4, strategy="scored_pq", density_mode="balanced"),
+        BenchmarkConfig(kv_cache="triple_pq", kv_warm_bits=4, strategy="polarquant"),
+        BenchmarkConfig(kv_cache="triple_pq", kv_warm_bits=4, strategy="polarquant", density_mode="balanced"),
     ]
 
     for i, config in enumerate(configs, 1):

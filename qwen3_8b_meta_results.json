@@ -1,0 +1,218 @@
+{
+  "model_path": "/Volumes/toshiba/models/qwen3-8b-mlx",
+  "num_tokens": 5001,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 256,
+        "n_v": 128,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 376.04991879684957,
+      "peak_memory_mb": 11190.134780883789,
+      "quality_score": 0.5,
+      "speed_score": 3.7604991879684957,
+      "memory_score": 0.0,
+      "pareto_score": 1.3781497563905487,
+      "timestamp": "2026-04-05 20:15:12"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 281.6335200316339,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 2.816335200316339,
+      "memory_score": 0.0,
+      "pareto_score": 1.0949005600949016,
+      "timestamp": "2026-04-05 20:15:31"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 64,
+        "n_v": 32,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 258.3550146262772,
+      "peak_memory_mb": 11190.134780883789,
+      "quality_score": 0.5,
+      "speed_score": 2.583550146262772,
+      "memory_score": 0.0,
+      "pareto_score": 1.0250650438788316,
+      "timestamp": "2026-04-05 20:15:51"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "ultra_long",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 338.02483512973583,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 3.3802483512973582,
+      "memory_score": 0.0,
+      "pareto_score": 1.2640745053892075,
+      "timestamp": "2026-04-05 20:16:07"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 128,
+        "n_v": 64,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 368.3734398790655,
+      "peak_memory_mb": 11190.134780883789,
+      "quality_score": 0.5,
+      "speed_score": 3.6837343987906546,
+      "memory_score": 0.0,
+      "pareto_score": 1.3551203196371964,
+      "timestamp": "2026-04-05 20:16:21"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 2,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 376.05545060523366,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 3.7605545060523364,
+      "memory_score": 0.0,
+      "pareto_score": 1.3781663518157008,
+      "timestamp": "2026-04-05 20:16:35"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 3,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 376.92728900700456,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 3.7692728900700456,
+      "memory_score": 0.0,
+      "pareto_score": 1.3807818670210137,
+      "timestamp": "2026-04-05 20:16:49"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "recall_first",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 349.5082141693539,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 3.4950821416935387,
+      "memory_score": 0.0,
+      "pareto_score": 1.2985246425080617,
+      "timestamp": "2026-04-05 20:17:05"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "balanced",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 310.0258194896885,
+      "peak_memory_mb": 11190.119155883789,
+      "quality_score": 0.5,
+      "speed_score": 3.100258194896885,
+      "memory_score": 0.0,
+      "pareto_score": 1.1800774584690654,
+      "timestamp": "2026-04-05 20:17:22"
+    },
+    {
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": null,
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0,
+      "tokens_per_sec": 310.06063605612184,
+      "peak_memory_mb": 11227.931659698486,
+      "quality_score": 0.5,
+      "speed_score": 3.100606360561218,
+      "memory_score": 0.0,
+      "pareto_score": 1.1801819081683655,
+      "timestamp": "2026-04-05 20:17:40"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": 3,
+      "strategy": "polarquant",
+      "n_k": null,
+      "n_v": null,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}
