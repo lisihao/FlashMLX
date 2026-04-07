@@ -1,0 +1,118 @@
+{
+  "model_path": "/Volumes/toshiba/models/llama-3.2-3b-mlx",
+  "num_tokens": 5002,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": null,
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 840.0288057130914,
+      "peak_memory_mb": 4138.372089385986,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 8.400288057130915,
+      "memory_score": 0.5861627910614013,
+      "pareto_score": 2.8863462127056403,
+      "timestamp": "2026-04-07 11:47:30"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 128,
+        "n_v": 64,
+        "density_mode": "recall_first",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 786.3473829103345,
+      "peak_memory_mb": 4133.637710571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.863473829103345,
+      "memory_score": 0.586636228942871,
+      "pareto_score": 2.7253966318736635,
+      "timestamp": "2026-04-07 11:47:36"
+    },
+    {
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 256,
+        "n_v": 64,
+        "density_mode": "balanced",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 757.3055353583198,
+      "peak_memory_mb": 4138.387714385986,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.573055353583198,
+      "memory_score": 0.5861612285614013,
+      "pareto_score": 2.6381760891413255,
+      "timestamp": "2026-04-07 11:47:43"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "ultra_long",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 732.5848171361769,
+      "peak_memory_mb": 4133.622085571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.325848171361769,
+      "memory_score": 0.5866377914428711,
+      "pareto_score": 2.5641092470511904,
+      "timestamp": "2026-04-07 11:47:50"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "standard",
+      "kv_warm_bits": null,
+      "strategy": null,
+      "n_k": null,
+      "n_v": null,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    },
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": null,
+      "strategy": "turboangle",
+      "n_k": 128,
+      "n_v": 64,
+      "density_mode": "recall_first",
+      "density_scale": null,
+      "context_length": 4096
+    },
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": 4,
+      "strategy": "polarquant",
+      "n_k": null,
+      "n_v": null,
+      "density_mode": "ultra_long",
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}
