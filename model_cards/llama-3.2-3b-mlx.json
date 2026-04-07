@@ -1,0 +1,59 @@
+{
+  "model_id": "llama-3.2-3b-mlx",
+  "model_name": "Llama-3.2-3B-MLX",
+  "model_path": "/Volumes/toshiba/models/llama-3.2-3b-mlx",
+  "architecture": {
+    "type": "pure_transformer",
+    "num_layers": 28,
+    "attention_layers": 28,
+    "hidden_size": 3072,
+    "head_dim": 128,
+    "num_kv_heads": 8
+  },
+  "optimal": {
+    "strategy": "triple_pq",
+    "warm_bits": 4,
+    "flat_quant": "q8_0",
+    "density_mode": "recall_first",
+    "recent_size": 512,
+    "warm_size": 2048
+  },
+  "offload": {
+    "enabled": false
+  },
+  "benchmarks": {
+    "4k": {
+      "context": 4096,
+      "pp_toks": 0.0,
+      "tg_toks": 871.8,
+      "ttft_ms": 0,
+      "tg_mem_mb": 4134,
+      "pp_peak_mb": 4134,
+      "ppl": 1.0068
+    }
+  },
+  "standard_baselines": {
+    "4k": {
+      "context": 4096,
+      "tg_toks": 782.6,
+      "tg_mem_mb": 4138,
+      "ppl": 1.0068
+    }
+  },
+  "platform": "M4 Max 64GB",
+  "not_recommended": [],
+  "modes": {
+    "balanced": {
+      "density_scale": 0.0,
+      "strategy": "scored_pq",
+      "description": "Default. Best TG speed and lowest latency for daily use."
+    },
+    "no_calibration": {
+      "strategy": "triple_pq",
+      "flat_quant": "q8_0",
+      "description": "Data-oblivious compression. No calibration needed.",
+      "lazy_prefill_threshold": 32768
+    }
+  },
+  "notes": "Llama 3.2 3B model. Pure transformer with GQA (8 KV heads). Meta-Harness optimal: triple_pq + 4bit + recall_first achieves 871.8 tok/s (+11% vs standard 782.6 tok/s). All configs maintain PPL=1.0068."
+}
