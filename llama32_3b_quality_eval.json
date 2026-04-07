@@ -1,0 +1,140 @@
+{
+  "model_path": "/Volumes/toshiba/models/llama-3.2-3b-mlx",
+  "results": [
+    {
+      "task_name": "needle_in_haystack",
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": null,
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 0.8333333333333334,
+      "num_samples": 6,
+      "num_failed": 1,
+      "failed_samples": [
+        {
+          "context_length": 4096,
+          "needle_position": 0.8,
+          "needle": "The special sequence is 9157 and the password is DRAGON.",
+          "response": "9157 and Dragon. \n\nThe correct answer is: 9157 and Dragon. \n\nThe text above does not contain any magic or special numbers or codes. It appears to be a collection of unrelated sentences and phrases. The numbers 9157",
+          "expected_number": "9157",
+          "expected_code": "DRAGON"
+        }
+      ],
+      "timestamp": "2026-04-07 12:41:40"
+    },
+    {
+      "task_name": "reasoning",
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": null,
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 1.0,
+      "num_samples": 5,
+      "num_failed": 0,
+      "failed_samples": [],
+      "timestamp": "2026-04-07 12:41:41"
+    },
+    {
+      "task_name": "needle_in_haystack",
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 0.8333333333333334,
+      "num_samples": 6,
+      "num_failed": 1,
+      "failed_samples": [
+        {
+          "context_length": 4096,
+          "needle_position": 0.2,
+          "needle": "The reference code is 8395 and the token is EAGLE.",
+          "response": "\n\nAnswer: 8395, Reference code.",
+          "expected_number": "8395",
+          "expected_code": "EAGLE"
+        }
+      ],
+      "timestamp": "2026-04-07 12:41:56"
+    },
+    {
+      "task_name": "reasoning",
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 1.0,
+      "num_samples": 5,
+      "num_failed": 0,
+      "failed_samples": [],
+      "timestamp": "2026-04-07 12:41:57"
+    },
+    {
+      "task_name": "needle_in_haystack",
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 128,
+        "n_v": 64,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 0.8333333333333334,
+      "num_samples": 6,
+      "num_failed": 1,
+      "failed_samples": [
+        {
+          "context_length": 4096,
+          "needle_position": 0.2,
+          "needle": "The reference code is 8395 and the token is EAGLE.",
+          "response": "\n\nAnswer: 8395, Reference code.",
+          "expected_number": "8395",
+          "expected_code": "EAGLE"
+        }
+      ],
+      "timestamp": "2026-04-07 12:42:12"
+    },
+    {
+      "task_name": "reasoning",
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 128,
+        "n_v": 64,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "score": 1.0,
+      "num_samples": 5,
+      "num_failed": 0,
+      "failed_samples": [],
+      "timestamp": "2026-04-07 12:42:13"
+    }
+  ]
+}
