@@ -88,7 +88,13 @@
       "description": "Maximum compression + Route 5 auto-recall. Best for detail retrieval.",
       "probe_layers": 3,
       "auto_reconstruct": true
+    },
+    "no_calibration": {
+      "strategy": "triple_pq",
+      "flat_quant": "q8_0",
+      "description": "Data-oblivious compression. No calibration needed. KV: -49%, Total: -17%.",
+      "lazy_prefill_threshold": 32768
     }
   },
-  "notes": "v2.0 Official Baseline (2026-04-01). scored_pq+Q8 optimal. 32K: PP +52%, TG +34%, Mem -89% vs standard. Q4 flat kills TG (-45%). Route 5 h^(0) capture zero-cost. Route 0 modes: balanced/ultra_long/recall_first."
+  "notes": "v2.0 Official Baseline (2026-04-01). scored_pq+Q8 optimal. 32K: PP +52%, TG +34%, Mem -89% vs standard. Q4 flat kills TG (-45%). Route 5 h^(0) capture zero-cost. Route 0 modes: balanced/ultra_long/recall_first/no_calibration. triple_pq bug fixed (2026-04-07): lazy_prefill_threshold=32768 prevents +55% prefill OOM."
 }
