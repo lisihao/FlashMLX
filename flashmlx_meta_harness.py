@@ -274,17 +274,20 @@ class FlashMLXMetaHarness:
         # Use a simpler approach: compute full cross-entropy
         batch_size, seq_len, vocab_size = shift_logits.shape
 
-        # Reshape for easier indexing
+        # Vectorized perplexity calculation (much faster!)
+        # Use MLX's gather/take to extract correct token probabilities
         probs_flat = probs.reshape(-1, vocab_size)
-        tokens_flat = shift_tokens.reshape(-1)
+        tokens_flat = shift_tokens.reshape(-1).astype(mx.int32)
 
-        # Manual gather: sum of log probs for correct tokens
-        log_probs_sum = 0.0
-        for i in range(tokens_flat.shape[0]):
-            token_id = int(tokens_flat[i].item())
-            log_probs_sum += mx.log(probs_flat[i, token_id] + 1e-10)
+        # Extract probabilities of correct tokens using advanced indexing
+        # Create row indices
+        row_indices = mx.arange(tokens_flat.shape[0])
+        # Gather probabilities: probs_flat[row_indices, tokens_flat]
+        correct_probs = probs_flat[row_indices, tokens_flat]
 
-        loss = -log_probs_sum / tokens_flat.shape[0]
+        # Compute log probabilities (vectorized)
+        log_probs = mx.log(correct_probs + 1e-10)
+        loss = -mx.mean(log_probs)
         perplexity = mx.exp(loss).item()
 
         # Compute speed (tokens/sec)
@@ -365,11 +368,28 @@ class FlashMLXMetaHarness:
 
         print(f"Search space: {len(configs)} configurations\n")
 
-        # Benchmark all configs
+        # Benchmark all configs with progress tracking
+        start_time = time.perf_counter()
         for i, config in enumerate(configs, 1):
             print(f"\n[{i}/{len(configs)}]")
+
+            # Time estimate
+            if i > 1:
+                elapsed = time.perf_counter() - start_time
+                avg_time = elapsed / (i - 1)
+                remaining = avg_time * (len(configs) - i + 1)
+                print(f"Progress: {i-1}/{len(configs)} complete, Est. remaining: {remaining/60:.1f} min")
+
             result = self.benchmark_config(config)
             self.results.append(result)
+
+        # Total time
+        total_time = time.perf_counter() - start_time
+        print(f"\n{'='*80}")
+        print(f"OPTIMIZATION COMPLETE")
+        print(f"  Total time: {total_time/60:.1f} min ({total_time:.1f} sec)")
+        print(f"  Avg per config: {total_time/len(configs):.1f} sec")
+        print(f"{'='*80}\n")
 
         # Find best config by Pareto score
         best_result = max(self.results, key=lambda r: r.pareto_score)
