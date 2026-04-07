@@ -1,0 +1,44 @@
+{
+  "qwen3-8b-mlx": {
+    "model_id": "qwen3-8b-mlx",
+    "architecture_type": "pure_transformer",
+    "num_layers": 36,
+    "num_attention_layers": 36,
+    "hidden_size": 4096,
+    "head_dim": 128,
+    "num_kv_heads": 8,
+    "num_q_heads": 32,
+    "kv_q_ratio": 0.25,
+    "param_count_b": 7.247757312,
+    "is_mla": false,
+    "is_gqa": true
+  },
+  "llama-3.2-3b-mlx": {
+    "model_id": "llama-3.2-3b-mlx",
+    "architecture_type": "pure_transformer",
+    "num_layers": 28,
+    "num_attention_layers": 28,
+    "hidden_size": 3072,
+    "head_dim": 128,
+    "num_kv_heads": 8,
+    "num_q_heads": 24,
+    "kv_q_ratio": 0.3333333333333333,
+    "param_count_b": 3.170893824,
+    "is_mla": false,
+    "is_gqa": true
+  },
+  "qwen3.5-35b-mlx": {
+    "model_id": "qwen3.5-35b-mlx",
+    "architecture_type": "hybrid_ssm_attention",
+    "num_layers": 40,
+    "num_attention_layers": 10,
+    "hidden_size": 0,
+    "head_dim": 256,
+    "num_kv_heads": 2,
+    "num_q_heads": 16,
+    "kv_q_ratio": 0.125,
+    "param_count_b": 0.0,
+    "is_mla": false,
+    "is_gqa": true
+  }
+}
