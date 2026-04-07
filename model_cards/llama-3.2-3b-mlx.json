@@ -12,7 +12,7 @@
   },
   "optimal": {
     "strategy": "triple_pq",
-    "warm_bits": 4,
+    "kv_warm_bits": 4,
     "flat_quant": "q8_0",
     "density_mode": "recall_first",
     "recent_size": 512,
@@ -39,6 +39,13 @@
       "tg_mem_mb": 4138,
       "ppl": 1.0068
     }
+  },
+  "quality_evaluation": {
+    "needle_recall": 0.833,
+    "reasoning_acc": 1.0,
+    "composite_score": 0.917,
+    "relative_to_standard": 0.0,
+    "note": "Multi-task eval @ 4K context. All configs (standard, triple_pq polarquant, triple_pq turboangle) achieve same quality scores. No degradation detected."
   },
   "platform": "M4 Max 64GB",
   "not_recommended": [],
