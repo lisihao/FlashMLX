@@ -143,7 +143,14 @@ class FlashMLXMetaHarness:
         # Load model once
         print(f"Loading model from {model_path}...")
         self.model, self.tokenizer = load(model_path)
-        self.num_layers = len(self.model.model.layers)
+
+        # Get layers (handle different model structures)
+        if hasattr(self.model, 'model') and hasattr(self.model.model, 'layers'):
+            self.num_layers = len(self.model.model.layers)
+        elif hasattr(self.model, 'language_model') and hasattr(self.model.language_model, 'model'):
+            self.num_layers = len(self.model.language_model.model.layers)
+        else:
+            raise ValueError(f"Cannot find layers in model structure")
 
         # Tokenize test prompt
         self.test_tokens = mx.array([self.tokenizer.encode(test_prompt)])

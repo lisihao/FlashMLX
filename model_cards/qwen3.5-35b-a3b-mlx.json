@@ -1,7 +1,7 @@
 {
   "model_id": "qwen3.5-35b-a3b-mlx",
   "model_name": "Qwen3.5-35B-A3B-MLX (6-bit)",
-  "model_path": "/Volumes/toshiba/models/Qwen3.5-35B-A3B-MLX",
+  "model_path": "/Volumes/toshiba/models/qwen3.5-35b-mlx",
   "architecture": {
     "type": "hybrid_ssm_attention",
     "num_layers": 40,
@@ -11,7 +11,10 @@
     "num_kv_heads": 8
   },
   "optimal": {
-    "strategy": "standard"
+    "strategy": "triple_pq",
+    "warm_quantizer": "turboangle",
+    "n_k": 256,
+    "n_v": 128
   },
   "offload": {
     "enabled": false
@@ -42,10 +45,18 @@
       "pp_peak_mb": 459
     }
   },
+  "meta_harness_results": {
+    "4k": {
+      "optimal_config": "turboangle K256V128",
+      "tg_toks": 742.6,
+      "tg_mem_mb": 25077,
+      "ppl": 1.0078
+    }
+  },
   "platform": "M4 Max 64GB",
   "not_recommended": [
     "scored_pq",
     "scored_kv_direct"
   ],
-  "notes": "Hybrid architecture (30 SSM + 10 Attention). KV cache is only 427MB at 16K — not the bottleneck. Optimization target is Route 1 (Expert Offloading), not KV compression."
+  "notes": "Hybrid architecture (30 SSM + 10 Attention). KV cache is only 427MB at 16K — not the bottleneck. Meta-Harness optimal: TurboAngle K256V128 achieves 742.6 tok/s @ 4K. All configs same memory (25077 MB), confirming KV cache is not bottleneck. Optimization target: Route 1 (Expert Offloading)."
 }

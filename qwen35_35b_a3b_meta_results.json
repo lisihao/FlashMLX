@@ -1,0 +1,78 @@
+{
+  "model_path": "/Volumes/toshiba/models/qwen3.5-35b-mlx",
+  "num_tokens": 5001,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 256,
+        "n_v": 128,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 742.6462741633429,
+      "peak_memory_mb": 25076.908166885376,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.426462741633429,
+      "memory_score": 0.0,
+      "pareto_score": 2.476966059844114,
+      "timestamp": "2026-04-07 11:10:46"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 128,
+        "n_v": 64,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 705.2765047177752,
+      "peak_memory_mb": 25076.90846633911,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.052765047177752,
+      "memory_score": 0.0,
+      "pareto_score": 2.364856751507411,
+      "timestamp": "2026-04-07 11:10:54"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "ultra_long",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 678.6762767901753,
+      "peak_memory_mb": 25076.892541885376,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 6.786762767901752,
+      "memory_score": 0.0,
+      "pareto_score": 2.2850560677246112,
+      "timestamp": "2026-04-07 11:11:02"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": null,
+      "strategy": "turboangle",
+      "n_k": 256,
+      "n_v": 128,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}
