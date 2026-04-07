@@ -1,0 +1,88 @@
+{
+  "model_path": "/Volumes/toshiba/models/qwen3-8b-mlx",
+  "num_tokens": 2001,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "standard",
+        "kv_warm_bits": null,
+        "strategy": null,
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 395.27346302640086,
+      "peak_memory_mb": 9761.689304351807,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 3.9527346302640085,
+      "memory_score": 0.023831069564819285,
+      "pareto_score": 1.439613840346252,
+      "timestamp": "2026-04-05 20:05:36"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 280.9464415162517,
+      "peak_memory_mb": 9737.064296722412,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 2.809464415162517,
+      "memory_score": 0.02629357032775881,
+      "pareto_score": 1.0971252759683925,
+      "timestamp": "2026-04-05 20:05:44"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "balanced",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 260.79564253044555,
+      "peak_memory_mb": 9737.064296722412,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 2.6079564253044554,
+      "memory_score": 0.02629357032775881,
+      "pareto_score": 1.0366728790109738,
+      "timestamp": "2026-04-05 20:05:52"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "standard",
+      "kv_warm_bits": null,
+      "strategy": null,
+      "n_k": null,
+      "n_v": null,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    },
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": 4,
+      "strategy": "polarquant",
+      "n_k": null,
+      "n_v": null,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}
