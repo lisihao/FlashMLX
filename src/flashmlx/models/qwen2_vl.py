@@ -54,7 +54,20 @@ class Qwen2VLModel(nn.Module):
 
         # Vision Encoder (已移植)
         if config.vision_config is not None:
-            vision_config = VisionConfig(**config.vision_config)
+            # Handle HF config parameter name differences
+            vision_cfg_dict = dict(config.vision_config)
+
+            # Map HF names to FlashMLX names
+            name_mapping = {
+                'in_chans': 'in_channels',
+                'spatial_patch_size': 'spatial_merge_size',
+            }
+
+            for hf_name, flashmlx_name in name_mapping.items():
+                if hf_name in vision_cfg_dict:
+                    vision_cfg_dict[flashmlx_name] = vision_cfg_dict.pop(hf_name)
+
+            vision_config = VisionConfig(**vision_cfg_dict)
             self.vision_tower = VisionModel(vision_config)
         else:
             self.vision_tower = None
