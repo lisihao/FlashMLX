@@ -1096,6 +1096,71 @@ FlashMLX 把这件事做成了真实系统实验，结论相反：**太大的 ch
 
 ---
 
+## Vision-Language Models (VLM) 支持
+
+FlashMLX 现在支持 **Vision-Language Models**（视觉-语言模型），将 FlashMLX 的 cache 优化能力扩展到多模态场景。
+
+### 快速开始
+
+```python
+from flashmlx.vlm import load_vlm_components
+from flashmlx.generation import VLMGenerator, create_vlm_cache
+
+# 加载 VLM 组件
+model, tokenizer, processor, config = load_vlm_components(
+    "mlx-community/Qwen2-VL-2B-Instruct-bf16"
+)
+
+# 创建优化 cache
+cache = create_vlm_cache(model, kv_cache="standard")
+
+# 创建生成器
+generator = VLMGenerator(model, tokenizer, config.image_token_id)
+
+# 文本生成
+response = generator.generate("What is MLX?", cache=cache)
+
+# Vision+Text 生成
+response = generator.generate(
+    "What's in this image?",
+    pixel_values=pixel_values,
+    grid_thw=grid_thw,
+    cache=cache
+)
+```
+
+### VLM 性能结果
+
+**Qwen2-VL-2B / M4 Max 64GB / bf16**
+
+| 场景 | Standard Cache | Compressed Cache | 提升 |
+|------|----------------|------------------|------|
+| 文本生成 (短上下文) | 52.2 tok/s | 55.0 tok/s | **+5%** |
+| Vision+Text (256 tokens) | 11.2 tok/s | 16.1 tok/s | **+43.6%** |
+| 质量 | Perfect ✅ | Short: OK, Long: Degraded ⚠️ | - |
+
+**Cache 策略建议**：
+- **生产环境**：使用 `standard` cache（完美质量）
+- **实验性**：`triple_pq` cache（需 calibration）
+
+### 支持的模型
+
+- ✅ Qwen2-VL-2B-Instruct
+- ✅ Qwen2-VL-7B-Instruct
+- ⏳ LLaVA (planned)
+- ⏳ InternVL (planned)
+
+### 示例和文档
+
+| 资源 | 描述 |
+|------|------|
+| [`docs/VLM_GUIDE.md`](docs/VLM_GUIDE.md) | 完整 VLM 使用指南 |
+| `examples/demo_vlm_simple.py` | 基础使用示例 |
+| `examples/demo_vlm_advanced.py` | 高级功能（多轮对话、批处理） |
+| `examples/bench_vlm_vision_cache.py` | Vision+Text 性能测试 |
+
+---
+
 ## 文档
 
 | 文档 | 内容 |
@@ -1103,6 +1168,7 @@ FlashMLX 把这件事做成了真实系统实验，结论相反：**太大的 ch
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 完整系统架构、数据流、文件结构、所有 Route 详解 |
 | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | API 参考 |
 | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | 使用指南 |
+| [`docs/VLM_GUIDE.md`](docs/VLM_GUIDE.md) | **Vision-Language Models 使用指南** |
 | `model_cards/*.json` | 每模型的优化配置（单一数据源） |
 | `benchmarks/` | 性能基准测试套件 |
 
