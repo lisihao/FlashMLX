@@ -205,8 +205,17 @@ class TestQwen2VLModel:
                 "hidden_size": 3584,
             },
             text_config={
+                "model_type": "qwen2",
                 "hidden_size": 3584,
+                "num_hidden_layers": 4,  # Small for testing
+                "intermediate_size": 18944,
+                "num_attention_heads": 28,
+                "num_key_value_heads": 4,
                 "vocab_size": 151936,
+                "rms_norm_eps": 1e-6,
+                "rope_theta": 1000000.0,
+                "rope_traditional": False,
+                "tie_word_embeddings": False,
             },
             image_token_id=151655,
             video_token_id=151656,
@@ -216,9 +225,11 @@ class TestQwen2VLModel:
 
         # Check components exist
         assert model.vision_tower is not None
+        assert model.language_model is not None
+        assert model.embed_tokens is not None
         assert model.config.image_token_id == 151655
 
-        print(f"✅ Model initialization: Vision tower created")
+        print(f"✅ Model initialization: Vision + Language connected")
 
     def test_sanitize_weights(self):
         """Test weight key transformation"""
@@ -242,6 +253,91 @@ class TestQwen2VLModel:
         assert "language_model.lm_head.weight" in sanitized
 
         print(f"✅ Weight sanitization: HF → FlashMLX keys")
+
+    def test_text_only_forward(self):
+        """Test text-only forward pass (no images)"""
+        # Create small model for testing
+        config = VLMConfig(
+            vision_config={"embed_dim": 1152, "depth": 1, "num_heads": 16, "hidden_size": 512},
+            text_config={
+                "model_type": "qwen2",
+                "hidden_size": 512,
+                "num_hidden_layers": 2,
+                "intermediate_size": 2048,
+                "num_attention_heads": 8,
+                "num_key_value_heads": 2,
+                "vocab_size": 1000,
+                "rms_norm_eps": 1e-6,
+                "rope_theta": 10000.0,
+                "tie_word_embeddings": False,
+            },
+        )
+
+        model = Qwen2VLModel(config)
+
+        # Text-only input (no pixel_values)
+        input_ids = mx.array([[1, 2, 3, 4, 5]])  # [batch=1, seq_len=5]
+
+        # Forward pass
+        logits = model(input_ids=input_ids, pixel_values=None, grid_thw=None)
+
+        # Check output shape
+        assert logits.shape == (1, 5, 1000)  # [batch, seq_len, vocab_size]
+
+        print(f"✅ Text-only forward: {input_ids.shape} → {logits.shape}")
+
+    def test_vision_text_forward(self):
+        """Test vision+text forward pass"""
+        # Create small model
+        config = VLMConfig(
+            vision_config={
+                "embed_dim": 256,
+                "depth": 1,
+                "num_heads": 4,
+                "hidden_size": 512,
+                "patch_size": 14,
+                "temporal_patch_size": 2,
+                "spatial_merge_size": 2,
+            },
+            text_config={
+                "model_type": "qwen2",
+                "hidden_size": 512,
+                "num_hidden_layers": 2,
+                "intermediate_size": 2048,
+                "num_attention_heads": 8,
+                "num_key_value_heads": 2,
+                "vocab_size": 1000,
+                "rms_norm_eps": 1e-6,
+                "rope_theta": 10000.0,
+                "tie_word_embeddings": False,
+            },
+            image_token_id=999,  # Use token ID within vocab
+        )
+
+        model = Qwen2VLModel(config)
+
+        # Input with <image> token
+        # ["Hello", "<image>", "world"]
+        input_ids = mx.array([[1, 999, 3]])  # [batch=1, seq_len=3]
+
+        # Create dummy image (56x56 for small test)
+        pixel_values = mx.random.normal((1, 3, 2, 56, 56))  # [B, C, T, H, W]
+
+        # Grid: temporal=2, height=56/14=4, width=56/14=4
+        # After merge: 4/2=2, 4/2=2 → 2*2*1 = 4 vision tokens
+        grid_thw = mx.array([[1, 4, 4]])  # After temporal/spatial merge: 1*2*2=4 tokens
+
+        # Forward pass
+        logits = model(
+            input_ids=input_ids,
+            pixel_values=pixel_values,
+            grid_thw=grid_thw,
+        )
+
+        # Check output shape (should be same as input seq_len since <image> is single token)
+        assert logits.shape == (1, 3, 1000)
+
+        print(f"✅ Vision+Text forward: image (56x56) + text → {logits.shape}")
 
 
 def test_qwen2vl_integration():
@@ -318,6 +414,8 @@ if __name__ == "__main__":
     test_model = TestQwen2VLModel()
     test_model.test_model_initialization()
     test_model.test_sanitize_weights()
+    test_model.test_text_only_forward()
+    test_model.test_vision_text_forward()
 
     # Integration test
     test_qwen2vl_integration()

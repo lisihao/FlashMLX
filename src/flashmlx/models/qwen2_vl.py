@@ -9,6 +9,18 @@ from typing import Optional, Tuple
 import mlx.core as mx
 import mlx.nn as nn
 
+# MLX-LM models (for language model)
+try:
+    from mlx_lm.models import qwen2
+except ImportError:
+    # Fallback: try from mlx-lm-source
+    import sys
+    from pathlib import Path
+    mlx_lm_path = Path(__file__).parent.parent.parent.parent / "mlx-lm-source"
+    if mlx_lm_path.exists():
+        sys.path.insert(0, str(mlx_lm_path))
+    from mlx_lm.models import qwen2
+
 # Support both relative and absolute imports
 try:
     from .vision import VisionModel, VisionConfig
@@ -47,11 +59,15 @@ class Qwen2VLModel(nn.Module):
         else:
             self.vision_tower = None
 
-        # Language Model (延后初始化，需要检查 mlx-lm 接口)
-        self.language_model = None  # TODO: Initialize in Week 2 Task 2.1
-        self.embed_tokens = None  # TODO: Get from language model
-
-        print(f"⚠️  Qwen2VLModel initialized (language_model not yet connected)")
+        # Language Model (MLX-LM Qwen2 + FlashMLX Routes)
+        if config.text_config is not None:
+            text_args = qwen2.ModelArgs.from_dict(config.text_config)
+            self.language_model = qwen2.Model(text_args)
+            # Get embed_tokens for fusion logic
+            self.embed_tokens = self.language_model.model.embed_tokens
+        else:
+            self.language_model = None
+            self.embed_tokens = None
 
     def get_input_embeddings(
         self,
@@ -211,35 +227,38 @@ class Qwen2VLModel(nn.Module):
             pixel_values: Image pixels [batch_size, C, H, W] (optional)
             grid_thw: Grid dimensions [batch_size, 3] (optional)
             mask: Attention mask (optional)
-            cache: KV cache for generation (optional)
+            cache: KV cache (FlashMLX optimized cache supported) (optional)
 
         Returns:
             Logits [batch_size, seq_len, vocab_size]
 
         Process:
             1. get_input_embeddings() → merged vision+text embeddings
-            2. language_model() → logits
+            2. language_model(input_embeddings=...) → logits
+
+        FlashMLX Cache Support:
+            Pass FlashMLX optimized cache created via:
+            >>> from flashmlx.cache import make_prompt_cache
+            >>> cache = make_prompt_cache(model, kv_cache="scored_pq", ...)
         """
         if self.language_model is None:
             raise RuntimeError(
-                "Language model not connected yet. "
-                "TODO: Implement in Week 2 Task 2.1"
+                "Language model not initialized. Check config.text_config."
             )
 
-        # Get merged embeddings
+        # Get merged embeddings (vision + text)
         inputs_embeds = self.get_input_embeddings(
             input_ids=input_ids,
             pixel_values=pixel_values,
             grid_thw=grid_thw,
         )
 
-        # Pass to language model
-        # TODO: Check if mlx-lm models support inputs_embeds parameter
+        # Pass to language model with input_embeddings
+        # mlx-lm qwen2.Model supports input_embeddings parameter
         logits = self.language_model(
-            input_ids=None,  # Use embeddings directly
-            inputs_embeds=inputs_embeds,
-            mask=mask,
-            cache=cache,
+            inputs=input_ids,  # Still needed for position encoding
+            cache=cache,  # FlashMLX optimized cache supported here
+            input_embeddings=inputs_embeds,  # Use merged embeddings
         )
 
         return logits
