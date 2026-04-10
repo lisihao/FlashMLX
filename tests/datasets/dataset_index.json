@@ -1,0 +1,31 @@
+{
+  "total_datasets": 4,
+  "datasets": {
+    "vqav2": {
+      "name": "vqav2",
+      "num_samples": 500,
+      "sample_file": "tests/datasets/vqav2/val_samples.json",
+      "format": "json"
+    },
+    "gqa": {
+      "name": "gqa",
+      "num_samples": 200,
+      "sample_file": "tests/datasets/gqa/val_samples.json",
+      "format": "json"
+    },
+    "textvqa": {
+      "name": "textvqa",
+      "num_samples": 200,
+      "sample_file": "tests/datasets/textvqa/val_samples.json",
+      "format": "json"
+    },
+    "pope": {
+      "name": "pope",
+      "num_samples": 200,
+      "sample_file": "tests/datasets/pope/val_samples.json",
+      "format": "json"
+    }
+  },
+  "version": "1.0",
+  "created_for": "FlashMLX VLM Testing"
+}

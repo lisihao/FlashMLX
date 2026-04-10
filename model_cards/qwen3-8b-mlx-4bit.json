@@ -94,6 +94,7 @@
       "auto_reconstruct": true
     },
     "no_calibration": {
+      "density_scale": 0.0,
       "strategy": "triple_pq",
       "flat_quant": "q8_0",
       "description": "Data-oblivious compression. No calibration needed. KV: -49%, Total: -17%.",

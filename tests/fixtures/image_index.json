@@ -1,0 +1,80 @@
+{
+  "total_images": 15,
+  "images": [
+    {
+      "filename": "bird.jpg",
+      "path": "tests/fixtures/images/bird.jpg",
+      "size": 40554
+    },
+    {
+      "filename": "car.jpg",
+      "path": "tests/fixtures/images/car.jpg",
+      "size": 40455
+    },
+    {
+      "filename": "cat.jpg",
+      "path": "tests/fixtures/images/cat.jpg",
+      "size": 40554
+    },
+    {
+      "filename": "dog.jpg",
+      "path": "tests/fixtures/images/dog.jpg",
+      "size": 40403
+    },
+    {
+      "filename": "fixture_0.jpg",
+      "path": "tests/fixtures/images/fixture_0.jpg",
+      "size": 40447
+    },
+    {
+      "filename": "fixture_1.jpg",
+      "path": "tests/fixtures/images/fixture_1.jpg",
+      "size": 40428
+    },
+    {
+      "filename": "fixture_2.jpg",
+      "path": "tests/fixtures/images/fixture_2.jpg",
+      "size": 40293
+    },
+    {
+      "filename": "fixture_3.jpg",
+      "path": "tests/fixtures/images/fixture_3.jpg",
+      "size": 40502
+    },
+    {
+      "filename": "fixture_4.jpg",
+      "path": "tests/fixtures/images/fixture_4.jpg",
+      "size": 40269
+    },
+    {
+      "filename": "fixture_5.jpg",
+      "path": "tests/fixtures/images/fixture_5.jpg",
+      "size": 40435
+    },
+    {
+      "filename": "fixture_6.jpg",
+      "path": "tests/fixtures/images/fixture_6.jpg",
+      "size": 40419
+    },
+    {
+      "filename": "fixture_7.jpg",
+      "path": "tests/fixtures/images/fixture_7.jpg",
+      "size": 40262
+    },
+    {
+      "filename": "fixture_8.jpg",
+      "path": "tests/fixtures/images/fixture_8.jpg",
+      "size": 40307
+    },
+    {
+      "filename": "fixture_9.jpg",
+      "path": "tests/fixtures/images/fixture_9.jpg",
+      "size": 40563
+    },
+    {
+      "filename": "tree.jpg",
+      "path": "tests/fixtures/images/tree.jpg",
+      "size": 40439
+    }
+  ]
+}

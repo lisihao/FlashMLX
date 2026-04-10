@@ -1,0 +1,7002 @@
+[
+  {
+    "question_id": "vqav2_0",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_1",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_2",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_3",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_4",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_5",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_6",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_7",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_8",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_9",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_10",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_11",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_12",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_13",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_14",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_15",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_16",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_17",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_18",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_19",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_20",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_21",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_22",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_23",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_24",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_25",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_26",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_27",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_28",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_29",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_30",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_31",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_32",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_33",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_34",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_35",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_36",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_37",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_38",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_39",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_40",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_41",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_42",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_43",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_44",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_45",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_46",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_47",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_48",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_49",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_50",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_51",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_52",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_53",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_54",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_55",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_56",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_57",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_58",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_59",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_60",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_61",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_62",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_63",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_64",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_65",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_66",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_67",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_68",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_69",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_70",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_71",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_72",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_73",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_74",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_75",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_76",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_77",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_78",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_79",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_80",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_81",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_82",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_83",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_84",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_85",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_86",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_87",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_88",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_89",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_90",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_91",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_92",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_93",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_94",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_95",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_96",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_97",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_98",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_99",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_100",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_101",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_102",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_103",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_104",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_105",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_106",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_107",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_108",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_109",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_110",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_111",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_112",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_113",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_114",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_115",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_116",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_117",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_118",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_119",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_120",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_121",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_122",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_123",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_124",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_125",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_126",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_127",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_128",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_129",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_130",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_131",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_132",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_133",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_134",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_135",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_136",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_137",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_138",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_139",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_140",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_141",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_142",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_143",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_144",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_145",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_146",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_147",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_148",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_149",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_150",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_151",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_152",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_153",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_154",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_155",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_156",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_157",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_158",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_159",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_160",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_161",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_162",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_163",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_164",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_165",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_166",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_167",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_168",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_169",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_170",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_171",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_172",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_173",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_174",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_175",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_176",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_177",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_178",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_179",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_180",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_181",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_182",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_183",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_184",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_185",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_186",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_187",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_188",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_189",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_190",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_191",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_192",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_193",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_194",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_195",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_196",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_197",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_198",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_199",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_200",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_201",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_202",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_203",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_204",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_205",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_206",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_207",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_208",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_209",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_210",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_211",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_212",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_213",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_214",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_215",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_216",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_217",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_218",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_219",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_220",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_221",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_222",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_223",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_224",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_225",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_226",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_227",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_228",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_229",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_230",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_231",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_232",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_233",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_234",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_235",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_236",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_237",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_238",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_239",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_240",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_241",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_242",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_243",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_244",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_245",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_246",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_247",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_248",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_249",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_250",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_251",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_252",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_253",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_254",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_255",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_256",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_257",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_258",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_259",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_260",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_261",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_262",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_263",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_264",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_265",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_266",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_267",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_268",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_269",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_270",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_271",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_272",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_273",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_274",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_275",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_276",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_277",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_278",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_279",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_280",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_281",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_282",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_283",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_284",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_285",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_286",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_287",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_288",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_289",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_290",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_291",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_292",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_293",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_294",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_295",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_296",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_297",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_298",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_299",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_300",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_301",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_302",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_303",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_304",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_305",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_306",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_307",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_308",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_309",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_310",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_311",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_312",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_313",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_314",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_315",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_316",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_317",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_318",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_319",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_320",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_321",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_322",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_323",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_324",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_325",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_326",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_327",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_328",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_329",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_330",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_331",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_332",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_333",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_334",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_335",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_336",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_337",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_338",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_339",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_340",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_341",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_342",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_343",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_344",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_345",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_346",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_347",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_348",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_349",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_350",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_351",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_352",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_353",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_354",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_355",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_356",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_357",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_358",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_359",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_360",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_361",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_362",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_363",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_364",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_365",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_366",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_367",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_368",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_369",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_370",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_371",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_372",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_373",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_374",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_375",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_376",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_377",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_378",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_379",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_380",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_381",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_382",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_383",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_384",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_385",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_386",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_387",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_388",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_389",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_390",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_391",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_392",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_393",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_394",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_395",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_396",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_397",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_398",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_399",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_400",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_401",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_402",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_403",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_404",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_405",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_406",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_407",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_408",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_409",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_410",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_411",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_412",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_413",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_414",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_415",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_416",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_417",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_418",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_419",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_420",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_421",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_422",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_423",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_424",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_425",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_426",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_427",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_428",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_429",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_430",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_431",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_432",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_433",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_434",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_435",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_436",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_437",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_438",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_439",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_440",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_441",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_442",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_443",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_444",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_445",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_446",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_447",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_448",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_449",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_450",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_451",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_452",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_453",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_454",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_455",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_456",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_457",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_458",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_459",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_460",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_461",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_462",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "two",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_463",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_464",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_465",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "three",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_466",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_467",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_468",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_469",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_470",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_471",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_472",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_473",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_474",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_475",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_476",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "four",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_477",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What time of day does this appear to be?",
+    "answers": [
+      {
+        "answer": "brown",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_478",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "five",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_479",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "running",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_480",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_481",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "How many objects are visible?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_482",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_483",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_484",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the bird doing?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_485",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_486",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "no",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_487",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "one",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_488",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_489",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_490",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "standing",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_491",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "yes",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_492",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "green",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_493",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the background color?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_494",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the main subject of the image?",
+    "answers": [
+      {
+        "answer": "orange",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_495",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is this a car or a truck?",
+    "answers": [
+      {
+        "answer": "red",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_496",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What color is the cat?",
+    "answers": [
+      {
+        "answer": "flying",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_497",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is this indoors or outdoors?",
+    "answers": [
+      {
+        "answer": "blue",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_498",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "How many dogs are in the image?",
+    "answers": [
+      {
+        "answer": "sitting",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  },
+  {
+    "question_id": "vqav2_499",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What type of tree is shown?",
+    "answers": [
+      {
+        "answer": "maybe",
+        "confidence": 1.0
+      }
+    ],
+    "answer_type": "other",
+    "question_type": "what color"
+  }
+]

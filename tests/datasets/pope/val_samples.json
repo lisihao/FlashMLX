@@ -1,0 +1,1802 @@
+[
+  {
+    "question_id": "pope_0",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_1",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_2",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_3",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_4",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_5",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_6",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_7",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_8",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_9",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_10",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_11",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_12",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_13",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_14",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_15",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_16",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_17",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_18",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_19",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_20",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_21",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_22",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_23",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_24",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_25",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_26",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_27",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_28",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_29",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_30",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_31",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_32",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_33",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_34",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_35",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_36",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_37",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_38",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_39",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_40",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_41",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_42",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_43",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_44",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_45",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_46",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_47",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_48",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_49",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_50",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_51",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_52",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_53",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_54",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_55",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_56",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_57",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_58",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_59",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_60",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_61",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_62",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_63",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_64",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_65",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_66",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_67",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_68",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_69",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_70",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_71",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_72",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_73",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_74",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_75",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_76",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_77",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_78",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_79",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_80",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_81",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_82",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_83",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_84",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_85",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_86",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_87",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_88",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_89",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_90",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_91",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_92",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_93",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_94",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_95",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_96",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_97",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_98",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_99",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_100",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_101",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_102",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_103",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_104",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_105",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_106",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_107",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_108",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_109",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_110",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_111",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_112",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_113",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_114",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_115",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_116",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_117",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_118",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_119",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_120",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_121",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a book in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "book"
+  },
+  {
+    "question_id": "pope_122",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_123",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_124",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_125",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_126",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_127",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_128",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_129",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_130",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_131",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_132",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_133",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_134",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_135",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_136",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_137",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_138",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_139",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_140",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_141",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_142",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_143",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_144",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_145",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_146",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_147",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_148",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_149",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_150",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_151",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_152",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_153",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_154",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_155",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_156",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a hat in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "hat"
+  },
+  {
+    "question_id": "pope_157",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_158",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_159",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_160",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_161",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_162",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_163",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_164",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_165",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_166",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_167",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_168",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_169",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_170",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_171",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_172",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a shoe in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "shoe"
+  },
+  {
+    "question_id": "pope_173",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_174",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_175",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a bag in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bag"
+  },
+  {
+    "question_id": "pope_176",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_177",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_178",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_179",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a umbrella in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "umbrella"
+  },
+  {
+    "question_id": "pope_180",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_181",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_182",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_183",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a car in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "car"
+  },
+  {
+    "question_id": "pope_184",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a person in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "person"
+  },
+  {
+    "question_id": "pope_185",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_186",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Is there a table in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "table"
+  },
+  {
+    "question_id": "pope_187",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_188",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is there a bicycle in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bicycle"
+  },
+  {
+    "question_id": "pope_189",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Is there a tree in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "tree"
+  },
+  {
+    "question_id": "pope_190",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_191",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is there a dog in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "dog"
+  },
+  {
+    "question_id": "pope_192",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_193",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_194",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_195",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is there a chair in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "chair"
+  },
+  {
+    "question_id": "pope_196",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is there a bird in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "bird"
+  },
+  {
+    "question_id": "pope_197",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is there a cat in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "cat"
+  },
+  {
+    "question_id": "pope_198",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "yes",
+    "label": true,
+    "object": "phone"
+  },
+  {
+    "question_id": "pope_199",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is there a phone in the image?",
+    "answer": "no",
+    "label": false,
+    "object": "phone"
+  }
+]

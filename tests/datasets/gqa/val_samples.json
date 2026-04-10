@@ -1,0 +1,2402 @@
+[
+  {
+    "question_id": "gqa_0",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_1",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_2",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_3",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_4",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_5",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_6",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_7",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_8",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_9",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_10",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_11",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_12",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_13",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_14",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_15",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_16",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_17",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_18",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_19",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_20",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_21",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_22",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_23",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "yes",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_24",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "left",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_25",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_26",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_27",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_28",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_29",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_30",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_31",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_32",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_33",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_34",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_35",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_36",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_37",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_38",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_39",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_40",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_41",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "yes",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_42",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_43",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_44",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_45",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "left",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_46",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_47",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_48",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "center",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_49",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "right",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_50",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_51",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_52",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_53",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_54",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_55",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "top",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_56",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_57",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "right",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_58",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_59",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_60",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_61",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_62",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_63",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_64",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "left",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_65",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "no",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_66",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_67",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_68",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_69",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "center",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_70",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "center",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_71",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "center",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_72",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_73",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_74",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_75",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_76",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_77",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_78",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_79",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_80",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_81",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "center",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_82",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_83",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_84",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_85",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_86",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_87",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_88",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "no",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_89",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_90",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "left",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_91",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_92",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_93",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_94",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_95",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "center",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_96",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_97",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_98",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "no",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_99",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_100",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_101",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_102",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "center",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_103",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_104",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_105",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "yes",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_106",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "left",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_107",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_108",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_109",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "yes",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_110",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_111",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_112",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_113",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "center",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_114",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_115",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_116",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "left",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_117",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_118",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_119",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_120",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "center",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_121",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_122",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_123",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_124",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_125",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_126",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_127",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_128",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_129",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_130",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_131",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_132",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_133",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_134",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_135",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_136",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_137",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "left",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_138",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_139",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "yes",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_140",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "right",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_141",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "bottom",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_142",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_143",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_144",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "right",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_145",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "top",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_146",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "right",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_147",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "yes",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_148",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_149",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "left",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_150",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_151",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "bottom",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_152",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_153",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "bottom",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_154",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "right",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_155",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "bottom",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_156",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_157",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_158",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_159",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_160",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_161",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "center",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_162",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_163",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_164",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_165",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_166",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_167",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_168",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_169",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "right",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_170",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_171",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_172",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "top",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_173",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "top",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_174",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "bottom",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_175",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_176",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "no",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_177",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "bottom",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_178",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "left",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_179",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "top",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_180",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_181",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "right",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_182",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "top",
+    "full_answer": "center",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_183",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "left",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_184",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "no",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_185",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_186",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is between the dog and the tree?",
+    "answer": "left",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_187",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "bottom",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_188",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "yes",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_189",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_190",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "right",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_191",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_192",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "left",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_193",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "right",
+    "full_answer": "yes",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_194",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "bottom",
+    "full_answer": "top",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_195",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_196",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "Which object is larger, the car or the bird?",
+    "answer": "center",
+    "full_answer": "right",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_197",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "Is the cat on the left or right side?",
+    "answer": "left",
+    "full_answer": "no",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_198",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "Are there more cats or dogs?",
+    "answer": "yes",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  },
+  {
+    "question_id": "gqa_199",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is the spatial relationship between objects?",
+    "answer": "no",
+    "full_answer": "left",
+    "semantic": [
+      "spatial",
+      "logical"
+    ]
+  }
+]

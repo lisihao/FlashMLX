@@ -1,0 +1,3602 @@
+[
+  {
+    "question_id": "textvqa_0",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "123",
+      "123",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "OPEN",
+      "ABC",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_1",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "WELCOME",
+      "OPEN",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "CAT",
+      "123",
+      "DOG",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_2",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "WELCOME",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "HELLO",
+      "DOG",
+      "123",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_3",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "OPEN",
+      "HELLO",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "HELLO",
+      "WELCOME",
+      "EXIT",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_4",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "OPEN",
+      "CLOSED",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "HELLO",
+      "STOP",
+      "OPEN",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_5",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CAT",
+      "EXIT",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "STOP",
+      "OPEN",
+      "CLOSED",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_6",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CAT",
+      "CLOSED",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "CAT",
+      "CLOSED",
+      "ABC",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_7",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "ABC",
+      "CLOSED",
+      "123"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "HELLO",
+      "EXIT",
+      "CAT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_8",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "123",
+      "123",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "STOP",
+      "HELLO",
+      "CAT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_9",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "DOG",
+      "STOP",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "CAT",
+      "CLOSED",
+      "DOG",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_10",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "DOG",
+      "CLOSED",
+      "123"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "CLOSED",
+      "OPEN",
+      "123",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_11",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "123",
+      "HELLO",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "STOP",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_12",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "HELLO",
+      "DOG",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "123",
+      "OPEN",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_13",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "DOG",
+      "WELCOME",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "STOP",
+      "DOG",
+      "123",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_14",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "EXIT",
+      "WELCOME",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "ABC",
+      "CAT",
+      "123",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_15",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "STOP",
+      "EXIT",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "STOP",
+      "WELCOME",
+      "CLOSED",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_16",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "ABC",
+      "123",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "DOG",
+      "ABC",
+      "HELLO",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_17",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "STOP",
+      "CLOSED",
+      "123"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "DOG",
+      "ABC",
+      "OPEN",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_18",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "OPEN",
+      "123"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "OPEN",
+      "EXIT",
+      "CLOSED",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_19",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "OPEN",
+      "WELCOME",
+      "123"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "ABC",
+      "EXIT",
+      "OPEN",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_20",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CAT",
+      "123",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "CAT",
+      "WELCOME",
+      "HELLO",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_21",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "HELLO",
+      "EXIT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "123",
+      "WELCOME",
+      "OPEN",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_22",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "OPEN",
+      "CAT",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "STOP",
+      "DOG",
+      "CAT",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_23",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "STOP",
+      "STOP",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "123",
+      "WELCOME",
+      "CAT",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_24",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "ABC",
+      "CAT",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "EXIT",
+      "CAT",
+      "WELCOME",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_25",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "123",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "OPEN",
+      "123",
+      "DOG",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_26",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "OPEN",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "STOP",
+      "123",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_27",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "OPEN",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "ABC",
+      "CLOSED",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_28",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "DOG",
+      "WELCOME",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "OPEN",
+      "EXIT",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_29",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "DOG",
+      "123",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "123",
+      "OPEN",
+      "DOG",
+      "CAT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_30",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "123",
+      "123",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "WELCOME",
+      "EXIT",
+      "CAT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_31",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "ABC",
+      "HELLO",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "EXIT",
+      "ABC",
+      "DOG",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_32",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "ABC",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "EXIT",
+      "DOG",
+      "WELCOME",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_33",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "HELLO",
+      "ABC",
+      "EXIT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_34",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "WELCOME",
+      "DOG",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "STOP",
+      "CAT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_35",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "OPEN",
+      "123",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "ABC",
+      "OPEN",
+      "CAT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_36",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "EXIT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "WELCOME",
+      "123",
+      "ABC",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_37",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "CAT",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "STOP",
+      "OPEN",
+      "ABC",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_38",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "WELCOME",
+      "OPEN",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "CLOSED",
+      "EXIT",
+      "CAT",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_39",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "123",
+      "DOG",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "WELCOME",
+      "HELLO",
+      "STOP",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_40",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "HELLO",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "OPEN",
+      "STOP",
+      "HELLO",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_41",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "EXIT",
+      "WELCOME",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "DOG",
+      "123",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_42",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "EXIT",
+      "WELCOME",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "EXIT",
+      "OPEN",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_43",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "ABC",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "HELLO",
+      "123",
+      "OPEN",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_44",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "EXIT",
+      "HELLO",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CLOSED",
+      "DOG",
+      "STOP",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_45",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "123",
+      "OPEN",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "123",
+      "EXIT",
+      "ABC",
+      "STOP",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_46",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "HELLO",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "EXIT",
+      "CLOSED",
+      "HELLO",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_47",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "EXIT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "DOG",
+      "CLOSED",
+      "WELCOME",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_48",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "123",
+      "OPEN",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "CLOSED",
+      "DOG",
+      "STOP",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_49",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "HELLO",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "OPEN",
+      "EXIT",
+      "WELCOME",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_50",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "OPEN",
+      "HELLO",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "OPEN",
+      "123",
+      "ABC",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_51",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "CLOSED",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "DOG",
+      "CAT",
+      "EXIT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_52",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "DOG",
+      "DOG",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "WELCOME",
+      "OPEN",
+      "STOP",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_53",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "DOG",
+      "DOG",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "123",
+      "WELCOME",
+      "HELLO",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_54",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "OPEN",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "CAT",
+      "ABC",
+      "OPEN",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_55",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "HELLO",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "EXIT",
+      "STOP",
+      "123",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_56",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "123",
+      "OPEN",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "EXIT",
+      "STOP",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_57",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "STOP",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "123",
+      "WELCOME",
+      "EXIT",
+      "ABC",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_58",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "123",
+      "ABC",
+      "CAT",
+      "STOP",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_59",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "OPEN",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "ABC",
+      "WELCOME",
+      "STOP",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_60",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "OPEN",
+      "STOP",
+      "123"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "DOG",
+      "WELCOME",
+      "OPEN",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_61",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "DOG",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "HELLO",
+      "WELCOME",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_62",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "HELLO",
+      "STOP",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CAT",
+      "HELLO",
+      "OPEN",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_63",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "ABC",
+      "ABC",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "EXIT",
+      "123",
+      "DOG",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_64",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "WELCOME",
+      "CLOSED",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "123",
+      "HELLO",
+      "STOP",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_65",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "ABC",
+      "123",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "123",
+      "ABC",
+      "EXIT",
+      "HELLO",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_66",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CLOSED",
+      "DOG",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "DOG",
+      "123",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_67",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "CAT",
+      "CLOSED",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "STOP",
+      "OPEN",
+      "EXIT",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_68",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "123",
+      "CAT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "STOP",
+      "OPEN",
+      "123",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_69",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "DOG",
+      "ABC",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "EXIT",
+      "HELLO",
+      "STOP",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_70",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "CLOSED",
+      "STOP",
+      "EXIT",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_71",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "DOG",
+      "CAT",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "HELLO",
+      "WELCOME",
+      "CLOSED",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_72",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "OPEN",
+      "HELLO",
+      "ABC",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_73",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "HELLO",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CAT",
+      "ABC",
+      "EXIT",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_74",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "CLOSED",
+      "123",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "CLOSED",
+      "EXIT",
+      "ABC",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_75",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "DOG",
+      "CLOSED",
+      "123"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "STOP",
+      "ABC",
+      "EXIT",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_76",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "HELLO",
+      "EXIT",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "OPEN",
+      "DOG",
+      "ABC",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_77",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "STOP",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "STOP",
+      "HELLO",
+      "DOG",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_78",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "WELCOME",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "DOG",
+      "CLOSED",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_79",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CAT",
+      "CAT",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "123",
+      "HELLO",
+      "OPEN",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_80",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "STOP",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "ABC",
+      "123",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_81",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "WELCOME",
+      "DOG",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "123",
+      "HELLO",
+      "WELCOME",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_82",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "DOG",
+      "EXIT",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "CLOSED",
+      "EXIT",
+      "WELCOME",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_83",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "OPEN",
+      "DOG",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "STOP",
+      "OPEN",
+      "WELCOME",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_84",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "WELCOME",
+      "123",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "123",
+      "WELCOME",
+      "OPEN",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_85",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "EXIT",
+      "DOG",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "123",
+      "HELLO",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_86",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "123",
+      "DOG",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "HELLO",
+      "OPEN",
+      "EXIT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_87",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "CAT",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "STOP",
+      "ABC",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_88",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "ABC",
+      "CAT",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "123",
+      "EXIT",
+      "CLOSED",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_89",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "HELLO",
+      "HELLO",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "123",
+      "STOP",
+      "WELCOME",
+      "DOG",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_90",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "ABC",
+      "OPEN",
+      "123"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "WELCOME",
+      "OPEN",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_91",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "CAT",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "123",
+      "DOG",
+      "ABC",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_92",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "WELCOME",
+      "123"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "WELCOME",
+      "CLOSED",
+      "OPEN",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_93",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "OPEN",
+      "OPEN",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "STOP",
+      "CAT",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_94",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CLOSED",
+      "HELLO",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "WELCOME",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_95",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "WELCOME",
+      "WELCOME",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "OPEN",
+      "HELLO",
+      "CLOSED",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_96",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "123",
+      "DOG",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "CAT",
+      "123",
+      "HELLO",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_97",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "EXIT",
+      "123",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "123",
+      "OPEN",
+      "STOP",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_98",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "DOG",
+      "CAT",
+      "123"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "ABC",
+      "OPEN",
+      "CLOSED",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_99",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "123",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "ABC",
+      "123",
+      "CAT",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_100",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "CLOSED",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CLOSED",
+      "ABC",
+      "EXIT",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_101",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CAT",
+      "EXIT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "CAT",
+      "HELLO",
+      "OPEN",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_102",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "EXIT",
+      "HELLO",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "STOP",
+      "WELCOME",
+      "CAT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_103",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CLOSED",
+      "HELLO",
+      "123"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "STOP",
+      "HELLO",
+      "ABC",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_104",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "STOP",
+      "ABC",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "DOG",
+      "EXIT",
+      "WELCOME",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_105",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "STOP",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "WELCOME",
+      "STOP",
+      "123",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_106",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "CAT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "HELLO",
+      "OPEN",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_107",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "DOG",
+      "WELCOME",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_108",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "STOP",
+      "CLOSED",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CLOSED",
+      "DOG",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_109",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "123",
+      "CLOSED",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "123",
+      "ABC",
+      "CLOSED",
+      "DOG",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_110",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "DOG",
+      "OPEN",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "ABC",
+      "EXIT",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_111",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "123"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "123",
+      "DOG",
+      "OPEN",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_112",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "OPEN",
+      "DOG",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "WELCOME",
+      "OPEN",
+      "CAT",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_113",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CLOSED",
+      "OPEN",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "EXIT",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_114",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "DOG",
+      "CLOSED",
+      "123"
+    ],
+    "ocr_tokens": [
+      "123",
+      "ABC",
+      "CLOSED",
+      "OPEN",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_115",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "OPEN",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CLOSED",
+      "STOP",
+      "ABC",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_116",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CAT",
+      "CAT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "ABC",
+      "123",
+      "DOG",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_117",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "OPEN",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "CLOSED",
+      "WELCOME",
+      "HELLO",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_118",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "DOG",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "CAT",
+      "123",
+      "WELCOME",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_119",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "CAT",
+      "STOP",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "HELLO",
+      "OPEN",
+      "ABC",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_120",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "123",
+      "EXIT",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "STOP",
+      "CAT",
+      "HELLO",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_121",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "HELLO",
+      "WELCOME",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "CLOSED",
+      "123",
+      "DOG",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_122",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "EXIT",
+      "CAT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "EXIT",
+      "HELLO",
+      "123",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_123",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "OPEN",
+      "DOG",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "OPEN",
+      "CLOSED",
+      "DOG",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_124",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "WELCOME",
+      "123",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "HELLO",
+      "WELCOME",
+      "STOP",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_125",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "CLOSED",
+      "ABC",
+      "CAT",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_126",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "ABC",
+      "ABC",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "EXIT",
+      "ABC",
+      "CLOSED",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_127",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "STOP",
+      "HELLO",
+      "123",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_128",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "ABC",
+      "STOP",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "WELCOME",
+      "CAT",
+      "OPEN",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_129",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "OPEN",
+      "OPEN",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "OPEN",
+      "ABC",
+      "EXIT",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_130",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CAT",
+      "EXIT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "OPEN",
+      "CLOSED",
+      "WELCOME",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_131",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "STOP",
+      "EXIT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "OPEN",
+      "CLOSED",
+      "WELCOME",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_132",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "ABC",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "123",
+      "OPEN",
+      "STOP",
+      "CLOSED",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_133",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "123",
+      "CLOSED",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "ABC",
+      "OPEN",
+      "CLOSED",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_134",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "HELLO",
+      "EXIT",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "123",
+      "ABC",
+      "DOG",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_135",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CLOSED",
+      "HELLO",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "CAT",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_136",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CAT",
+      "CAT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "123",
+      "WELCOME",
+      "STOP",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_137",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "WELCOME",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "DOG",
+      "CLOSED",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_138",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "DOG",
+      "123",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "CAT",
+      "DOG",
+      "123",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_139",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "WELCOME",
+      "123",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "OPEN",
+      "DOG",
+      "HELLO",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_140",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "DOG",
+      "HELLO",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "HELLO",
+      "STOP",
+      "DOG",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_141",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "STOP",
+      "OPEN",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "ABC",
+      "HELLO",
+      "DOG",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_142",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "STOP",
+      "123",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "STOP",
+      "123",
+      "OPEN",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_143",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "DOG",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "OPEN",
+      "DOG",
+      "CLOSED",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_144",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "STOP",
+      "HELLO",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "DOG",
+      "123",
+      "CAT",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_145",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "HELLO",
+      "CAT",
+      "123"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CLOSED",
+      "HELLO",
+      "ABC",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_146",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "STOP",
+      "ABC",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "CLOSED",
+      "CAT",
+      "ABC",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_147",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "CAT",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "ABC",
+      "123",
+      "STOP",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_148",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "STOP",
+      "WELCOME",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "123",
+      "ABC",
+      "WELCOME",
+      "CAT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_149",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "123",
+      "STOP",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "HELLO",
+      "DOG",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_150",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "EXIT",
+      "STOP",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "WELCOME",
+      "CAT",
+      "ABC",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_151",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "STOP",
+      "OPEN",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "DOG",
+      "WELCOME",
+      "STOP",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_152",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "STOP",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "CAT",
+      "EXIT",
+      "DOG",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_153",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "STOP",
+      "WELCOME",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "DOG",
+      "OPEN",
+      "123",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_154",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "EXIT",
+      "WELCOME",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "WELCOME",
+      "123",
+      "HELLO",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_155",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "WELCOME",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "WELCOME",
+      "CAT",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_156",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "EXIT",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "123",
+      "DOG",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_157",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "STOP",
+      "EXIT",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "DOG",
+      "ABC",
+      "123",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_158",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CLOSED",
+      "ABC",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "DOG",
+      "EXIT",
+      "WELCOME",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_159",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "WELCOME",
+      "EXIT",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "ABC",
+      "HELLO",
+      "STOP",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_160",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "WELCOME",
+      "123"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "EXIT",
+      "WELCOME",
+      "CLOSED",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_161",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "123",
+      "DOG",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "EXIT",
+      "HELLO",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_162",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "HELLO",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "OPEN",
+      "CLOSED",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_163",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "OPEN",
+      "DOG",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CAT",
+      "WELCOME",
+      "STOP",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_164",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "HELLO",
+      "EXIT",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "ABC",
+      "EXIT",
+      "123",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_165",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "CLOSED",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "ABC",
+      "HELLO",
+      "STOP",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_166",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "CAT",
+      "HELLO",
+      "STOP",
+      "CLOSED",
+      "OPEN"
+    ]
+  },
+  {
+    "question_id": "textvqa_167",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "DOG",
+      "OPEN",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "CAT",
+      "DOG",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_168",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "CLOSED",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "DOG",
+      "ABC",
+      "HELLO",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_169",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "STOP",
+      "ABC",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "STOP",
+      "EXIT",
+      "OPEN",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_170",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "123",
+      "OPEN",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "EXIT",
+      "DOG",
+      "CLOSED",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_171",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "DOG",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "123",
+      "STOP",
+      "CAT",
+      "DOG",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_172",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "ABC",
+      "ABC",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "HELLO",
+      "CLOSED",
+      "DOG",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_173",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "ABC"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "123",
+      "OPEN",
+      "DOG",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_174",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "WELCOME",
+      "ABC",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "WELCOME",
+      "EXIT",
+      "STOP",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_175",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "EXIT",
+      "CAT",
+      "STOP"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "123",
+      "CLOSED",
+      "CAT",
+      "DOG"
+    ]
+  },
+  {
+    "question_id": "textvqa_176",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "EXIT",
+      "DOG",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "CAT",
+      "123",
+      "ABC",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_177",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "CAT",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "WELCOME",
+      "STOP",
+      "HELLO",
+      "CLOSED",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_178",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "WELCOME",
+      "CLOSED",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "HELLO",
+      "123",
+      "CAT",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_179",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CAT",
+      "STOP",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "CLOSED",
+      "123",
+      "OPEN",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_180",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "ABC",
+      "OPEN",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "HELLO",
+      "CLOSED",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_181",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "HELLO",
+      "DOG",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "HELLO",
+      "CAT",
+      "CLOSED",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_182",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "CLOSED",
+      "CLOSED",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "HELLO",
+      "OPEN",
+      "CAT",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_183",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "DOG",
+      "123",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "CLOSED",
+      "123",
+      "EXIT",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_184",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "OPEN",
+      "DOG",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "HELLO",
+      "CLOSED",
+      "WELCOME",
+      "DOG",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_185",
+    "image_id": "img_5",
+    "image": "tests/fixtures/images/fixture_5.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "CAT",
+      "STOP",
+      "CLOSED"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "ABC",
+      "OPEN",
+      "CLOSED",
+      "WELCOME"
+    ]
+  },
+  {
+    "question_id": "textvqa_186",
+    "image_id": "img_6",
+    "image": "tests/fixtures/images/fixture_6.jpg",
+    "question": "What does the sign say?",
+    "answers": [
+      "DOG",
+      "OPEN",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "123",
+      "EXIT",
+      "CAT",
+      "WELCOME",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_187",
+    "image_id": "img_7",
+    "image": "tests/fixtures/images/fixture_7.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "EXIT",
+      "CLOSED",
+      "OPEN"
+    ],
+    "ocr_tokens": [
+      "OPEN",
+      "EXIT",
+      "CLOSED",
+      "WELCOME",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_188",
+    "image_id": "img_8",
+    "image": "tests/fixtures/images/fixture_8.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "OPEN",
+      "CAT",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "ABC",
+      "STOP",
+      "DOG",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_189",
+    "image_id": "img_9",
+    "image": "tests/fixtures/images/fixture_9.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "STOP",
+      "EXIT",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "CAT",
+      "STOP",
+      "OPEN",
+      "123"
+    ]
+  },
+  {
+    "question_id": "textvqa_190",
+    "image_id": "img_10",
+    "image": "tests/fixtures/images/cat.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "HELLO",
+      "HELLO",
+      "123"
+    ],
+    "ocr_tokens": [
+      "EXIT",
+      "DOG",
+      "123",
+      "OPEN",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_191",
+    "image_id": "img_11",
+    "image": "tests/fixtures/images/dog.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "DOG",
+      "EXIT",
+      "CAT"
+    ],
+    "ocr_tokens": [
+      "123",
+      "DOG",
+      "WELCOME",
+      "STOP",
+      "ABC"
+    ]
+  },
+  {
+    "question_id": "textvqa_192",
+    "image_id": "img_12",
+    "image": "tests/fixtures/images/bird.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "123",
+      "OPEN",
+      "HELLO"
+    ],
+    "ocr_tokens": [
+      "123",
+      "OPEN",
+      "CAT",
+      "STOP",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_193",
+    "image_id": "img_13",
+    "image": "tests/fixtures/images/car.jpg",
+    "question": "What text is visible in the image?",
+    "answers": [
+      "ABC",
+      "STOP",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "DOG",
+      "OPEN",
+      "CAT",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_194",
+    "image_id": "img_14",
+    "image": "tests/fixtures/images/tree.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "CAT",
+      "CLOSED",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "123",
+      "OPEN",
+      "EXIT",
+      "CLOSED"
+    ]
+  },
+  {
+    "question_id": "textvqa_195",
+    "image_id": "img_0",
+    "image": "tests/fixtures/images/fixture_0.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "CLOSED",
+      "OPEN",
+      "123"
+    ],
+    "ocr_tokens": [
+      "ABC",
+      "EXIT",
+      "STOP",
+      "CLOSED",
+      "CAT"
+    ]
+  },
+  {
+    "question_id": "textvqa_196",
+    "image_id": "img_1",
+    "image": "tests/fixtures/images/fixture_1.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "HELLO",
+      "CAT",
+      "EXIT"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "OPEN",
+      "ABC",
+      "CAT",
+      "STOP"
+    ]
+  },
+  {
+    "question_id": "textvqa_197",
+    "image_id": "img_2",
+    "image": "tests/fixtures/images/fixture_2.jpg",
+    "question": "What number is shown?",
+    "answers": [
+      "WELCOME",
+      "HELLO",
+      "DOG"
+    ],
+    "ocr_tokens": [
+      "STOP",
+      "WELCOME",
+      "CLOSED",
+      "CAT",
+      "HELLO"
+    ]
+  },
+  {
+    "question_id": "textvqa_198",
+    "image_id": "img_3",
+    "image": "tests/fixtures/images/fixture_3.jpg",
+    "question": "What is written on the surface?",
+    "answers": [
+      "123",
+      "OPEN",
+      "123"
+    ],
+    "ocr_tokens": [
+      "DOG",
+      "STOP",
+      "ABC",
+      "CLOSED",
+      "EXIT"
+    ]
+  },
+  {
+    "question_id": "textvqa_199",
+    "image_id": "img_4",
+    "image": "tests/fixtures/images/fixture_4.jpg",
+    "question": "What word appears on the object?",
+    "answers": [
+      "CAT",
+      "ABC",
+      "WELCOME"
+    ],
+    "ocr_tokens": [
+      "CLOSED",
+      "EXIT",
+      "DOG",
+      "HELLO",
+      "STOP"
+    ]
+  }
+]
