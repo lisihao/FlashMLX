@@ -116,14 +116,22 @@ class VLMGenerator:
 
             # Check for EOS token
             if self._is_eos_token(next_token_id):
+                # Debug: print when hitting EOS
+                # print(f"  [DEBUG] Hit EOS at token {i+1}: {next_token_id}")
                 break
 
             # Append token
             generated_tokens.append(next_token_id)
 
             # Update input_ids for next iteration
-            next_token = mx.array([[next_token_id]])
-            current_ids = next_token
+            # If using cache, only pass new token; otherwise pass full sequence
+            if cache is not None:
+                next_token = mx.array([[next_token_id]])
+                current_ids = next_token
+            else:
+                # No cache: need full sequence for autoregressive generation
+                next_token = mx.array([[next_token_id]])
+                current_ids = mx.concatenate([current_ids, next_token], axis=1)
 
         # Detokenize
         if not generated_tokens:
