@@ -49,6 +49,37 @@ class VLMGenerator:
         self.image_token_id = image_token_id
         self.max_tokens = max_tokens
 
+    def _format_prompt(self, prompt: str, use_chat_template: bool = True) -> str:
+        """Format prompt using chat template if available.
+
+        Args:
+            prompt: User prompt text
+            use_chat_template: Whether to use chat template (default: True)
+
+        Returns:
+            Formatted prompt string
+        """
+        if not use_chat_template or not hasattr(self.tokenizer, 'apply_chat_template'):
+            return prompt
+
+        # Format as chat message
+        messages = [
+            {"role": "user", "content": prompt}
+        ]
+
+        try:
+            # Apply chat template
+            formatted = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,  # Add <|im_start|>assistant
+            )
+            return formatted
+        except Exception as e:
+            # Fallback to plain text if template fails
+            print(f"  [WARN] Chat template failed: {e}, using plain text")
+            return prompt
+
     def generate(
         self,
         prompt: str,
@@ -57,6 +88,7 @@ class VLMGenerator:
         max_tokens: Optional[int] = None,
         temperature: float = 0.0,
         cache=None,
+        use_chat_template: bool = True,
     ) -> str:
         """Generate text response from prompt and optional image.
 
@@ -67,23 +99,28 @@ class VLMGenerator:
             max_tokens: Override default max_tokens (optional)
             temperature: Sampling temperature (0.0 = greedy, default)
             cache: FlashMLX optimized cache (optional)
+            use_chat_template: Whether to format with chat template (default: True)
 
         Returns:
             Generated text response
 
         Process:
-            1. Tokenize prompt (handles <image> tokens automatically)
-            2. Run generation loop:
+            1. Format prompt with chat template (if available)
+            2. Tokenize prompt (handles <image> tokens automatically)
+            3. Run generation loop:
                - Forward pass through model
                - Sample next token
                - Append to sequence
-            3. Detokenize output tokens to text
+            4. Detokenize output tokens to text
         """
         max_tokens = max_tokens or self.max_tokens
 
+        # Format prompt with chat template
+        formatted_prompt = self._format_prompt(prompt, use_chat_template)
+
         # Tokenize prompt
         # For Qwen2-VL, <image> is automatically tokenized to image_token_id
-        input_ids = mx.array(self.tokenizer.encode(prompt))
+        input_ids = mx.array(self.tokenizer.encode(formatted_prompt))
         input_ids = mx.expand_dims(input_ids, axis=0)  # [1, seq_len]
 
         # Initialize generation

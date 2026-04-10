@@ -6,7 +6,7 @@ Three optimization routes:
   Route 2: Chunked Prefill + Streaming Eviction (long context)
   Route 3: Scored P2 + Pluggable Flat Buffer Quantization (KV cache compression)
 
-Quick start:
+Quick start (Text Models):
     import flashmlx
 
     model, tokenizer = flashmlx.load("model_path")
@@ -17,9 +17,30 @@ Quick start:
 
     # Or use directly with generate()
     text = flashmlx.generate(model, tokenizer, prompt, kv_cache="scored_pq")
+
+Quick start (Vision-Language Models):
+    from flashmlx import load_vlm
+
+    # One-line loading
+    vlm = load_vlm("mlx-community/Qwen2-VL-2B-Instruct-bf16")
+
+    # Text generation
+    response = vlm.generate("What is MLX?")
+
+    # Vision+text generation
+    response = vlm.generate("What's in this image?", image="cat.jpg")
 """
 
 __version__ = "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Ensure local mlx-lm-source is prioritized
+# ---------------------------------------------------------------------------
+import sys
+from pathlib import Path as _Path
+_mlx_lm_path = _Path(__file__).parent.parent.parent / "mlx-lm-source"
+if str(_mlx_lm_path) not in sys.path:
+    sys.path.insert(0, str(_mlx_lm_path))
 
 # ---------------------------------------------------------------------------
 # Model loading (re-export from enhanced mlx-lm)
@@ -84,6 +105,11 @@ from .rc_engine import RCEngine, RCSequenceState, RCChunkResult
 # ---------------------------------------------------------------------------
 from .patch import patch_mlx_lm, unpatch_mlx_lm, enable_profiling, disable_profiling, get_profiling_stats
 
+# ---------------------------------------------------------------------------
+# VLM: Vision-Language Model API (Qwen2-VL, LLaVA, etc.)
+# ---------------------------------------------------------------------------
+from .vlm import load_vlm_components
+
 __all__ = [
     "__version__",
     # Model loading
@@ -134,4 +160,6 @@ __all__ = [
     "enable_profiling",
     "disable_profiling",
     "get_profiling_stats",
+    # VLM API
+    "load_vlm_components",
 ]
