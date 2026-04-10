@@ -461,6 +461,8 @@ class VisionModel(nn.Module):
         Handles weight format conversion:
         - PyTorch Conv3d: [out, in, kH, KW, kT]
         - MLX Conv3d: [out, kH, KW, kT, in]
+        - PyTorch Linear: [out, in]
+        - MLX Linear: [in, out]
         """
         sanitized_weights = {}
         for k, v in weights.items():
@@ -473,6 +475,13 @@ class VisionModel(nn.Module):
                     sanitized_weights[k] = v
                 else:
                     sanitized_weights[k] = v.transpose(0, 2, 3, 4, 1)
+            elif ".weight" in k and len(v.shape) == 2:
+                # Transpose Linear layer weights (PyTorch [out, in] → MLX [in, out])
+                # Skip quantization params (.biases, .scales) - they are 2D but shouldn't be transposed
+                if not (k.endswith('.biases') or k.endswith('.scales')):
+                    sanitized_weights[k] = v.T
+                else:
+                    sanitized_weights[k] = v
             else:
                 sanitized_weights[k] = v
 

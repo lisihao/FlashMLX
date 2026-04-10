@@ -263,8 +263,8 @@ def main():
     print("FlashMLX VLM Real Weights Test")
     print("="*60)
 
-    # Load model with real weights
-    model, tokenizer, processor, config = download_and_load_model(use_4bit=True)
+    # Load model with real weights (use bf16 to avoid quantization issues)
+    model, tokenizer, processor, config = download_and_load_model(use_4bit=False)
 
     # Test generation
     success = test_generation(model, tokenizer, processor, config)
