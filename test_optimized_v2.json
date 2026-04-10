@@ -1,0 +1,78 @@
+{
+  "model_path": "/Volumes/toshiba/models/llama-3.2-3b-mlx",
+  "num_tokens": 5002,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "recall_first",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 826.2742150492097,
+      "peak_memory_mb": 4133.622085571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 8.262742150492096,
+      "memory_score": 0.5866377914428711,
+      "pareto_score": 2.8451774407902883,
+      "timestamp": "2026-04-07 11:19:21"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 4,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": "ultra_long",
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 764.5713648530643,
+      "peak_memory_mb": 4133.622085571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.645713648530643,
+      "memory_score": 0.5866377914428711,
+      "pareto_score": 2.6600688902018526,
+      "timestamp": "2026-04-07 11:19:28"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 2,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 748.1456025524385,
+      "peak_memory_mb": 4133.622085571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.481456025524385,
+      "memory_score": 0.5866377914428711,
+      "pareto_score": 2.610791603299975,
+      "timestamp": "2026-04-07 11:19:35"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": 4,
+      "strategy": "polarquant",
+      "n_k": null,
+      "n_v": null,
+      "density_mode": "recall_first",
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}

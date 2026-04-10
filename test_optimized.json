@@ -1,0 +1,58 @@
+{
+  "model_path": "/Volumes/toshiba/models/llama-3.2-3b-mlx",
+  "num_tokens": 5002,
+  "results": [
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": 2,
+        "strategy": "polarquant",
+        "n_k": null,
+        "n_v": null,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 811.5480157206939,
+      "peak_memory_mb": 4133.622085571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 8.115480157206939,
+      "memory_score": 0.5866377914428711,
+      "pareto_score": 2.8009988428047414,
+      "timestamp": "2026-04-07 11:18:34"
+    },
+    {
+      "config": {
+        "kv_cache": "triple_pq",
+        "kv_warm_bits": null,
+        "strategy": "turboangle",
+        "n_k": 64,
+        "n_v": 32,
+        "density_mode": null,
+        "density_scale": null,
+        "context_length": 4096
+      },
+      "perplexity": 1.0078125,
+      "tokens_per_sec": 755.2341524073727,
+      "peak_memory_mb": 4133.637710571289,
+      "quality_score": 0.4980544747081712,
+      "speed_score": 7.552341524073727,
+      "memory_score": 0.586636228942871,
+      "pareto_score": 2.632056940364778,
+      "timestamp": "2026-04-07 11:18:40"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "kv_cache": "triple_pq",
+      "kv_warm_bits": 2,
+      "strategy": "polarquant",
+      "n_k": null,
+      "n_v": null,
+      "density_mode": null,
+      "density_scale": null,
+      "context_length": 4096
+    }
+  ]
+}

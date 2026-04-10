@@ -14,13 +14,13 @@
         "context_length": 4096
       },
       "perplexity": 1.0078125,
-      "tokens_per_sec": 395.27346302640086,
+      "tokens_per_sec": 377.04058079116476,
       "peak_memory_mb": 9761.689304351807,
       "quality_score": 0.4980544747081712,
-      "speed_score": 3.9527346302640085,
+      "speed_score": 3.7704058079116476,
       "memory_score": 0.023831069564819285,
-      "pareto_score": 1.439613840346252,
-      "timestamp": "2026-04-05 20:05:36"
+      "pareto_score": 1.3849151936405437,
+      "timestamp": "2026-04-07 09:59:49"
     },
     {
       "config": {
@@ -34,13 +34,13 @@
         "context_length": 4096
       },
       "perplexity": 1.0078125,
-      "tokens_per_sec": 280.9464415162517,
+      "tokens_per_sec": 352.4913089016535,
       "peak_memory_mb": 9737.064296722412,
       "quality_score": 0.4980544747081712,
-      "speed_score": 2.809464415162517,
+      "speed_score": 3.5249130890165348,
       "memory_score": 0.02629357032775881,
-      "pareto_score": 1.0971252759683925,
-      "timestamp": "2026-04-05 20:05:44"
+      "pareto_score": 1.3117598781245978,
+      "timestamp": "2026-04-07 09:59:55"
     },
     {
       "config": {
@@ -54,13 +54,13 @@
         "context_length": 4096
       },
       "perplexity": 1.0078125,
-      "tokens_per_sec": 260.79564253044555,
+      "tokens_per_sec": 340.16943276691376,
       "peak_memory_mb": 9737.064296722412,
       "quality_score": 0.4980544747081712,
-      "speed_score": 2.6079564253044554,
+      "speed_score": 3.4016943276691376,
       "memory_score": 0.02629357032775881,
-      "pareto_score": 1.0366728790109738,
-      "timestamp": "2026-04-05 20:05:52"
+      "pareto_score": 1.2747942497203786,
+      "timestamp": "2026-04-07 10:00:01"
     }
   ],
   "pareto_frontier": [
