@@ -6,9 +6,11 @@
 
 ## 执行摘要
 
-✅ **集成成功**：两个 Gemma 4 模型都成功集成 FlashMLX
-⚠️ **架构限制**：Hybrid Cache 策略限制了 FlashMLX 高级压缩
-🎯 **推荐**：gemma-4-31B 有更大的压缩潜力（16 KV heads）
+✅ **集成成功**:两个 Gemma 4 模型都成功集成 FlashMLX
+✅ **性能验证** (2026-04-10 修正):E4B 69.1 tok/s / 31B **13.74 tok/s** (早期 6.5 数据错误)
+✅ **vlm_bridge 零开销**:NATIVE vs BRIDGE 差距 -0.6% (噪声范围)
+⚠️ **架构限制**:Hybrid Cache 架构阻止了 FlashMLX 高级压缩(triple_pq / scored_pq 被 fallback)
+🎯 **下一步**:攻坚 `cache_factory.py` 的 hybrid 支持,解锁 16 KV heads 的压缩潜力
 
 ---
 
@@ -52,12 +54,33 @@
 
 ### 生成速度（M4 Max 64GB）
 
-| 模型 | 生成速度 | 内存占用 | Cache 策略 |
-|------|---------|---------|-----------|
-| **gemma-4-E4B** | 69.1 tok/s | 5.31 MB | Standard |
-| **gemma-4-31B** | 6.5 tok/s | 18.71 MB | Standard |
+> **⚠️ 2026-04-10 修正**: 初版报告中 31B 的 `6.5 tok/s` 是错误数据,根源是早期
+> 测试走了 legacy monkey-patch 路径或 system mlx-vlm 0.4.0 fallback（fallback
+> 本身不支持 gemma4）。迁移到 mlx-vlm-source fork 0.4.4 + vlm_bridge 后,实测
+> 速度已经自动修复。对照实验脚本:`/tmp/gemma31b_native_vs_bridge.py`。
 
-**速度比**: 31B 比 E4B 慢 10.6x（参数量 6.3x）
+| 模型 | 生成速度 | Prompt TPS | 内存占用 | Cache 策略 |
+|------|---------|-----------|---------|-----------|
+| **gemma-4-E4B** | 69.1 tok/s | — | 5.31 MB | Standard |
+| **gemma-4-31B** | **13.74 tok/s** ✨ | 20.49 tok/s | 17.41 GB peak | Standard |
+
+**速度比**: 31B 比 E4B 慢 **5.03x**(参数量 6.3x)—— 实际比参数比还快 25%,属于
+GQA + 4-bit dequant + Metal kernel 开销后的**健康水平**。
+
+**M4 Max 理论上限**: 内存带宽 ~400 GB/s ÷ 17.1 GB 模型 ≈ 23 tok/s 极限 →
+实测 13.74 tok/s = **理论上限的 60%**,符合 Apple Silicon 统一内存推理的典型效率。
+
+### vlm_bridge 开销验证 (2026-04-10)
+
+单进程加载一次模型,两次 benchmark 对比:
+
+| 路径 | GEN tok/s | Prompt TPS | 差距 |
+|------|----------|-----------|------|
+| **NATIVE** (mlx-vlm 自己管 cache) | 13.74 | 20.49 | baseline |
+| **BRIDGE** (FlashMLX create_vlm_cache strategy="standard") | 13.67 | 20.32 | **-0.6%** |
+
+**结论**: FlashMLX vlm_bridge 在 Gemma 4 上**零开销**。cache_factory 检测到 hybrid
+架构后 fallback 到 `RotatingKVCache`,与 mlx-vlm 原生路径完全等价。
 
 ### Hybrid Cache 分析
 
