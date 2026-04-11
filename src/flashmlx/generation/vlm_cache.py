@@ -4,18 +4,17 @@ VLM-specific Cache Configuration
 Provides optimized cache strategies for Vision-Language Models.
 """
 
-# CRITICAL: Add mlx-lm-source to path BEFORE any imports
+# NOTE: sys.path for mlx-lm-source is managed by flashmlx/__init__.py.
+# Do NOT delete mlx_lm from sys.modules here — it causes class identity
+# divergence: the VLM model was constructed with KVCache from the first
+# import, and reloading creates a second KVCache class object. Subsequent
+# isinstance() checks in cache_factory then return False for the model's
+# cache instances, breaking hybrid detection (e.g. Gemma 4).
 import sys
 from pathlib import Path
-mlx_lm_path = Path(__file__).parent.parent.parent.parent / "mlx-lm-source"
-# Remove any existing mlx_lm from sys.modules to force reimport
-if 'mlx_lm' in sys.modules:
-    # Remove all mlx_lm submodules
-    modules_to_remove = [k for k in sys.modules.keys() if k.startswith('mlx_lm')]
-    for mod in modules_to_remove:
-        del sys.modules[mod]
-# Add our local mlx-lm-source to the front of sys.path
-sys.path.insert(0, str(mlx_lm_path))
+_mlx_lm_path = Path(__file__).parent.parent.parent.parent / "mlx-lm-source"
+if str(_mlx_lm_path) not in sys.path:
+    sys.path.insert(0, str(_mlx_lm_path))
 
 from typing import Optional
 import mlx.nn as nn
