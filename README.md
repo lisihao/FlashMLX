@@ -366,13 +366,18 @@ has a tombstone entry explaining why it did not make it into the main path.
 
 ## License
 
-**TBD.** There is currently no LICENSE file in the repository. If you want to
-use FlashMLX in a commercial product, please open an issue first — we are
-actively discussing what license to apply.
+FlashMLX is released under the **MIT License** — the same license used by the
+upstream `mlx`, `mlx-lm`, and `mlx-vlm` projects it builds on. See
+[`LICENSE`](LICENSE) for the full text.
 
-For research use and personal experimentation, consider this "source available";
-we will not pursue issues against academic or hobby use while the license
-question is being resolved. Contributors retain copyright on their changes.
+The repository vendors copies of `mlx`, `mlx-lm`, and `mlx-vlm`, each with
+their own upstream MIT License (© 2023 Apple Inc.) preserved in the
+respective `mlx-source/`, `mlx-lm-source/`, and `mlx-vlm-source/` directories.
+When you redistribute FlashMLX (source or binary), please keep both the root
+LICENSE and the vendored upstream LICENSE files intact.
+
+Contributors retain copyright on their changes; contributions are accepted
+under the same MIT terms as the rest of the project.
 
 ---
 
