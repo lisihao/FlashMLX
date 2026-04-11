@@ -9,8 +9,9 @@
 ✅ **集成成功**:两个 Gemma 4 模型都成功集成 FlashMLX
 ✅ **性能验证** (2026-04-10 修正):E4B 69.1 tok/s / 31B **13.74 tok/s** (早期 6.5 数据错误)
 ✅ **vlm_bridge 零开销**:NATIVE vs BRIDGE 差距 -0.6% (噪声范围)
-⚠️ **架构限制**:Hybrid Cache 架构阻止了 FlashMLX 高级压缩(triple_pq / scored_pq 被 fallback)
-🎯 **下一步**:攻坚 `cache_factory.py` 的 hybrid 支持,解锁 16 KV heads 的压缩潜力
+✅ **Hybrid Cache 修复** (2026-04-10, commit `302f9ca` + `b503a55`):cache_factory 正确识别 `KVCache+RotatingKVCache` 混合架构,所有策略可以创建 cache,10/60 层 (31B) 替换为 TripleLayerKVCache
+⚠️ **长 context 实测: 无压缩收益** (8K/16K/32K):Gemma 4 full_attention 层 KV heads 太少 (4 KV × 512 dim),且 triple_pq 在 32K 出现回归 (TG -49%, peak +19%)
+🎯 **结论**:修复解锁了 API,但 Gemma 4 **不是** KV 压缩的理想场景 — 建议生产用 `standard` 策略
 
 ---
 
@@ -116,17 +117,21 @@ gemma-4-31B (60 layers):
 | 文本生成 | ✅ | ✅ | 生成正常 |
 | VLM Bridge | ✅ | ✅ | API 完整 |
 
-### ⚠️ 限制项
+### ✅ 修复后状态 (2026-04-10)
 
-| FlashMLX 策略 | E4B | 31B | 原因 |
+| FlashMLX 策略 | E4B | 31B | 备注 |
 |--------------|-----|-----|------|
-| **standard** | ✅ | ✅ | 完全支持 |
-| **triple** | ❌ | ❌ | Hybrid 架构不兼容 |
-| **triple_pq** | ❌ | ❌ | list index out of range |
-| **scored_pq** | ❌ | ❌ | Auto-disabled (hybrid) |
-| **scored_kv_direct** | ❌ | ❌ | 需 FLASHMLX_EXPERIMENTAL=1 |
+| **standard** | ✅ | ✅ | baseline |
+| **triple** | ✅ | ✅ | Cache 创建 OK,TripleLayerKVCache 替换全量层 |
+| **triple_pq** | ✅ | ✅ | 32K 出现 TG 回归 (见下节) |
+| **scored_pq** | ✅ | ✅ | 无 calibration → fallback 到 triple (无 AM) |
+| **scored_kv_direct** | 未测 | 未测 | 需 FLASHMLX_EXPERIMENTAL=1 |
 
-**根本原因**: FlashMLX cache factory 期望所有层都是 KVCache，但 Gemma 4 混合使用 KVCache + RotatingKVCache。
+**修复内容**:
+1. `mlx-lm-source/cache_factory.py` (`_detect_architecture`): 返回 4 元组,区分 `SSM+Attention` vs `KVCache+RotatingKVCache`,hybrid 循环按 `len(native_caches)` 迭代
+2. `src/flashmlx/generation/vlm_cache.py`: 删除遗留的 `del sys.modules[mlx_lm.*]` hack,避免类身份 (class identity) 分裂导致 `isinstance` 误判
+
+**教训**: `isinstance` 诡异时先查 class id — 同名但 id 不同 = 被 reload 过。
 
 ---
 
@@ -154,6 +159,63 @@ gemma-4-31B (60 layers):
 |------|---------|---------|---------|------|
 | **E4B** | 小 (2 heads) | Standard | Baseline | KV 已优化，无需压缩 |
 | **31B** | 大 (16 heads) | Triple PQ | +20-30% | 值得尝试（需修复 hybrid） |
+
+---
+
+## 长 Context 实测 (2026-04-10, hybrid 修复后)
+
+**环境**: gemma-4-31B, M4 Max 64GB, single-process, 固定 prompt 重复填充到目标长度
+**脚本**: `examples/bench_gemma4_long_context.py` (设置 `GEMMA4_MODEL_PATH` 环境变量后运行)
+
+### 结果矩阵
+
+| Context | Strategy | PP tok/s | TG tok/s | Peak GB | KVΔ GB | vs baseline |
+|---------|----------|----------|----------|---------|--------|-------------|
+| 8K  | standard  | 94.9 | 12.34 | 22.12 | +4.97 | baseline |
+| 8K  | triple_pq | 92.2 | 12.50 | 22.20 | +5.05 | ≈same |
+| 8K  | scored_pq | 95.5 | 12.49 | 22.12 | +4.97 | ≈same |
+| 16K | standard  | 94.0 | 11.90 | 23.83 | +6.67 | baseline |
+| 16K | triple_pq | 93.1 | 11.84 | 23.83 | +6.67 | ≈same |
+| 16K | scored_pq | 93.3 | 11.82 | 23.83 | +6.67 | ≈same |
+| 32K | standard  | 87.2 | **10.52** | **27.25** | +10.10 | baseline |
+| 32K | triple_pq | 85.6 | **5.37** ⚠️ | **32.39** ⚠️ | +15.24 | **TG -49%, peak +19%** |
+| 32K | scored_pq | 86.7 | 10.51 | 27.25 | +10.10 | ≈same |
+
+**输出一致性**: 三策略在 8K/16K/32K 全部生成**完全相同**的文本 ✅
+
+### 关键发现
+
+1. **修复后 cache 创建全部成功**, TripleLayerKVCache 正确替换 10 层 full_attention。
+
+2. **Gemma 4 不是 KV 压缩的好靶子**:
+   - full_attention 层只有 `num_global_key_value_heads=4` × `global_head_dim=512` = 4 KB/token
+   - 10 个可压缩层 × 8 KB (K+V) = 80 KB/token
+   - 32K 上下文 ≈ 2.5 GB 原始 KV,但 peak memory 主要被 **prefill attention scratch** 占据 (+10 GB delta at 32K)
+   - 压缩 KV 存储对总体 peak 影响极小
+
+3. **⚠️ triple_pq@32K 回归**:
+   - TG 从 10.52 跌到 5.37 tok/s (-49%)
+   - Peak 从 27.25 涨到 32.39 GB (+19%)
+   - **根因**: `triple_pq` 没进入 AM 路径 (`enable_am=False`),但保留了 PolarQuant warm buffer 量化。长 context 下 warm buffer 没有 AM 裁剪,每步都要重新量化 → 内存+延迟双爆炸
+   - 8K/16K 没触发因为还没到 TripleLayerKVCache 内部的 warm→flat 迁移阈值
+
+4. **scored_pq ≈ standard**:
+   - `scored_pq` 被 fallback 到 `triple (no AM)`,没有 PolarQuant 开销
+   - 无 calibration_file 时实际上是一个 pass-through
+
+### 结论
+
+| 策略 | 8K | 16K | 32K | 推荐 |
+|------|----|----|------|------|
+| standard  | ✅ 12.3 tok/s | ✅ 11.9 tok/s | ✅ 10.5 tok/s | **生产默认** |
+| scored_pq | ✅ 12.5 tok/s | ✅ 11.8 tok/s | ✅ 10.5 tok/s | 与 standard 等价 (安全) |
+| triple_pq | ✅ 12.5 tok/s | ✅ 11.8 tok/s | ❌ 5.4 tok/s | **32K 避免** |
+
+**生产建议**:
+- **默认**: `strategy="standard"` — 在 Gemma 4 上性能等价且无回归
+- **如果必须用压缩路径**: 用 `scored_pq` 而不是 `triple_pq` (前者无 calibration 时安全 fallback)
+- **要真正获得压缩收益**: 需要生成 Gemma 4 的 AM calibration 文件,启用 `triple_pq_am`/`scored_pq`+calibration
+- **Gemma 4 的瓶颈不在 KV**: KV Sharing + RotatingKVCache 已经压到很低;想进一步节省,应压 **模型权重** (4-bit 已做) 或用更激进的 sliding_window
 
 ---
 
@@ -246,17 +308,18 @@ response = generate_vlm(
 
 ### 📋 下一步
 
-1. **修复 Hybrid Cache 支持**:
-   - 修改 `cache_factory.py` 支持混合 cache 类型
-   - 使 Triple/Scored 策略兼容 Gemma 4
-
-2. **Vision 测试**:
+1. ✅ **Hybrid Cache 支持已完成** (commit `302f9ca` + `b503a55`)
+2. ✅ **长 context benchmark 已完成** (8K/16K/32K, 见上节)
+3. 🔜 **TODO: triple_pq@32K 回归调查**:
+   - 定位 TripleLayerKVCache 的 warm→flat 迁移阈值
+   - 考虑让 `triple_pq` 在没 calibration 时也 fallback 到 plain triple (和 scored_pq 同一行为)
+   - 或:长 context 自动降级 PolarQuant warm 量化
+4. 🔜 **Gemma 4 AM calibration**:
+   - 采集 AM 校准数据 → 启用真正的 triple_pq_am / scored_pq+calibration
+   - 衡量真实压缩收益 (预计 10 层 full_attention 可省 1.5 GB at 32K,约 5% 总 peak)
+5. 🔜 **Vision 测试**:
    - 测试 280 vision tokens 的压缩效果
    - Vision+Text 长上下文性能
-
-3. **Benchmark**:
-   - gemma-4-31B 长上下文测试（32K+）
-   - 对比 Standard vs 未来的压缩策略
 
 ---
 
