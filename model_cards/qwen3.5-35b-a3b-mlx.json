@@ -3,9 +3,13 @@
   "model_name": "Qwen3.5-35B-A3B-MLX (6-bit)",
   "model_path": "/Volumes/toshiba/models/qwen3.5-35b-mlx",
   "architecture": {
-    "type": "hybrid_ssm_attention",
+    "type": "hybrid_ssm_attention_moe",
     "num_layers": 40,
     "attention_layers": 10,
+    "ssm_layers": 30,
+    "moe_layers": 40,
+    "num_experts": 256,
+    "experts_per_token": 8,
     "hidden_size": 4096,
     "head_dim": 128,
     "num_kv_heads": 8
@@ -17,7 +21,10 @@
     "n_v": 128
   },
   "offload": {
-    "enabled": false
+    "enabled": true,
+    "pool_size": 0,
+    "cpu_cache_gb": null,
+    "max_workers": 4
   },
   "benchmarks": {
     "4k": {
@@ -57,10 +64,10 @@
     "perplexity_degradation": 0.0,
     "note": "TurboAngle K256V128 @ 4K maintains PPL=1.0078 (same as standard). Hybrid architecture (10/40 attention layers) shows minimal quality impact from KV compression."
   },
-  "platform": "M4 Max 64GB",
+  "platform": "M5 Max 128GB",
   "not_recommended": [
     "scored_pq",
     "scored_kv_direct"
   ],
-  "notes": "Hybrid architecture (30 SSM + 10 Attention). KV cache is only 427MB at 16K — not the bottleneck. Meta-Harness optimal: TurboAngle K256V128 achieves 742.6 tok/s @ 4K. All configs same memory (25077 MB), confirming KV cache is not bottleneck. Optimization target: Route 1 (Expert Offloading)."
+  "notes": "Triple hybrid: 30 SSM + 10 Attention + 40 MoE (256 experts, 8-way routing). KV cache is NOT the bottleneck (427MB@16K). Expert weights dominate memory (~25.5GB/26.86GB). Route 1 Expert Offloading enabled: 97% experts inactive per token, pread()-only SSD access (zero writes). Profiling: 42ms/tok decode, GEMM groups median=1, expert load imbalance 13:1."
 }

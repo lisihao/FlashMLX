@@ -76,6 +76,51 @@ the same physical memory.
 | Model residency | 18.21 GB | **11.42 GB** | **-37.3%** |
 | Quality | 4/4 pass | **4/4 pass** | no degradation |
 
+### Expert Affinity Scheduling (Route 1 extension)
+
+When multiple users chat concurrently with an MoE model, FCFS scheduling
+scatters tokens across different experts — each expert processes only 1
+token per step, wasting GPU parallelism. Expert Affinity groups requests
+with overlapping expert routing into the same batch, increasing per-expert
+GEMM group_size from 1 to 4–6.
+
+| Metric | Affinity OFF | Affinity ON | Change |
+|---|---:|---:|---:|
+| Aggregate TPS (8 concurrent) | 67.3 tok/s | **92.9 tok/s** | **+38.0%** |
+| Wave-2 TPS | 53.9 tok/s | **85.1 tok/s** | **+57.8%** |
+| TTFT | 12,687 ms | **7,016 ms** | **-44.7%** |
+
+Pure scheduling optimization — zero model changes, zero kernel changes.
+See [`docs/expert-affinity-scheduling.md`](docs/expert-affinity-scheduling.md)
+for the full design.
+
+### Temporal Expert Pipeline (TEP) — MoE Expert Offloading (Route 1)
+
+TEP keeps only a small subset of MoE experts in GPU memory during decode,
+offloading the rest to SSD. Three key innovations make this practical:
+
+1. **Decode Recompact** — rebuilds the expert pool from decode-phase activation
+   data instead of prefill data, raising TG hit rate from 46% to 85-99%.
+2. **Zero-out miss policy** — missed experts produce zero output (dropout-like
+   degradation) instead of using the wrong expert (K-1 clamp), which garbles
+   output below 95% hit rate.
+3. **Deferred telemetry** — removed per-layer GPU synchronization from the hot
+   path, recovering a 38% throughput regression caused by breaking MLX's lazy
+   evaluation pipeline.
+
+| Config | TG tok/s | GPU Memory | vs Standard |
+|---|---:|---:|---:|
+| standard (no offloading) | 61.3 tok/s | 26.3 GB | baseline |
+| **dr+zero_32** (pool=32, zero-out) | **73.6 tok/s** | **5.0 GB** | **+20% speed, -81% memory** |
+| dr+zero_64 (pool=64, zero-out) | 60.3 tok/s | 8.1 GB | -2% speed, -69% memory |
+| dr+k1_64 (pool=64, k1-clamp) | 71.8 tok/s | 8.1 GB | +17% speed, -69% memory |
+
+Pool=32 is faster than standard because smaller expert tensors have better GPU
+cache locality for the `gather_qmm` kernel.
+
+See [`docs/tep-analysis.md`](docs/tep-analysis.md) for the full analysis with
+architecture diagrams, competitive comparison, and future directions.
+
 Numbers above are reproducible — see `benchmarks/` and `examples/` for the exact
 scripts and model cards. Raw logs from the latest Gemma 4 run live in
 `docs/gemma31b_longctx_benchmark_2026-04-10.log` (gitignored by default).

@@ -15,7 +15,7 @@ Usage in ThunderOMLX engine_core.py:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, FrozenSet, List, Optional
 
 import mlx.nn as nn
 
@@ -247,3 +247,27 @@ class ThunderOMLXAdapter:
             'nbytes_per_token': h0_store.nbytes / max(h0_store.count, 1),
             'format': 'h0_blocks_v1',
         }
+
+    # ------------------------------------------------------------------
+    # Expert affinity feedback (MoE batch composition optimization)
+    # ------------------------------------------------------------------
+
+    def get_batch_routing(self) -> Dict[int, List[int]]:
+        """Delegate to ThunderOMLXBridge.get_batch_routing()."""
+        try:
+            from mlx_lm.models.expert_offload import ThunderOMLXBridge
+        except ImportError:
+            return {}
+        # ThunderOMLXAdapter doesn't hold a bridge reference directly;
+        # the bridge is accessed via OffloadContext.bridge in the engine.
+        # This method exists for protocol compliance — the scheduler calls
+        # bridge.get_batch_routing() directly via offload_ctx.bridge.
+        return {}
+
+    def get_batch_routing_by_uid(
+        self, uid_to_batch_pos: Dict[int, int]
+    ) -> Dict[int, FrozenSet[int]]:
+        """Delegate to ThunderOMLXBridge.get_batch_routing_by_uid()."""
+        # Same as get_batch_routing: protocol compliance stub.
+        # Actual calls go through offload_ctx.bridge directly.
+        return {}

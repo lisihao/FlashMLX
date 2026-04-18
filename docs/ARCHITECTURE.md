@@ -509,6 +509,53 @@ TG Phase (Generation):
 | Compact pool=192 | 90.9 | 13.99 GB | -23% |
 | **Compact pool=128** | **92.8** | **9.77 GB** | **-46%** |
 
+### 7.5 Expert Affinity Scheduling
+
+Three-tier storage solves *where* experts live; affinity scheduling
+solves *which requests* run together.
+
+#### Problem
+
+8 concurrent decode → tokens scatter to 30+ distinct experts →
+each expert processes 1 token → gather_qmm does matvec instead of
+matmul → GPU parallelism wasted.
+
+#### Solution
+
+FlashMLX captures per-step expert routing (zero-cost shape op) and
+exports it via ThunderOMLXBridge. ThunderOMLX's scheduler checks
+Jaccard similarity between a candidate request's expert signature and
+the running batch's expert union. Low-overlap requests are deferred
+(max 3 times, anti-starvation guaranteed).
+
+#### Data Flow
+
+```
+FlashMoeSwitchGLU._pool_call()
+  → _last_decode_indices = indices[..., 0, :]   # [B,K], <100ns
+       ↓
+ThunderOMLXBridge.get_batch_routing_by_uid()
+  → {uid: frozenset(expert_ids)}                 # ~30μs
+       ↓
+Scheduler._update_expert_signatures()
+  → Request._expert_signature = frozenset(...)
+       ↓
+Scheduler._schedule_waiting()
+  → Jaccard(candidate, batch) < 0.3 → defer (max 3×)
+       ↓
+Higher per-expert group_size → GPU throughput ↑
+```
+
+#### Results (Qwen3.5-35B-A3B / 8 concurrent / M4 Pro 48GB)
+
+| Metric | OFF | ON | Change |
+|---|---:|---:|---:|
+| Aggregate TPS | 67.3 | **92.9** | **+38%** |
+| Wave-2 TPS | 53.9 | **85.1** | **+58%** |
+| TTFT | 12,687 ms | **7,016 ms** | **-45%** |
+
+Full design: [`expert-affinity-scheduling.md`](expert-affinity-scheduling.md)
+
 ---
 
 ## 8. Route 0: Density Router

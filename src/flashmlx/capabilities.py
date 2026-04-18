@@ -206,10 +206,12 @@ def _detect_architecture_type(model: nn.Module, caps: ModelCapabilities) -> None
     # Check MoE: look for experts attribute in layers
     if hasattr(model, "layers") and len(model.layers) > 0:
         layer0 = model.layers[0]
+        mlp = getattr(layer0, "mlp", None)
         has_experts = (
             hasattr(layer0, "experts")
             or hasattr(layer0, "block_sparse_moe")
-            or hasattr(getattr(layer0, "mlp", None), "experts", )
+            or hasattr(mlp, "experts")
+            or hasattr(mlp, "switch_mlp")
         )
         caps.is_moe = has_experts
         caps.supports_expert_offload = has_experts

@@ -14,7 +14,7 @@ Usage in ThunderOMLX:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, FrozenSet, List, Optional, Protocol, runtime_checkable
 
 import mlx.nn as nn
 
@@ -147,5 +147,31 @@ class FlashMLXProvider(Protocol):
 
         Returns:
             Dict with 'blocks' list and metadata, or None if no H0Store.
+        """
+        ...
+
+    # ------------------------------------------------------------------
+    # Expert affinity feedback (MoE batch composition optimization)
+    # ------------------------------------------------------------------
+
+    def get_batch_routing(self) -> Dict[int, List[int]]:
+        """Get per-batch-position expert routing from the last decode step.
+
+        Returns:
+            {batch_position: [expert_ids]} — union across sampled MoE layers.
+            Empty dict if no decode has happened or model is not MoE.
+        """
+        ...
+
+    def get_batch_routing_by_uid(
+        self, uid_to_batch_pos: Dict[int, int]
+    ) -> Dict[int, FrozenSet[int]]:
+        """Get per-UID expert signature from the last decode step.
+
+        Args:
+            uid_to_batch_pos: Mapping from BatchGenerator UID to batch position.
+
+        Returns:
+            {uid: frozenset(expert_ids)} per UID. Missing UIDs are omitted.
         """
         ...
