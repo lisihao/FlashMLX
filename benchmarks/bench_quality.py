@@ -381,6 +381,258 @@ def setup_pool32_poolshadow(model, model_path, tokenizer):
     return ctx
 
 
+def _setup_offload_ftec(model, model_path, tokenizer, pool_size,
+                         shadow_size=64, shadow_bits=6,
+                         guard_j=2, guard_tau=0.02):
+    """pool=N + decode-hot shadow (top-M non-pool experts) + ftec 3-way dispatch.
+
+    FTEC: pool hit → full precision, pool miss + shadow hit → shadow precision,
+    pool miss + shadow miss → zero.  Much smaller memory than full shadow.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    ctx.compact(pool_size=pool_size, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    # Set k1_clamp for TG warmup to gather frequency data
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._pool_is_identity = False
+                sw._pool_compacted = True
+                sw._miss_policy = "k1_clamp"
+
+    # TG warmup — generates frequency data for decode_shadow
+    warmup = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Count from 1 to 20."}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, warmup, max_tokens=15):
+        pass
+
+    ctx.decode_recompact(pool_size=pool_size)
+
+    # Create decode-hot shadow from TG frequency (AFTER recompact has freq data)
+    print(f"  [{pool_size}] Creating decode shadow ({shadow_size} experts, "
+          f"{shadow_bits}-bit)...")
+    ctx.create_decode_shadow(size=shadow_size, bits=shadow_bits)
+
+    # Set ftec miss policy
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._miss_policy = "ftec"
+
+    ctx.enable_reranking(bonus=0.01, guard_j=guard_j, guard_tau=guard_tau)
+    return ctx
+
+
+def setup_pool32_ftec64(model, model_path, tokenizer):
+    """pool=32 + decode-hot shadow (64, 6-bit) + ftec + guarded rerank."""
+    return _setup_offload_ftec(model, model_path, tokenizer,
+                                pool_size=32, shadow_size=64, shadow_bits=6)
+
+
+def setup_pool32_ftec128(model, model_path, tokenizer):
+    """pool=32 + decode-hot shadow (128, 6-bit) + ftec + guarded rerank."""
+    return _setup_offload_ftec(model, model_path, tokenizer,
+                                pool_size=32, shadow_size=128, shadow_bits=6)
+
+
+def setup_pool32_ftec64_4bit(model, model_path, tokenizer):
+    """pool=32 + decode-hot shadow (64, 4-bit) + ftec + guarded rerank."""
+    return _setup_offload_ftec(model, model_path, tokenizer,
+                                pool_size=32, shadow_size=64, shadow_bits=4)
+
+
+def setup_pool32_ftec224(model, model_path, tokenizer):
+    """pool=32 + decode-hot shadow (224 = all non-pool, 6-bit) + ftec.
+
+    Near-full coverage test: if this works (~14/20), then FTEC dispatch code
+    is correct and partial shadow failure is purely a coverage issue.
+    """
+    return _setup_offload_ftec(model, model_path, tokenizer,
+                                pool_size=32, shadow_size=224, shadow_bits=6)
+
+
+def setup_pool32_shadow6_ftec(model, model_path, tokenizer):
+    """pool=32 + full shadow (6-bit) + FTEC dispatch + unguarded rerank.
+
+    Tests FTEC dispatch code in isolation: uses full shadow data (which works
+    with "shadow" policy at 14-15/20) but switches to "ftec" dispatch.
+    This isolates whether 0/20 is caused by the dispatch code or the setup.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    ctx.compact(pool_size=32, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    # Create full shadow (all 256 experts)
+    print(f"  [32] Creating full shadow (6-bit, all experts)...")
+    ctx.create_shadow(bits=6)
+
+    # Navigate to layers
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+
+    # Set up FTEC metadata for full shadow:
+    # _shadow_expert_ids = all 256 experts, _shadow_remap = identity
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy") and sw._shadow is not None:
+                sw._pool_is_identity = False
+                sw._pool_compacted = True
+                # Set FTEC dispatch with full shadow (identity remap)
+                all_ids = list(range(sw.num_experts))
+                sw._shadow_expert_ids = all_ids
+                import numpy as np
+                remap_np = np.arange(sw.num_experts, dtype=np.int32)
+                sw._shadow_remap = mx.array(remap_np)
+                sw._shadow_remap_np = remap_np
+                sw._miss_policy = "ftec"
+
+    # TG warmup with ftec policy
+    warmup = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Count from 1 to 20."}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, warmup, max_tokens=15):
+        pass
+
+    ctx.decode_recompact(pool_size=32)
+
+    # Re-set ftec policy and metadata after recompact
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy") and sw._shadow is not None:
+                all_ids = list(range(sw.num_experts))
+                sw._shadow_expert_ids = all_ids
+                import numpy as np
+                remap_np = np.arange(sw.num_experts, dtype=np.int32)
+                sw._shadow_remap = mx.array(remap_np)
+                sw._shadow_remap_np = remap_np
+                sw._miss_policy = "ftec"
+
+    # Unguarded rerank (same as shadow policy uses)
+    ctx.enable_reranking(bonus=0.01)
+    return ctx
+
+
+def setup_pool32_ftec224_noguard(model, model_path, tokenizer):
+    """pool=32 + decode-hot shadow (224 = all non-pool, 6-bit) + NO guard.
+
+    Same as N but without guarded rerank. Tests if guard_j=2 is the problem.
+    """
+    return _setup_offload_ftec(model, model_path, tokenizer,
+                                pool_size=32, shadow_size=224, shadow_bits=6,
+                                guard_j=0, guard_tau=0.02)
+
+
+def setup_pool32_k1warm_fullshadow(model, model_path, tokenizer):
+    """K1_CLAMP warmup → decode_recompact → FULL shadow + ftec dispatch.
+
+    Tests if k1_clamp warmup corrupts the pool composition via
+    decode_recompact. Uses full shadow so coverage is 100%.
+    If 0/20: k1_clamp warmup is the problem (bad pool).
+    If ~75%: the problem is coverage, not the warmup.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    ctx.compact(pool_size=32, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    # K1_CLAMP warmup (same as _setup_offload_ftec)
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._pool_is_identity = False
+                sw._pool_compacted = True
+                sw._miss_policy = "k1_clamp"
+
+    warmup = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Count from 1 to 20."}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, warmup, max_tokens=15):
+        pass
+
+    ctx.decode_recompact(pool_size=32)
+
+    # NOW use FULL shadow (all 256 experts) + ftec dispatch
+    print(f"  [Q] Creating FULL shadow (6-bit) after k1_clamp warmup...")
+    ctx.create_shadow(bits=6)
+
+    # Set ftec metadata with identity remap
+    import numpy as np
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy") and sw._shadow is not None:
+                all_ids = list(range(sw.num_experts))
+                sw._shadow_expert_ids = all_ids
+                remap_np = np.arange(sw.num_experts, dtype=np.int32)
+                sw._shadow_remap = mx.array(remap_np)
+                sw._shadow_remap_np = remap_np
+                sw._miss_policy = "ftec"
+
+    ctx.enable_reranking(bonus=0.01)
+    return ctx
+
+
 def setup_pool256_identity(model, model_path, tokenizer):
     """pool=256 (all experts in pool, identity remap, no offloading).
 
@@ -489,6 +741,13 @@ def main():
         "H": ("H_pool32_shd6_norr", setup_pool32_shadow6_norr),
         "I": ("I_pool256_compact", setup_pool256_forced_compact),
         "J": ("J_pool32_poolshadow", setup_pool32_poolshadow),
+        "K": ("K_pool32_ftec64", setup_pool32_ftec64),
+        "L": ("L_pool32_ftec128", setup_pool32_ftec128),
+        "M": ("M_pool32_ftec64_4b", setup_pool32_ftec64_4bit),
+        "N": ("N_pool32_ftec224", setup_pool32_ftec224),
+        "O": ("O_pool32_shd6_ftec", setup_pool32_shadow6_ftec),
+        "P": ("P_ftec224_noguard", setup_pool32_ftec224_noguard),
+        "Q": ("Q_k1warm_fullshd", setup_pool32_k1warm_fullshadow),
     }
 
     all_results = []
