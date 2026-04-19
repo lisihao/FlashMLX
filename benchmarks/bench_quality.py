@@ -9,6 +9,8 @@ Configs:
   A: standard (no offload, full 6-bit)
   B: pool=32 + zero_out + rerank (5 GB, fastest)
   C: pool=64 + zero_out + rerank (8 GB, highest HR)
+  D: pool=32 + full shadow (4-bit) + rerank (~22 GB, same-expert fallback)
+  E: pool=64 + full shadow (4-bit) + rerank (~25 GB, same-expert fallback)
 """
 
 import argparse
@@ -124,8 +126,12 @@ def run_config(model_path, problems, max_tokens, label, setup_fn):
               f"exp={result['expected'][:20]:20s} "
               f"({elapsed:.1f}s)")
         # Prevent metal buffer accumulation across problems
+        # flush_tg_telemetry clears _tg_indices_buffer/_tg_scores_buffer
+        # which hold mx.array refs that pin metal buffers
+        if ctx and hasattr(ctx, 'flush_tg_telemetry'):
+            ctx.flush_tg_telemetry()
         gc.collect()
-        mx.metal.clear_cache()
+        mx.clear_cache()
 
     accuracy = correct / total if total > 0 else 0
     print(f"  [{label}] Accuracy: {correct}/{total} = {accuracy:.1%}")
@@ -134,7 +140,7 @@ def run_config(model_path, problems, max_tokens, label, setup_fn):
         ctx.close()
     del model, tokenizer
     gc.collect()
-    mx.metal.clear_cache()
+    mx.clear_cache()
 
     return {"label": label, "correct": correct, "total": total,
             "accuracy": accuracy, "results": results}
@@ -208,13 +214,256 @@ def setup_pool64_rr(model, model_path, tokenizer):
     return _setup_offload(model, model_path, tokenizer, pool_size=64)
 
 
+def _setup_offload_shadow(model, model_path, tokenizer, pool_size,
+                           shadow_bits=4, enable_rerank=True):
+    """pool=N + full shadow (N-bit, all 256 experts) + miss_policy=shadow.
+
+    Same-expert fallback: pool miss uses the SAME expert at lower precision
+    instead of zeroing the output. This is the core FTEC hypothesis.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    ctx.compact(pool_size=pool_size, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    # Create full shadow (all 256 experts) BEFORE setting miss policy
+    print(f"  [{pool_size}] Creating full shadow ({shadow_bits}-bit, all experts)...")
+    ctx.create_shadow(bits=shadow_bits)
+
+    # Set shadow miss policy (not k1_clamp)
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._pool_is_identity = False
+                sw._pool_compacted = True
+                sw._miss_policy = "shadow"
+
+    # TG warmup with shadow policy
+    warmup = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Count from 1 to 20."}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, warmup, max_tokens=15):
+        pass
+
+    ctx.decode_recompact(pool_size=pool_size)
+
+    # Keep shadow policy after recompact
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._miss_policy = "shadow"
+
+    if enable_rerank:
+        ctx.enable_reranking(bonus=0.01)
+    return ctx
+
+
+def setup_pool32_shadow(model, model_path, tokenizer):
+    """pool=32 + full shadow (4-bit) + rerank."""
+    return _setup_offload_shadow(model, model_path, tokenizer, pool_size=32)
+
+
+def setup_pool64_shadow(model, model_path, tokenizer):
+    """pool=64 + full shadow (4-bit) + rerank."""
+    return _setup_offload_shadow(model, model_path, tokenizer, pool_size=64)
+
+
+def setup_pool32_shadow6(model, model_path, tokenizer):
+    """pool=32 + full shadow (6-bit = same as model) + rerank."""
+    return _setup_offload_shadow(model, model_path, tokenizer,
+                                 pool_size=32, shadow_bits=6)
+
+
+def setup_pool32_shadow6_norr(model, model_path, tokenizer):
+    """pool=32 + full shadow (6-bit) + NO rerank.
+
+    Isolates rerank effect on quality.
+    """
+    return _setup_offload_shadow(model, model_path, tokenizer,
+                                 pool_size=32, shadow_bits=6,
+                                 enable_rerank=False)
+
+
+def setup_pool32_poolshadow(model, model_path, tokenizer):
+    """pool=32 + shadow from POOL tensor (pre-compact, identical data).
+
+    Shadow is created from the same full pool tensor before compact,
+    guaranteeing byte-identical data. Tests if loader inconsistency
+    is causing the quality gap.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    # Create shadow FROM THE FULL POOL (before compact)
+    print("  Creating shadow from full pool (pre-compact, same data)...")
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+
+    shadow_bytes = 0
+    shadow_layers = 0
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_pool") and sw._pool is not None:
+                # Copy pool data directly as shadow (same bits, same data)
+                sw._shadow = {k: v for k, v in sw._pool.items()}
+                sw._shadow_bits = sw.bits
+                for v in sw._shadow.values():
+                    shadow_bytes += v.nbytes
+                shadow_layers += 1
+    print(f"  Shadow from pool: {shadow_layers} layers, "
+          f"{shadow_bytes / 1024**3:.2f} GB")
+
+    # NOW compact
+    ctx.compact(pool_size=32, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    # Set shadow miss policy
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._pool_is_identity = False
+                sw._pool_compacted = True
+                sw._miss_policy = "shadow"
+
+    # TG warmup
+    warmup = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Count from 1 to 20."}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, warmup, max_tokens=15):
+        pass
+
+    ctx.decode_recompact(pool_size=32)
+
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._miss_policy = "shadow"
+
+    ctx.enable_reranking(bonus=0.01)
+    return ctx
+
+
+def setup_pool256_identity(model, model_path, tokenizer):
+    """pool=256 (all experts in pool, identity remap, no offloading).
+
+    Tests whether the offload code path itself causes quality loss,
+    independent of precision or miss handling.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    # NO compact — keep all 256 experts in pool (identity remap)
+    # NO shadow, NO rerank
+    # Just disable TG buffering to save memory
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._disable_tg_buffer = True
+
+    return ctx
+
+
+def setup_pool256_forced_compact(model, model_path, tokenizer):
+    """pool=256 + forced compact path (not identity).
+
+    All 256 experts stay in pool, but uses the non-identity remap code
+    path. No misses possible. Tests if the compact code path itself
+    causes quality loss vs identity path.
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=256,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+    )
+    gc.collect()
+
+    # PP warmup
+    dummy = tokenizer.apply_chat_template(
+        [{"role": "user", "content": "Hi"}],
+        add_generation_prompt=True, tokenize=False
+    )
+    for r in stream_generate(model, tokenizer, dummy, max_tokens=5):
+        pass
+
+    # Compact to 256 = keep all experts, but switch to non-identity path
+    ctx.compact(pool_size=256, disable_coverage_gate=True,
+                auto_expand_cpu_cache=False)
+
+    inner = model
+    for attr in ("model", "model", "language_model", "model"):
+        if hasattr(inner, attr):
+            inner = getattr(inner, attr)
+    for layer in inner.layers:
+        if hasattr(layer, "mlp") and hasattr(layer.mlp, "switch_mlp"):
+            sw = layer.mlp.switch_mlp
+            if hasattr(sw, "_miss_policy"):
+                sw._disable_tg_buffer = True
+
+    return ctx
+
+
 def main():
     parser = argparse.ArgumentParser(description="Quality benchmark")
     parser.add_argument("--model", default="/Users/lisihao/models/Qwen3.5-35B-A3B-6bit")
     parser.add_argument("--data", default="/Users/lisihao/ThunderOMLX/data/memcollab/math500_subset_50.jsonl")
     parser.add_argument("--n", type=int, default=20, help="Number of problems")
     parser.add_argument("--max-tokens", type=int, default=1024)
-    parser.add_argument("--configs", default="A,B,C", help="Configs to run")
+    parser.add_argument("--configs", default="A,B,C,D,E", help="Configs to run")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
@@ -233,6 +482,13 @@ def main():
         "A": ("A_standard", setup_standard),
         "B": ("B_pool32_rr", setup_pool32_rr),
         "C": ("C_pool64_rr", setup_pool64_rr),
+        "D": ("D_pool32_shadow", setup_pool32_shadow),
+        "E": ("E_pool64_shadow", setup_pool64_shadow),
+        "F": ("F_pool256_identity", setup_pool256_identity),
+        "G": ("G_pool32_shadow6", setup_pool32_shadow6),
+        "H": ("H_pool32_shd6_norr", setup_pool32_shadow6_norr),
+        "I": ("I_pool256_compact", setup_pool256_forced_compact),
+        "J": ("J_pool32_poolshadow", setup_pool32_poolshadow),
     }
 
     all_results = []
