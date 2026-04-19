@@ -1,0 +1,131 @@
+[
+  {
+    "label": "A_standard",
+    "correct": 2,
+    "total": 5,
+    "accuracy": 0.4,
+    "results": [
+      {
+        "problem_id": "test/prealgebra/1622.json",
+        "subject": "Prealgebra",
+        "correct": true,
+        "predicted": "42",
+        "expected": "42"
+      },
+      {
+        "problem_id": "test/geometry/434.json",
+        "subject": "Geometry",
+        "correct": false,
+        "predicted": "",
+        "expected": "28"
+      },
+      {
+        "problem_id": "test/intermediate_algebra/1000.json",
+        "subject": "Intermediate Algebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "3"
+      },
+      {
+        "problem_id": "test/algebra/1098.json",
+        "subject": "Algebra",
+        "correct": true,
+        "predicted": "6+9i",
+        "expected": "6+9i"
+      },
+      {
+        "problem_id": "test/precalculus/779.json",
+        "subject": "Precalculus",
+        "correct": false,
+        "predicted": "",
+        "expected": "-2+7i"
+      }
+    ]
+  },
+  {
+    "label": "B_pool32_rr",
+    "correct": 0,
+    "total": 5,
+    "accuracy": 0.0,
+    "results": [
+      {
+        "problem_id": "test/prealgebra/1622.json",
+        "subject": "Prealgebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "42"
+      },
+      {
+        "problem_id": "test/geometry/434.json",
+        "subject": "Geometry",
+        "correct": false,
+        "predicted": "",
+        "expected": "28"
+      },
+      {
+        "problem_id": "test/intermediate_algebra/1000.json",
+        "subject": "Intermediate Algebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "3"
+      },
+      {
+        "problem_id": "test/algebra/1098.json",
+        "subject": "Algebra",
+        "correct": false,
+        "predicted": "1+2i",
+        "expected": "6+9i"
+      },
+      {
+        "problem_id": "test/precalculus/779.json",
+        "subject": "Precalculus",
+        "correct": false,
+        "predicted": "",
+        "expected": "-2+7i"
+      }
+    ]
+  },
+  {
+    "label": "C_pool64_rr",
+    "correct": 0,
+    "total": 5,
+    "accuracy": 0.0,
+    "results": [
+      {
+        "problem_id": "test/prealgebra/1622.json",
+        "subject": "Prealgebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "42"
+      },
+      {
+        "problem_id": "test/geometry/434.json",
+        "subject": "Geometry",
+        "correct": false,
+        "predicted": "",
+        "expected": "28"
+      },
+      {
+        "problem_id": "test/intermediate_algebra/1000.json",
+        "subject": "Intermediate Algebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "3"
+      },
+      {
+        "problem_id": "test/algebra/1098.json",
+        "subject": "Algebra",
+        "correct": false,
+        "predicted": "",
+        "expected": "6+9i"
+      },
+      {
+        "problem_id": "test/precalculus/779.json",
+        "subject": "Precalculus",
+        "correct": false,
+        "predicted": "",
+        "expected": "-2+7i"
+      }
+    ]
+  }
+]
