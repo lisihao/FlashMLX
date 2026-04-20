@@ -130,6 +130,9 @@ def run_config(model_path, problems, max_tokens, label, setup_fn):
         # which hold mx.array refs that pin metal buffers
         if ctx and hasattr(ctx, 'flush_tg_telemetry'):
             ctx.flush_tg_telemetry()
+        # Clear discovery caches between problems (mobile streaming memory bound)
+        if ctx and hasattr(ctx, 'clear_discovery_caches'):
+            ctx.clear_discovery_caches()
         gc.collect()
         mx.clear_cache()
 
