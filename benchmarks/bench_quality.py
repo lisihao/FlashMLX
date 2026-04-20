@@ -136,6 +136,18 @@ def run_config(model_path, problems, max_tokens, label, setup_fn):
     accuracy = correct / total if total > 0 else 0
     print(f"  [{label}] Accuracy: {correct}/{total} = {accuracy:.1%}")
 
+    # Print streaming stats if available
+    if ctx and hasattr(ctx, 'get_streaming_stats'):
+        stats = ctx.get_streaming_stats()
+        if stats["total_discovery_calls"] > 0:
+            total_loads = sum(stats["tier_hits"].values())
+            print(f"  [{label}] Streaming PP stats:")
+            print(f"    Discovery calls: {stats['total_discovery_calls']}")
+            print(f"    Total time: {stats['total_discovery_ms']:.0f} ms")
+            print(f"    Tier hits: cache={stats['tier_hits']['cache']}, "
+                  f"cpu={stats['tier_hits']['cpu']}, ssd={stats['tier_hits']['ssd']}")
+            print(f"    Cache hit rate: {stats['cache_hit_rate']:.1%}")
+
     if ctx:
         ctx.close()
     del model, tokenizer
@@ -709,6 +721,39 @@ def setup_pool256_forced_compact(model, model_path, tokenizer):
     return ctx
 
 
+def setup_mobile_streaming(model, model_path, tokenizer):
+    """Mobile: streaming PP (no shadow) + auto-build pool for TG.
+
+    PP goes through _discovery_call (loads experts from NVMe per-layer).
+    Zero extra memory during PP phase. Quality should be identical to
+    standard since discovery loads full-precision experts.
+
+    Flow per problem:
+      1. PP: streaming discovery loads experts from SSD, fills telemetry
+      2. First TG token: auto-builds pool from discovery_cache (telemetry-ranked)
+      3. Subsequent TG tokens: pool_call with zero_out for misses
+    """
+    ctx = patch_model_for_offload(
+        model, model_path, pool_size=64,
+        max_workers=4, cpu_cache_gb=0.0,
+        enable_prefetch=False, enable_telemetry=True,
+        skip_prebuild=True,  # Mobile: no full pool prebuild, use discovery
+    )
+    gc.collect()
+
+    # Enable streaming PP mode
+    ctx.enable_streaming_pp()
+
+    # No warmup needed — each problem streams PP + TG through discovery.
+    # Discovery cache acts as within-problem cache: experts loaded during PP
+    # stay in GPU memory for TG reuse (hit rate typically >90%).
+
+    # Reset streaming stats
+    ctx.reset_streaming_stats()
+
+    return ctx
+
+
 def main():
     parser = argparse.ArgumentParser(description="Quality benchmark")
     parser.add_argument("--model", default="/Users/lisihao/models/Qwen3.5-35B-A3B-6bit")
@@ -748,6 +793,7 @@ def main():
         "O": ("O_pool32_shd6_ftec", setup_pool32_shadow6_ftec),
         "P": ("P_ftec224_noguard", setup_pool32_ftec224_noguard),
         "Q": ("Q_k1warm_fullshd", setup_pool32_k1warm_fullshadow),
+        "R": ("R_mobile_streaming", setup_mobile_streaming),
     }
 
     all_results = []
