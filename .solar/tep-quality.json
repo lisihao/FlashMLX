@@ -1,9 +1,9 @@
 [
   {
-    "label": "D_pool32_shadow",
-    "correct": 14,
+    "label": "G_pool32_shadow6",
+    "correct": 17,
     "total": 20,
-    "accuracy": 0.7,
+    "accuracy": 0.85,
     "results": [
       {
         "problem_id": "test/prealgebra/1622.json",
@@ -16,21 +16,21 @@
         "problem_id": "test/geometry/434.json",
         "subject": "Geometry",
         "correct": false,
-        "predicted": "an",
+        "predicted": "",
         "expected": "28"
       },
       {
         "problem_id": "test/intermediate_algebra/1000.json",
         "subject": "Intermediate Algebra",
-        "correct": false,
-        "predicted": "",
+        "correct": true,
+        "predicted": "3",
         "expected": "3"
       },
       {
         "problem_id": "test/algebra/1098.json",
         "subject": "Algebra",
-        "correct": false,
-        "predicted": "expected",
+        "correct": true,
+        "predicted": "6+9i",
         "expected": "6+9i"
       },
       {
@@ -106,22 +106,22 @@
       {
         "problem_id": "test/prealgebra/1733.json",
         "subject": "Prealgebra",
-        "correct": true,
-        "predicted": "-9",
+        "correct": false,
+        "predicted": "",
         "expected": "-9"
       },
       {
         "problem_id": "test/prealgebra/505.json",
         "subject": "Prealgebra",
-        "correct": false,
-        "predicted": "1.433",
+        "correct": true,
+        "predicted": "6",
         "expected": "6"
       },
       {
         "problem_id": "test/algebra/2232.json",
         "subject": "Algebra",
-        "correct": false,
-        "predicted": "16",
+        "correct": true,
+        "predicted": "-3",
         "expected": "-3"
       },
       {
