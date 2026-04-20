@@ -304,18 +304,24 @@ def setup_pool64_shadow(model, model_path, tokenizer):
 
 
 def setup_pool32_shadow6(model, model_path, tokenizer):
-    """pool=32 + full shadow (6-bit = same as model) + rerank."""
+    """pool=32 + full shadow (2-bit) + rerank.
+
+    Shadow at 2-bit saves memory vs full pool: ~8 GB shadow vs 24 GB full.
+    Total expert memory: pool(3 GB) + shadow(8 GB) = ~11 GB.
+    Previously used shadow_bits=6 which was wasteful (same precision as model,
+    making the shadow a redundant 24 GB copy of all experts).
+    """
     return _setup_offload_shadow(model, model_path, tokenizer,
-                                 pool_size=32, shadow_bits=6)
+                                 pool_size=32, shadow_bits=2)
 
 
 def setup_pool32_shadow6_norr(model, model_path, tokenizer):
-    """pool=32 + full shadow (6-bit) + NO rerank.
+    """pool=32 + full shadow (2-bit) + NO rerank.
 
     Isolates rerank effect on quality.
     """
     return _setup_offload_shadow(model, model_path, tokenizer,
-                                 pool_size=32, shadow_bits=6,
+                                 pool_size=32, shadow_bits=2,
                                  enable_rerank=False)
 
 
@@ -785,8 +791,8 @@ def main():
         "D": ("D_pool32_shadow", setup_pool32_shadow),
         "E": ("E_pool64_shadow", setup_pool64_shadow),
         "F": ("F_pool256_identity", setup_pool256_identity),
-        "G": ("G_pool32_shadow6", setup_pool32_shadow6),
-        "H": ("H_pool32_shd6_norr", setup_pool32_shadow6_norr),
+        "G": ("G_pool32_shadow2", setup_pool32_shadow6),
+        "H": ("H_pool32_shd2_norr", setup_pool32_shadow6_norr),
         "I": ("I_pool256_compact", setup_pool256_forced_compact),
         "J": ("J_pool32_poolshadow", setup_pool32_poolshadow),
         "K": ("K_pool32_ftec64", setup_pool32_ftec64),
