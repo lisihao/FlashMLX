@@ -380,6 +380,10 @@ class OffloadConfig(BaseModel):
 
     Controls FlashMLX Route 1: three-tier expert management
     (GPU pool → CPU warm → SSD cold).
+
+    Supports two tracks:
+    - Desktop: Pool-N + Shadow (2-bit re-quantized) for constant-memory TG.
+    - Mobile: Zero-shadow streaming PP + frequency-aware cache eviction.
     """
 
     enabled: bool = Field(
@@ -397,6 +401,49 @@ class OffloadConfig(BaseModel):
     cpu_cache_gb: Optional[float] = Field(
         default=None,
         description="CPU warm cache size in GB (None = auto)",
+    )
+
+    # Desktop / Mobile track selection
+    mode: str = Field(
+        default="auto",
+        description=(
+            "Offload track: 'auto' (detect by memory headroom), "
+            "'desktop' (pool + shadow), 'mobile' (streaming + freq-aware)"
+        ),
+    )
+
+    # Desktop track: shadow configuration
+    shadow_bits: int = Field(
+        default=2,
+        description="Shadow re-quantization bits (2/4/6). Desktop only.",
+    )
+    miss_policy: str = Field(
+        default="shadow",
+        description="Pool miss policy: 'shadow' (fallback to shadow), 'zero_out', 'ftec'",
+    )
+
+    # Mobile track: streaming + frequency-aware eviction
+    streaming_cache_limit: int = Field(
+        default=0,
+        description="Max experts per layer in streaming cache (0 = unlimited)",
+    )
+    streaming_hotset_size: int = Field(
+        default=0,
+        description="Frequency-prune to top-K on PP→TG transition (0 = disabled)",
+    )
+    eviction_strategy: str = Field(
+        default="frequency",
+        description="Cache eviction: 'frequency' (PP telemetry-ranked) or 'lru'",
+    )
+
+    # Reranking (pool hit rate optimization)
+    enable_reranking: bool = Field(
+        default=True,
+        description="Enable pool reranking with frequency bonus",
+    )
+    rerank_bonus: float = Field(
+        default=0.01,
+        description="Reranking frequency bonus weight",
     )
 
 
