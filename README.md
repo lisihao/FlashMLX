@@ -125,6 +125,49 @@ Numbers above are reproducible — see `benchmarks/` and `examples/` for the exa
 scripts and model cards. Raw logs from the latest Gemma 4 run live in
 `docs/gemma31b_longctx_benchmark_2026-04-10.log` (gitignored by default).
 
+### Expert Offloading: Desktop & Mobile Dual-Track
+
+TEP established the infrastructure (three-tier storage, sentinel miss detection,
+deferred telemetry). Building on it, we developed two production tracks that solve
+the **PP correctness problem** — even 1% expert miss during prefill corrupts the
+KV cache and destroys output quality.
+
+**Desktop Track** (Pool-32 + Shadow-2bit): keeps a 2-bit quantized copy of all 256
+experts in GPU. Prefill routes through the shadow (zero miss); decode uses the
+6-bit pool with shadow fallback for the ~5% misses.
+
+**Mobile Track** (Zero-Shadow Streaming + Frequency-Aware Eviction): no shadow at all.
+Prefill streams experts from NVMe per-layer at original 6-bit precision. Decode uses
+a discovery cache with frequency-aware eviction — hot experts (profiled for free
+during prefill) survive eviction, cold experts are replaced first.
+
+| Config | Description | Memory | TG tok/s | PP tok/s | Quality |
+|--------|------------|--------|----------|----------|---------|
+| A (standard) | No offloading | 26.2 GB | 44.5 | 0.4 | 85% |
+| **G (desktop)** | Pool-32 + Shadow-2bit | **14.3 GB** | **62.9** | 8.1 | 85% |
+| **R (mobile)** | Streaming + Freq-Aware | **1.85→16.8 GB** | **15.0** | ~12 | 85% |
+
+Desktop: **-45% memory, +41% TG speed, quality-preserving** (2-bit shadow for PP,
+6-bit pool for TG). The memory reduction actually *increases* TG throughput by
+relieving bandwidth pressure.
+
+Mobile: **starts at 1.85 GB** (93% reduction), grows to a configurable cache cap.
+Frequency-aware eviction delivers **+111% TG speed** vs LRU at the same memory
+budget (15.0 vs 7.09 tok/s). PP quality is *higher* than Desktop — original 6-bit
+experts vs 2-bit shadow.
+
+Three key innovations:
+1. **Shadow Precision Scaling** — 2-bit shadow saves 15 GB vs 6-bit, with +40% TG speed as a bonus
+2. **PP-as-Profiling** — prefill telemetry gives a free expert frequency map; zero extra cost
+3. **Frequency-Aware Eviction** — evicts globally coldest experts instead of LRU, eliminating MoE cache thrashing
+
+Shadow works in batch mode (FlashBatchGenerator) without modification — interleaved
+scheduling produces homogeneous decode/prefill phases that map cleanly to the
+seq_len-based dispatch.
+
+See [`docs/expert-offload-experimental-results.md`](docs/expert-offload-experimental-results.md)
+for the full data, precision analysis, and reproduction commands.
+
 ---
 
 ## Architecture at a glance
