@@ -1,0 +1,3523 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-17 21:40:50",
+  "tokens": 200,
+  "pool_size": 32,
+  "prompt": "Explain the mathematical proof of the Pythagorean theorem using the area method, step by step.",
+  "results": [
+    {
+      "label": "standard",
+      "text": "Here's a thinking process that leads to the explanation of the Pythagorean theorem proof using the area method:\n\n1.  **Understand the Goal:** The user wants an explanation of the mathematical proof of the Pythagorean theorem ($a^2 + b^2 = c^2$) specifically using the \"area method.\" This needs to be step-by-step.\n\n2.  **Identify the Best \"Area Method\":** There are several proofs using area (dissection proofs, rearrangement proofs). The most famous and intuitive one is the \"Bhaskara's Proof\" or the \"Square within a Square\" proof (often attributed to ancient Chinese or Indian mathematicians, but popularized in the West by Perigal or simply called the \"Rearrangement Proof\").\n    *   *Option 1: The Large Square with Four Triangles.* (Construct a large square of side $a+b$, put four triangles inside, calculate area in two ways",
+      "tokens": 200,
+      "tg_tps": 69.01282472329434,
+      "total_ms": 5169.350082986057,
+      "peak_gb": 26.302904622629285
+    },
+    {
+      "label": "k1_pool32",
+      "text": "Here's a thinking process that which is used to generate a Pythagorean Theorem proof:\n\n1.  **Identify the Goal:** The user user wants \"Explain the mathematical proof of the Pythagorean theorem using the area method, step by step.\"\n2.  **Determine the Method:** The prompt specifically \"area method\" (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i) (i)",
+      "tokens": 200,
+      "tg_tps": 55.85017426920916,
+      "total_ms": 6220.62029101653,
+      "peak_gb": 26.439977696165442,
+      "pool_size": 32,
+      "comparison": {
+        "match_ratio": 0.06370192307692307,
+        "first_diverge_char": 31,
+        "first_diverge_word": 5
+      }
+    },
+    {
+      "label": "hotswap_pool32_at5_b16",
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **An Request:** The user wants \"Explain the mathematical proof of the Pythag theorem using the area method, step by step.\"\n2.  **Goal:** Provide a clear, step-by-step explanation of the Pythag theorem proof using the \"area method (also is the most time.\n2.  **Goal:** Provide a clear, step-by-step explanation of the Pythag theorem proof using the \"area method (also is the most time.\n2.  **Goal:** Provide a clear, step-by-step explanation of the Pythag theorem proof using the \"area method (also is the most time.\n2.  **Goal:** Provide a clear, step-by-step explanation of the Pythag theorem proof using the \"area method (also is the most time.\n2.  **Goal:** Provide a clear, step-by-step explanation of the Pythag theorem proof using the \"area",
+      "tokens": 200,
+      "tg_tps": 52.77312143085472,
+      "total_ms": 5889.399582985789,
+      "peak_gb": 26.439977696165442,
+      "pool_size": 32,
+      "swap_at": 5,
+      "swap_budget": 16,
+      "swap_stats": {
+        "total_swapped": 307,
+        "layers_updated": 40,
+        "elapsed_ms": 455.2054170053452,
+        "layer_stats": [
+          {
+            "swapped": 11,
+            "layer": 0,
+            "promoted": [
+              4,
+              36,
+              44,
+              57,
+              78,
+              84,
+              88,
+              136,
+              175,
+              180,
+              204
+            ],
+            "demoted": [
+              11,
+              15,
+              16,
+              17,
+              21,
+              24,
+              26,
+              30,
+              31,
+              37,
+              38
+            ],
+            "non_pool_hot": 11
+          },
+          {
+            "swapped": 15,
+            "layer": 1,
+            "promoted": [
+              33,
+              221,
+              254,
+              3,
+              10,
+              29,
+              100,
+              101,
+              111,
+              118,
+              126,
+              206,
+              233,
+              245,
+              251
+            ],
+            "demoted": [
+              5,
+              9,
+              11,
+              19,
+              26,
+              27,
+              39,
+              44,
+              57,
+              58,
+              59,
+              60,
+              69,
+              75,
+              80
+            ],
+            "non_pool_hot": 15
+          },
+          {
+            "swapped": 11,
+            "layer": 2,
+            "promoted": [
+              64,
+              94,
+              117,
+              237,
+              84,
+              108,
+              150,
+              173,
+              182,
+              208,
+              230
+            ],
+            "demoted": [
+              0,
+              1,
+              3,
+              5,
+              10,
+              19,
+              29,
+              39,
+              40,
+              41,
+              48
+            ],
+            "non_pool_hot": 11
+          },
+          {
+            "swapped": 7,
+            "layer": 3,
+            "promoted": [
+              15,
+              20,
+              70,
+              30,
+              166,
+              236,
+              246
+            ],
+            "demoted": [
+              1,
+              3,
+              6,
+              12,
+              37,
+              45,
+              50
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 8,
+            "layer": 4,
+            "promoted": [
+              253,
+              58,
+              74,
+              79,
+              37,
+              219,
+              229,
+              250
+            ],
+            "demoted": [
+              8,
+              13,
+              15,
+              20,
+              23,
+              57,
+              66,
+              68
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 9,
+            "layer": 5,
+            "promoted": [
+              178,
+              2,
+              144,
+              147,
+              155,
+              11,
+              44,
+              86,
+              88
+            ],
+            "demoted": [
+              9,
+              13,
+              15,
+              25,
+              43,
+              56,
+              57,
+              60,
+              61
+            ],
+            "non_pool_hot": 9
+          },
+          {
+            "swapped": 7,
+            "layer": 6,
+            "promoted": [
+              42,
+              142,
+              177,
+              36,
+              62,
+              136,
+              183
+            ],
+            "demoted": [
+              3,
+              16,
+              27,
+              32,
+              43,
+              49,
+              56
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 6,
+            "layer": 7,
+            "promoted": [
+              14,
+              171,
+              32,
+              85,
+              129,
+              155
+            ],
+            "demoted": [
+              6,
+              19,
+              22,
+              29,
+              30,
+              37
+            ],
+            "non_pool_hot": 6
+          },
+          {
+            "swapped": 4,
+            "layer": 8,
+            "promoted": [
+              4,
+              50,
+              157,
+              184
+            ],
+            "demoted": [
+              3,
+              8,
+              17,
+              27
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 5,
+            "layer": 9,
+            "promoted": [
+              59,
+              98,
+              58,
+              170,
+              239
+            ],
+            "demoted": [
+              0,
+              18,
+              20,
+              29,
+              32
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 10,
+            "promoted": [
+              196,
+              12,
+              133,
+              95,
+              46
+            ],
+            "demoted": [
+              9,
+              14,
+              17,
+              18,
+              25
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 11,
+            "promoted": [
+              47,
+              78,
+              114,
+              213,
+              248
+            ],
+            "demoted": [
+              0,
+              7,
+              14,
+              18,
+              37
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 8,
+            "layer": 12,
+            "promoted": [
+              49,
+              193,
+              76,
+              99,
+              199,
+              232,
+              18,
+              192
+            ],
+            "demoted": [
+              4,
+              15,
+              25,
+              26,
+              47,
+              50,
+              55,
+              63
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 6,
+            "layer": 13,
+            "promoted": [
+              44,
+              42,
+              74,
+              118,
+              171,
+              194
+            ],
+            "demoted": [
+              0,
+              3,
+              20,
+              43,
+              47,
+              53
+            ],
+            "non_pool_hot": 6
+          },
+          {
+            "swapped": 4,
+            "layer": 14,
+            "promoted": [
+              28,
+              166,
+              0,
+              40
+            ],
+            "demoted": [
+              3,
+              12,
+              25,
+              30
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 4,
+            "layer": 15,
+            "promoted": [
+              6,
+              250,
+              149,
+              240
+            ],
+            "demoted": [
+              10,
+              40,
+              54,
+              56
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 7,
+            "layer": 16,
+            "promoted": [
+              9,
+              38,
+              73,
+              81,
+              126,
+              136,
+              247
+            ],
+            "demoted": [
+              5,
+              7,
+              10,
+              24,
+              37,
+              53,
+              59
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 10,
+            "layer": 17,
+            "promoted": [
+              104,
+              142,
+              167,
+              185,
+              125,
+              144,
+              206,
+              208,
+              229,
+              252
+            ],
+            "demoted": [
+              0,
+              8,
+              10,
+              19,
+              21,
+              22,
+              25,
+              26,
+              34,
+              45
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 7,
+            "layer": 18,
+            "promoted": [
+              203,
+              161,
+              177,
+              195,
+              124,
+              155,
+              166
+            ],
+            "demoted": [
+              2,
+              3,
+              6,
+              13,
+              32,
+              40,
+              55
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 8,
+            "layer": 19,
+            "promoted": [
+              201,
+              226,
+              239,
+              19,
+              132,
+              194,
+              225,
+              255
+            ],
+            "demoted": [
+              1,
+              10,
+              26,
+              41,
+              47,
+              48,
+              55,
+              64
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 4,
+            "layer": 20,
+            "promoted": [
+              61,
+              141,
+              184,
+              238
+            ],
+            "demoted": [
+              0,
+              8,
+              11,
+              17
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 9,
+            "layer": 21,
+            "promoted": [
+              54,
+              55,
+              117,
+              151,
+              165,
+              170,
+              189,
+              221,
+              239
+            ],
+            "demoted": [
+              2,
+              12,
+              18,
+              29,
+              32,
+              44,
+              45,
+              49,
+              67
+            ],
+            "non_pool_hot": 9
+          },
+          {
+            "swapped": 10,
+            "layer": 22,
+            "promoted": [
+              35,
+              196,
+              12,
+              42,
+              46,
+              48,
+              59,
+              91,
+              114,
+              219
+            ],
+            "demoted": [
+              11,
+              20,
+              36,
+              40,
+              50,
+              68,
+              76,
+              82,
+              100,
+              106
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 7,
+            "layer": 23,
+            "promoted": [
+              47,
+              27,
+              66,
+              208,
+              213,
+              229,
+              248
+            ],
+            "demoted": [
+              14,
+              16,
+              18,
+              37,
+              41,
+              51,
+              54
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 9,
+            "layer": 24,
+            "promoted": [
+              23,
+              99,
+              193,
+              155,
+              158,
+              163,
+              196,
+              206,
+              219
+            ],
+            "demoted": [
+              2,
+              4,
+              20,
+              24,
+              26,
+              48,
+              50,
+              53,
+              55
+            ],
+            "non_pool_hot": 9
+          },
+          {
+            "swapped": 10,
+            "layer": 25,
+            "promoted": [
+              113,
+              42,
+              26,
+              57,
+              118,
+              149,
+              151,
+              194,
+              219,
+              243
+            ],
+            "demoted": [
+              0,
+              23,
+              47,
+              52,
+              64,
+              74,
+              78,
+              93,
+              101,
+              110
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 5,
+            "layer": 26,
+            "promoted": [
+              28,
+              189,
+              27,
+              60,
+              236
+            ],
+            "demoted": [
+              17,
+              31,
+              54,
+              57,
+              64
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 11,
+            "layer": 27,
+            "promoted": [
+              58,
+              250,
+              217,
+              6,
+              26,
+              44,
+              56,
+              68,
+              135,
+              150,
+              245
+            ],
+            "demoted": [
+              10,
+              12,
+              18,
+              28,
+              40,
+              53,
+              62,
+              65,
+              66,
+              82,
+              83
+            ],
+            "non_pool_hot": 11
+          },
+          {
+            "swapped": 8,
+            "layer": 28,
+            "promoted": [
+              247,
+              38,
+              46,
+              81,
+              108,
+              189,
+              200,
+              236
+            ],
+            "demoted": [
+              10,
+              14,
+              16,
+              17,
+              18,
+              24,
+              56,
+              59
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 10,
+            "layer": 29,
+            "promoted": [
+              104,
+              185,
+              125,
+              16,
+              46,
+              111,
+              127,
+              137,
+              201,
+              230
+            ],
+            "demoted": [
+              0,
+              4,
+              8,
+              9,
+              10,
+              18,
+              19,
+              21,
+              22,
+              25
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 7,
+            "layer": 30,
+            "promoted": [
+              72,
+              124,
+              3,
+              34,
+              61,
+              89,
+              161
+            ],
+            "demoted": [
+              6,
+              17,
+              18,
+              24,
+              29,
+              30,
+              31
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 4,
+            "layer": 31,
+            "promoted": [
+              225,
+              114,
+              39,
+              44
+            ],
+            "demoted": [
+              3,
+              30,
+              32,
+              35
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 8,
+            "layer": 32,
+            "promoted": [
+              237,
+              12,
+              15,
+              18,
+              104,
+              127,
+              210,
+              221
+            ],
+            "demoted": [
+              14,
+              17,
+              19,
+              24,
+              26,
+              27,
+              28,
+              33
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 11,
+            "layer": 33,
+            "promoted": [
+              118,
+              6,
+              11,
+              18,
+              27,
+              40,
+              63,
+              116,
+              121,
+              180,
+              188
+            ],
+            "demoted": [
+              0,
+              4,
+              9,
+              12,
+              19,
+              23,
+              29,
+              32,
+              37,
+              47,
+              49
+            ],
+            "non_pool_hot": 11
+          },
+          {
+            "swapped": 7,
+            "layer": 34,
+            "promoted": [
+              9,
+              15,
+              33,
+              81,
+              90,
+              137,
+              152
+            ],
+            "demoted": [
+              6,
+              16,
+              18,
+              23,
+              40,
+              44,
+              48
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 5,
+            "layer": 35,
+            "promoted": [
+              22,
+              104,
+              112,
+              210,
+              132
+            ],
+            "demoted": [
+              9,
+              33,
+              34,
+              44,
+              57
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 10,
+            "layer": 36,
+            "promoted": [
+              14,
+              194,
+              39,
+              214,
+              66,
+              117,
+              198,
+              203,
+              239,
+              251
+            ],
+            "demoted": [
+              17,
+              20,
+              23,
+              24,
+              26,
+              27,
+              28,
+              31,
+              32,
+              35
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 8,
+            "layer": 37,
+            "promoted": [
+              23,
+              28,
+              48,
+              130,
+              20,
+              64,
+              158,
+              227
+            ],
+            "demoted": [
+              3,
+              4,
+              6,
+              7,
+              16,
+              25,
+              27,
+              35
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 9,
+            "layer": 38,
+            "promoted": [
+              154,
+              35,
+              86,
+              97,
+              101,
+              182,
+              213,
+              238,
+              250
+            ],
+            "demoted": [
+              0,
+              12,
+              17,
+              22,
+              24,
+              34,
+              52,
+              76,
+              82
+            ],
+            "non_pool_hot": 9
+          },
+          {
+            "swapped": 8,
+            "layer": 39,
+            "promoted": [
+              235,
+              224,
+              15,
+              45,
+              73,
+              114,
+              129,
+              179
+            ],
+            "demoted": [
+              16,
+              30,
+              34,
+              38,
+              42,
+              48,
+              69,
+              77
+            ],
+            "non_pool_hot": 8
+          }
+        ]
+      },
+      "comparison": {
+        "match_ratio": 0.10096153846153846,
+        "first_diverge_char": 44,
+        "first_diverge_word": 8
+      }
+    },
+    {
+      "label": "hotswap_pool32_at3_b32",
+      "text": "Here's a thinking process that leads to the explanation of the Pythagorean theorem using the area method:\n\n1.  **Under the Goal:** The user's request is to explain the mathematical proof of the Pythagorean theorem using the \"area method (step-by-step).\n\n2.  **Identify Key Concepts:**\n    *   Pythagorean Theorem: $a$ $b$ $no$ $c$ $g$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $a$ $",
+      "tokens": 200,
+      "tg_tps": 56.90581462325407,
+      "total_ms": 5289.515875047073,
+      "peak_gb": 26.439977696165442,
+      "pool_size": 32,
+      "swap_at": 3,
+      "swap_budget": 32,
+      "swap_stats": {
+        "total_swapped": 167,
+        "layers_updated": 39,
+        "elapsed_ms": 305.6898340000771,
+        "layer_stats": [
+          {
+            "swapped": 6,
+            "layer": 0,
+            "promoted": [
+              57,
+              78,
+              84,
+              88,
+              136,
+              180
+            ],
+            "demoted": [
+              11,
+              13,
+              15,
+              16,
+              17,
+              21
+            ],
+            "non_pool_hot": 6
+          },
+          {
+            "swapped": 8,
+            "layer": 1,
+            "promoted": [
+              33,
+              3,
+              29,
+              100,
+              111,
+              126,
+              221,
+              251
+            ],
+            "demoted": [
+              5,
+              9,
+              11,
+              19,
+              22,
+              26,
+              27,
+              39
+            ],
+            "non_pool_hot": 8
+          },
+          {
+            "swapped": 4,
+            "layer": 2,
+            "promoted": [
+              64,
+              94,
+              117,
+              237
+            ],
+            "demoted": [
+              0,
+              1,
+              3,
+              5
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 4,
+            "layer": 3,
+            "promoted": [
+              20,
+              30,
+              70,
+              246
+            ],
+            "demoted": [
+              1,
+              3,
+              6,
+              12
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 5,
+            "layer": 4,
+            "promoted": [
+              58,
+              79,
+              37,
+              74,
+              253
+            ],
+            "demoted": [
+              8,
+              13,
+              15,
+              20,
+              23
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 5,
+            "promoted": [
+              147,
+              178,
+              11,
+              44,
+              88
+            ],
+            "demoted": [
+              9,
+              13,
+              15,
+              25,
+              43
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 6,
+            "promoted": [
+              36,
+              42,
+              142,
+              177,
+              183
+            ],
+            "demoted": [
+              3,
+              16,
+              27,
+              32,
+              43
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 2,
+            "layer": 7,
+            "promoted": [
+              14,
+              32
+            ],
+            "demoted": [
+              6,
+              19
+            ],
+            "non_pool_hot": 2
+          },
+          {
+            "swapped": 2,
+            "layer": 8,
+            "promoted": [
+              4,
+              157
+            ],
+            "demoted": [
+              3,
+              8
+            ],
+            "non_pool_hot": 2
+          },
+          {
+            "swapped": 2,
+            "layer": 9,
+            "promoted": [
+              59,
+              239
+            ],
+            "demoted": [
+              0,
+              8
+            ],
+            "non_pool_hot": 2
+          },
+          {
+            "swapped": 3,
+            "layer": 10,
+            "promoted": [
+              196,
+              12,
+              133
+            ],
+            "demoted": [
+              8,
+              9,
+              14
+            ],
+            "non_pool_hot": 3
+          },
+          {
+            "swapped": 1,
+            "layer": 11,
+            "promoted": [
+              114
+            ],
+            "demoted": [
+              0
+            ],
+            "non_pool_hot": 1
+          },
+          {
+            "swapped": 4,
+            "layer": 12,
+            "promoted": [
+              49,
+              193,
+              18,
+              199
+            ],
+            "demoted": [
+              4,
+              15,
+              25,
+              26
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 4,
+            "layer": 13,
+            "promoted": [
+              42,
+              44,
+              74,
+              118
+            ],
+            "demoted": [
+              0,
+              3,
+              20,
+              43
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 1,
+            "layer": 14,
+            "promoted": [
+              28
+            ],
+            "demoted": [
+              3
+            ],
+            "non_pool_hot": 1
+          },
+          {
+            "swapped": 1,
+            "layer": 16,
+            "promoted": [
+              73
+            ],
+            "demoted": [
+              5
+            ],
+            "non_pool_hot": 1
+          },
+          {
+            "swapped": 4,
+            "layer": 17,
+            "promoted": [
+              104,
+              167,
+              229,
+              252
+            ],
+            "demoted": [
+              0,
+              8,
+              10,
+              19
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 4,
+            "layer": 18,
+            "promoted": [
+              124,
+              155,
+              177,
+              203
+            ],
+            "demoted": [
+              2,
+              3,
+              6,
+              13
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 5,
+            "layer": 19,
+            "promoted": [
+              132,
+              201,
+              225,
+              239,
+              255
+            ],
+            "demoted": [
+              1,
+              10,
+              26,
+              41,
+              44
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 1,
+            "layer": 20,
+            "promoted": [
+              61
+            ],
+            "demoted": [
+              0
+            ],
+            "non_pool_hot": 1
+          },
+          {
+            "swapped": 5,
+            "layer": 21,
+            "promoted": [
+              55,
+              117,
+              151,
+              165,
+              239
+            ],
+            "demoted": [
+              2,
+              12,
+              18,
+              29,
+              32
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 22,
+            "promoted": [
+              35,
+              42,
+              48,
+              59,
+              91
+            ],
+            "demoted": [
+              11,
+              20,
+              36,
+              40,
+              50
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 4,
+            "layer": 23,
+            "promoted": [
+              27,
+              47,
+              229,
+              248
+            ],
+            "demoted": [
+              14,
+              16,
+              18,
+              37
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 4,
+            "layer": 24,
+            "promoted": [
+              155,
+              163,
+              193,
+              219
+            ],
+            "demoted": [
+              2,
+              4,
+              20,
+              24
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 5,
+            "layer": 25,
+            "promoted": [
+              113,
+              57,
+              118,
+              219,
+              243
+            ],
+            "demoted": [
+              0,
+              23,
+              47,
+              52,
+              64
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 26,
+            "promoted": [
+              27,
+              28,
+              60,
+              189,
+              236
+            ],
+            "demoted": [
+              12,
+              17,
+              31,
+              54,
+              57
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 7,
+            "layer": 27,
+            "promoted": [
+              26,
+              56,
+              58,
+              135,
+              217,
+              245,
+              250
+            ],
+            "demoted": [
+              10,
+              12,
+              18,
+              28,
+              40,
+              53,
+              62
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 4,
+            "layer": 28,
+            "promoted": [
+              46,
+              108,
+              200,
+              236
+            ],
+            "demoted": [
+              10,
+              14,
+              16,
+              17
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 5,
+            "layer": 29,
+            "promoted": [
+              104,
+              127,
+              137,
+              185,
+              230
+            ],
+            "demoted": [
+              0,
+              4,
+              8,
+              9,
+              10
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 5,
+            "layer": 30,
+            "promoted": [
+              3,
+              34,
+              61,
+              72,
+              124
+            ],
+            "demoted": [
+              6,
+              17,
+              18,
+              24,
+              29
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 2,
+            "layer": 31,
+            "promoted": [
+              225,
+              39
+            ],
+            "demoted": [
+              3,
+              20
+            ],
+            "non_pool_hot": 2
+          },
+          {
+            "swapped": 4,
+            "layer": 32,
+            "promoted": [
+              237,
+              127,
+              210,
+              221
+            ],
+            "demoted": [
+              2,
+              14,
+              17,
+              19
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 7,
+            "layer": 33,
+            "promoted": [
+              18,
+              27,
+              40,
+              63,
+              118,
+              121,
+              188
+            ],
+            "demoted": [
+              0,
+              4,
+              9,
+              12,
+              19,
+              23,
+              29
+            ],
+            "non_pool_hot": 7
+          },
+          {
+            "swapped": 5,
+            "layer": 34,
+            "promoted": [
+              9,
+              15,
+              81,
+              137,
+              152
+            ],
+            "demoted": [
+              1,
+              6,
+              16,
+              18,
+              23
+            ],
+            "non_pool_hot": 5
+          },
+          {
+            "swapped": 4,
+            "layer": 35,
+            "promoted": [
+              22,
+              104,
+              112,
+              132
+            ],
+            "demoted": [
+              9,
+              33,
+              34,
+              42
+            ],
+            "non_pool_hot": 4
+          },
+          {
+            "swapped": 9,
+            "layer": 36,
+            "promoted": [
+              14,
+              66,
+              117,
+              194,
+              198,
+              203,
+              214,
+              239,
+              251
+            ],
+            "demoted": [
+              17,
+              20,
+              23,
+              24,
+              26,
+              27,
+              28,
+              31,
+              32
+            ],
+            "non_pool_hot": 9
+          },
+          {
+            "swapped": 6,
+            "layer": 37,
+            "promoted": [
+              23,
+              28,
+              48,
+              130,
+              158,
+              227
+            ],
+            "demoted": [
+              3,
+              4,
+              6,
+              7,
+              8,
+              16
+            ],
+            "non_pool_hot": 6
+          },
+          {
+            "swapped": 6,
+            "layer": 38,
+            "promoted": [
+              86,
+              97,
+              101,
+              154,
+              213,
+              250
+            ],
+            "demoted": [
+              0,
+              12,
+              17,
+              18,
+              22,
+              24
+            ],
+            "non_pool_hot": 6
+          },
+          {
+            "swapped": 4,
+            "layer": 39,
+            "promoted": [
+              235,
+              15,
+              114,
+              224
+            ],
+            "demoted": [
+              10,
+              16,
+              30,
+              34
+            ],
+            "non_pool_hot": 4
+          }
+        ]
+      },
+      "comparison": {
+        "match_ratio": 0.1201923076923077,
+        "first_diverge_char": 83,
+        "first_diverge_word": 13
+      }
+    },
+    {
+      "label": "hotswap_pool32_at10_b32",
+      "text": "Here's a thinking process that which is used to generate the explanation of the Pythagorean theorem proof:\n\n1.  **An Request:** The user wants a step-by-step explanation of the mathematical proof of the Pythagorean theorem using the area method.\n2.  **Plan:** I need to identify the core components of the proof.\n   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *  ",
+      "tokens": 200,
+      "tg_tps": 48.38197130144529,
+      "total_ms": 5968.830625002738,
+      "peak_gb": 26.439977696165442,
+      "pool_size": 32,
+      "swap_at": 10,
+      "swap_budget": 32,
+      "swap_stats": {
+        "total_swapped": 702,
+        "layers_updated": 40,
+        "elapsed_ms": 869.8666249983944,
+        "layer_stats": [
+          {
+            "swapped": 28,
+            "layer": 0,
+            "promoted": [
+              85,
+              233,
+              4,
+              49,
+              84,
+              157,
+              165,
+              5,
+              18,
+              33,
+              36,
+              40,
+              44,
+              50,
+              57,
+              78,
+              80,
+              88,
+              122,
+              127,
+              136,
+              146,
+              153,
+              171,
+              172,
+              175,
+              180,
+              204
+            ],
+            "demoted": [
+              15,
+              16,
+              17,
+              21,
+              24,
+              26,
+              30,
+              31,
+              37,
+              38,
+              39,
+              41,
+              43,
+              47,
+              48,
+              52,
+              53,
+              54,
+              62,
+              69,
+              70,
+              72,
+              81,
+              82,
+              95,
+              96,
+              97,
+              98
+            ],
+            "non_pool_hot": 28
+          },
+          {
+            "swapped": 27,
+            "layer": 1,
+            "promoted": [
+              29,
+              33,
+              85,
+              221,
+              126,
+              158,
+              203,
+              254,
+              3,
+              7,
+              10,
+              13,
+              17,
+              66,
+              100,
+              101,
+              111,
+              113,
+              118,
+              157,
+              198,
+              206,
+              230,
+              232,
+              233,
+              245,
+              251
+            ],
+            "demoted": [
+              5,
+              9,
+              11,
+              19,
+              26,
+              27,
+              39,
+              44,
+              58,
+              59,
+              60,
+              69,
+              75,
+              80,
+              81,
+              82,
+              86,
+              87,
+              88,
+              89,
+              92,
+              94,
+              96,
+              97,
+              102,
+              103,
+              112
+            ],
+            "non_pool_hot": 27
+          },
+          {
+            "swapped": 23,
+            "layer": 2,
+            "promoted": [
+              117,
+              23,
+              64,
+              89,
+              20,
+              94,
+              150,
+              230,
+              236,
+              237,
+              15,
+              43,
+              72,
+              84,
+              108,
+              110,
+              149,
+              159,
+              173,
+              182,
+              208,
+              212,
+              247
+            ],
+            "demoted": [
+              0,
+              1,
+              3,
+              5,
+              10,
+              19,
+              29,
+              39,
+              40,
+              41,
+              48,
+              66,
+              80,
+              85,
+              87,
+              92,
+              93,
+              100,
+              109,
+              111,
+              122,
+              128,
+              129
+            ],
+            "non_pool_hot": 23
+          },
+          {
+            "swapped": 20,
+            "layer": 3,
+            "promoted": [
+              20,
+              53,
+              15,
+              55,
+              171,
+              30,
+              70,
+              148,
+              166,
+              236,
+              246,
+              51,
+              91,
+              101,
+              116,
+              122,
+              177,
+              221,
+              226,
+              250
+            ],
+            "demoted": [
+              1,
+              3,
+              6,
+              12,
+              37,
+              45,
+              50,
+              56,
+              69,
+              73,
+              84,
+              86,
+              89,
+              92,
+              107,
+              108,
+              112,
+              117,
+              118,
+              123
+            ],
+            "non_pool_hot": 20
+          },
+          {
+            "swapped": 17,
+            "layer": 4,
+            "promoted": [
+              74,
+              228,
+              253,
+              12,
+              79,
+              37,
+              58,
+              65,
+              71,
+              122,
+              239,
+              55,
+              60,
+              219,
+              229,
+              245,
+              250
+            ],
+            "demoted": [
+              13,
+              15,
+              20,
+              23,
+              57,
+              66,
+              68,
+              72,
+              75,
+              77,
+              87,
+              89,
+              90,
+              97,
+              102,
+              108,
+              109
+            ],
+            "non_pool_hot": 17
+          },
+          {
+            "swapped": 18,
+            "layer": 5,
+            "promoted": [
+              178,
+              236,
+              249,
+              2,
+              27,
+              31,
+              144,
+              147,
+              155,
+              10,
+              11,
+              14,
+              44,
+              86,
+              88,
+              100,
+              169,
+              194
+            ],
+            "demoted": [
+              13,
+              15,
+              25,
+              43,
+              56,
+              57,
+              60,
+              62,
+              65,
+              71,
+              77,
+              79,
+              104,
+              108,
+              120,
+              127,
+              135,
+              139
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 18,
+            "layer": 6,
+            "promoted": [
+              42,
+              136,
+              62,
+              73,
+              90,
+              122,
+              142,
+              177,
+              200,
+              36,
+              55,
+              83,
+              135,
+              173,
+              182,
+              183,
+              186,
+              235
+            ],
+            "demoted": [
+              3,
+              16,
+              27,
+              32,
+              43,
+              49,
+              56,
+              60,
+              68,
+              71,
+              92,
+              110,
+              114,
+              129,
+              133,
+              149,
+              153,
+              161
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 16,
+            "layer": 7,
+            "promoted": [
+              14,
+              32,
+              171,
+              131,
+              44,
+              85,
+              161,
+              2,
+              56,
+              61,
+              102,
+              129,
+              155,
+              158,
+              181,
+              253
+            ],
+            "demoted": [
+              6,
+              22,
+              29,
+              30,
+              37,
+              49,
+              69,
+              73,
+              75,
+              91,
+              116,
+              117,
+              125,
+              138,
+              165,
+              166
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 17,
+            "layer": 8,
+            "promoted": [
+              65,
+              4,
+              57,
+              80,
+              157,
+              186,
+              207,
+              50,
+              86,
+              120,
+              122,
+              172,
+              179,
+              184,
+              225,
+              238,
+              240
+            ],
+            "demoted": [
+              3,
+              8,
+              17,
+              27,
+              35,
+              47,
+              56,
+              63,
+              72,
+              76,
+              78,
+              79,
+              84,
+              91,
+              98,
+              99,
+              108
+            ],
+            "non_pool_hot": 17
+          },
+          {
+            "swapped": 13,
+            "layer": 9,
+            "promoted": [
+              59,
+              41,
+              142,
+              54,
+              98,
+              217,
+              240,
+              19,
+              58,
+              96,
+              104,
+              170,
+              239
+            ],
+            "demoted": [
+              0,
+              18,
+              20,
+              29,
+              32,
+              36,
+              45,
+              49,
+              70,
+              72,
+              94,
+              97,
+              100
+            ],
+            "non_pool_hot": 13
+          },
+          {
+            "swapped": 16,
+            "layer": 10,
+            "promoted": [
+              196,
+              46,
+              95,
+              12,
+              133,
+              56,
+              114,
+              218,
+              20,
+              24,
+              35,
+              42,
+              72,
+              194,
+              201,
+              208
+            ],
+            "demoted": [
+              14,
+              18,
+              25,
+              27,
+              40,
+              54,
+              76,
+              103,
+              108,
+              109,
+              111,
+              116,
+              120,
+              123,
+              124,
+              130
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 18,
+            "layer": 11,
+            "promoted": [
+              47,
+              114,
+              49,
+              78,
+              147,
+              156,
+              207,
+              213,
+              247,
+              15,
+              40,
+              60,
+              93,
+              141,
+              143,
+              153,
+              248,
+              254
+            ],
+            "demoted": [
+              0,
+              7,
+              14,
+              37,
+              56,
+              68,
+              71,
+              76,
+              83,
+              88,
+              92,
+              96,
+              97,
+              101,
+              104,
+              108,
+              109,
+              112
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 18,
+            "layer": 12,
+            "promoted": [
+              193,
+              49,
+              76,
+              101,
+              43,
+              99,
+              186,
+              199,
+              206,
+              223,
+              232,
+              17,
+              18,
+              42,
+              155,
+              163,
+              192,
+              254
+            ],
+            "demoted": [
+              4,
+              15,
+              25,
+              26,
+              47,
+              50,
+              63,
+              64,
+              65,
+              68,
+              74,
+              79,
+              83,
+              86,
+              93,
+              97,
+              100,
+              106
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 11,
+            "layer": 13,
+            "promoted": [
+              44,
+              74,
+              100,
+              42,
+              151,
+              194,
+              220,
+              118,
+              155,
+              171,
+              204
+            ],
+            "demoted": [
+              0,
+              3,
+              20,
+              43,
+              47,
+              53,
+              71,
+              82,
+              90,
+              126,
+              132
+            ],
+            "non_pool_hot": 11
+          },
+          {
+            "swapped": 10,
+            "layer": 14,
+            "promoted": [
+              28,
+              40,
+              231,
+              6,
+              47,
+              166,
+              203,
+              0,
+              63,
+              218
+            ],
+            "demoted": [
+              3,
+              12,
+              25,
+              30,
+              57,
+              88,
+              97,
+              100,
+              110,
+              114
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 15,
+            "layer": 15,
+            "promoted": [
+              250,
+              6,
+              149,
+              218,
+              240,
+              195,
+              44,
+              46,
+              99,
+              109,
+              121,
+              174,
+              182,
+              226,
+              238
+            ],
+            "demoted": [
+              10,
+              40,
+              54,
+              56,
+              66,
+              82,
+              83,
+              86,
+              92,
+              93,
+              95,
+              102,
+              107,
+              108,
+              111
+            ],
+            "non_pool_hot": 15
+          },
+          {
+            "swapped": 18,
+            "layer": 16,
+            "promoted": [
+              147,
+              35,
+              40,
+              0,
+              180,
+              9,
+              38,
+              41,
+              46,
+              73,
+              81,
+              119,
+              126,
+              136,
+              159,
+              204,
+              232,
+              247
+            ],
+            "demoted": [
+              5,
+              7,
+              24,
+              37,
+              53,
+              59,
+              69,
+              75,
+              88,
+              89,
+              93,
+              107,
+              108,
+              141,
+              144,
+              149,
+              166,
+              169
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 21,
+            "layer": 17,
+            "promoted": [
+              142,
+              104,
+              88,
+              144,
+              206,
+              167,
+              185,
+              197,
+              201,
+              16,
+              17,
+              28,
+              37,
+              46,
+              49,
+              125,
+              198,
+              208,
+              229,
+              235,
+              252
+            ],
+            "demoted": [
+              0,
+              8,
+              10,
+              19,
+              21,
+              22,
+              25,
+              26,
+              34,
+              45,
+              60,
+              74,
+              81,
+              86,
+              105,
+              106,
+              112,
+              121,
+              124,
+              138,
+              145
+            ],
+            "non_pool_hot": 21
+          },
+          {
+            "swapped": 16,
+            "layer": 18,
+            "promoted": [
+              203,
+              177,
+              166,
+              63,
+              135,
+              195,
+              161,
+              69,
+              89,
+              93,
+              112,
+              113,
+              124,
+              148,
+              155,
+              188
+            ],
+            "demoted": [
+              2,
+              3,
+              13,
+              32,
+              40,
+              55,
+              57,
+              76,
+              94,
+              97,
+              100,
+              108,
+              109,
+              116,
+              130,
+              147
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 16,
+            "layer": 19,
+            "promoted": [
+              201,
+              226,
+              225,
+              231,
+              91,
+              199,
+              224,
+              239,
+              19,
+              132,
+              151,
+              164,
+              194,
+              228,
+              248,
+              255
+            ],
+            "demoted": [
+              1,
+              10,
+              41,
+              47,
+              48,
+              55,
+              64,
+              75,
+              94,
+              117,
+              118,
+              126,
+              129,
+              142,
+              154,
+              159
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 15,
+            "layer": 20,
+            "promoted": [
+              61,
+              98,
+              120,
+              141,
+              151,
+              171,
+              210,
+              238,
+              16,
+              65,
+              160,
+              181,
+              184,
+              187,
+              207
+            ],
+            "demoted": [
+              0,
+              8,
+              11,
+              17,
+              18,
+              22,
+              47,
+              79,
+              84,
+              92,
+              107,
+              108,
+              110,
+              127,
+              152
+            ],
+            "non_pool_hot": 15
+          },
+          {
+            "swapped": 23,
+            "layer": 21,
+            "promoted": [
+              170,
+              239,
+              178,
+              243,
+              54,
+              55,
+              96,
+              148,
+              189,
+              217,
+              5,
+              19,
+              81,
+              117,
+              146,
+              151,
+              165,
+              180,
+              188,
+              215,
+              221,
+              224,
+              240
+            ],
+            "demoted": [
+              2,
+              12,
+              18,
+              29,
+              32,
+              44,
+              45,
+              49,
+              67,
+              70,
+              72,
+              86,
+              95,
+              97,
+              100,
+              112,
+              113,
+              122,
+              134,
+              161,
+              184,
+              203,
+              206
+            ],
+            "non_pool_hot": 23
+          },
+          {
+            "swapped": 20,
+            "layer": 22,
+            "promoted": [
+              56,
+              46,
+              114,
+              196,
+              219,
+              0,
+              12,
+              24,
+              35,
+              151,
+              208,
+              9,
+              42,
+              48,
+              59,
+              62,
+              80,
+              91,
+              183,
+              218
+            ],
+            "demoted": [
+              11,
+              20,
+              36,
+              40,
+              50,
+              68,
+              76,
+              82,
+              100,
+              106,
+              108,
+              109,
+              111,
+              120,
+              122,
+              123,
+              124,
+              125,
+              137,
+              140
+            ],
+            "non_pool_hot": 20
+          },
+          {
+            "swapped": 21,
+            "layer": 23,
+            "promoted": [
+              47,
+              213,
+              114,
+              76,
+              132,
+              143,
+              192,
+              10,
+              15,
+              27,
+              49,
+              63,
+              66,
+              73,
+              82,
+              208,
+              229,
+              230,
+              247,
+              248,
+              251
+            ],
+            "demoted": [
+              14,
+              16,
+              18,
+              37,
+              41,
+              51,
+              54,
+              61,
+              64,
+              71,
+              83,
+              87,
+              88,
+              92,
+              96,
+              97,
+              104,
+              109,
+              112,
+              123,
+              126
+            ],
+            "non_pool_hot": 21
+          },
+          {
+            "swapped": 15,
+            "layer": 24,
+            "promoted": [
+              23,
+              99,
+              196,
+              206,
+              186,
+              193,
+              13,
+              76,
+              158,
+              43,
+              101,
+              143,
+              155,
+              163,
+              219
+            ],
+            "demoted": [
+              2,
+              4,
+              24,
+              26,
+              48,
+              50,
+              53,
+              55,
+              62,
+              65,
+              68,
+              70,
+              74,
+              87,
+              93
+            ],
+            "non_pool_hot": 15
+          },
+          {
+            "swapped": 17,
+            "layer": 25,
+            "promoted": [
+              113,
+              194,
+              100,
+              38,
+              42,
+              149,
+              151,
+              220,
+              235,
+              14,
+              26,
+              57,
+              84,
+              118,
+              176,
+              219,
+              243
+            ],
+            "demoted": [
+              0,
+              23,
+              47,
+              52,
+              74,
+              78,
+              93,
+              101,
+              110,
+              114,
+              119,
+              130,
+              132,
+              134,
+              135,
+              137,
+              147
+            ],
+            "non_pool_hot": 17
+          },
+          {
+            "swapped": 12,
+            "layer": 26,
+            "promoted": [
+              28,
+              189,
+              40,
+              165,
+              236,
+              27,
+              47,
+              60,
+              73,
+              187,
+              191,
+              213
+            ],
+            "demoted": [
+              31,
+              54,
+              64,
+              78,
+              81,
+              88,
+              100,
+              106,
+              110,
+              112,
+              123,
+              136
+            ],
+            "non_pool_hot": 12
+          },
+          {
+            "swapped": 20,
+            "layer": 27,
+            "promoted": [
+              250,
+              6,
+              58,
+              44,
+              217,
+              46,
+              70,
+              170,
+              14,
+              26,
+              48,
+              56,
+              68,
+              74,
+              99,
+              131,
+              135,
+              150,
+              203,
+              245
+            ],
+            "demoted": [
+              10,
+              12,
+              18,
+              28,
+              40,
+              53,
+              62,
+              65,
+              66,
+              82,
+              83,
+              85,
+              87,
+              92,
+              102,
+              107,
+              108,
+              122,
+              124,
+              126
+            ],
+            "non_pool_hot": 20
+          },
+          {
+            "swapped": 19,
+            "layer": 28,
+            "promoted": [
+              0,
+              247,
+              46,
+              96,
+              162,
+              35,
+              38,
+              41,
+              81,
+              91,
+              108,
+              116,
+              137,
+              145,
+              147,
+              189,
+              192,
+              200,
+              236
+            ],
+            "demoted": [
+              10,
+              14,
+              16,
+              17,
+              18,
+              24,
+              56,
+              59,
+              63,
+              75,
+              89,
+              92,
+              93,
+              105,
+              107,
+              126,
+              144,
+              149,
+              165
+            ],
+            "non_pool_hot": 19
+          },
+          {
+            "swapped": 16,
+            "layer": 29,
+            "promoted": [
+              104,
+              125,
+              144,
+              201,
+              16,
+              185,
+              211,
+              46,
+              208,
+              49,
+              58,
+              111,
+              127,
+              137,
+              218,
+              230
+            ],
+            "demoted": [
+              0,
+              4,
+              8,
+              9,
+              10,
+              18,
+              19,
+              21,
+              25,
+              26,
+              30,
+              33,
+              34,
+              36,
+              60,
+              69
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 13,
+            "layer": 30,
+            "promoted": [
+              166,
+              89,
+              72,
+              124,
+              161,
+              3,
+              34,
+              61,
+              71,
+              93,
+              117,
+              159,
+              177
+            ],
+            "demoted": [
+              6,
+              17,
+              18,
+              24,
+              29,
+              30,
+              31,
+              32,
+              39,
+              52,
+              55,
+              63,
+              68
+            ],
+            "non_pool_hot": 13
+          },
+          {
+            "swapped": 10,
+            "layer": 31,
+            "promoted": [
+              225,
+              114,
+              39,
+              164,
+              44,
+              145,
+              199,
+              221,
+              228,
+              231
+            ],
+            "demoted": [
+              3,
+              30,
+              32,
+              35,
+              36,
+              37,
+              47,
+              51,
+              55,
+              67
+            ],
+            "non_pool_hot": 10
+          },
+          {
+            "swapped": 14,
+            "layer": 32,
+            "promoted": [
+              237,
+              18,
+              15,
+              221,
+              104,
+              12,
+              48,
+              77,
+              116,
+              127,
+              136,
+              195,
+              210,
+              255
+            ],
+            "demoted": [
+              14,
+              19,
+              24,
+              26,
+              27,
+              28,
+              33,
+              35,
+              44,
+              52,
+              53,
+              54,
+              58,
+              66
+            ],
+            "non_pool_hot": 14
+          },
+          {
+            "swapped": 18,
+            "layer": 33,
+            "promoted": [
+              118,
+              121,
+              6,
+              11,
+              244,
+              253,
+              18,
+              27,
+              40,
+              63,
+              105,
+              107,
+              116,
+              151,
+              168,
+              180,
+              182,
+              188
+            ],
+            "demoted": [
+              0,
+              4,
+              12,
+              19,
+              23,
+              29,
+              32,
+              47,
+              53,
+              56,
+              57,
+              67,
+              68,
+              75,
+              84,
+              86,
+              90,
+              93
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 21,
+            "layer": 34,
+            "promoted": [
+              9,
+              81,
+              219,
+              33,
+              64,
+              208,
+              90,
+              205,
+              8,
+              10,
+              12,
+              15,
+              21,
+              55,
+              56,
+              108,
+              137,
+              152,
+              175,
+              212,
+              255
+            ],
+            "demoted": [
+              6,
+              16,
+              18,
+              23,
+              40,
+              44,
+              48,
+              49,
+              51,
+              61,
+              73,
+              80,
+              84,
+              86,
+              88,
+              94,
+              96,
+              98,
+              103,
+              107,
+              113
+            ],
+            "non_pool_hot": 21
+          },
+          {
+            "swapped": 18,
+            "layer": 35,
+            "promoted": [
+              22,
+              132,
+              104,
+              210,
+              14,
+              112,
+              5,
+              18,
+              20,
+              39,
+              66,
+              85,
+              99,
+              106,
+              122,
+              179,
+              196,
+              218
+            ],
+            "demoted": [
+              9,
+              33,
+              57,
+              74,
+              81,
+              92,
+              95,
+              96,
+              97,
+              108,
+              115,
+              117,
+              127,
+              146,
+              149,
+              156,
+              159,
+              170
+            ],
+            "non_pool_hot": 18
+          },
+          {
+            "swapped": 20,
+            "layer": 36,
+            "promoted": [
+              14,
+              194,
+              158,
+              67,
+              39,
+              117,
+              195,
+              214,
+              234,
+              49,
+              55,
+              66,
+              77,
+              126,
+              187,
+              198,
+              203,
+              211,
+              239,
+              251
+            ],
+            "demoted": [
+              17,
+              20,
+              23,
+              24,
+              26,
+              27,
+              28,
+              31,
+              32,
+              35,
+              42,
+              44,
+              58,
+              59,
+              70,
+              80,
+              82,
+              83,
+              84,
+              102
+            ],
+            "non_pool_hot": 20
+          },
+          {
+            "swapped": 16,
+            "layer": 37,
+            "promoted": [
+              48,
+              28,
+              23,
+              64,
+              83,
+              20,
+              67,
+              130,
+              158,
+              37,
+              43,
+              56,
+              60,
+              161,
+              174,
+              227
+            ],
+            "demoted": [
+              3,
+              4,
+              6,
+              7,
+              16,
+              25,
+              27,
+              35,
+              39,
+              61,
+              71,
+              78,
+              82,
+              84,
+              85,
+              91
+            ],
+            "non_pool_hot": 16
+          },
+          {
+            "swapped": 21,
+            "layer": 38,
+            "promoted": [
+              201,
+              163,
+              88,
+              101,
+              154,
+              213,
+              9,
+              30,
+              35,
+              43,
+              86,
+              97,
+              98,
+              127,
+              142,
+              182,
+              222,
+              234,
+              236,
+              238,
+              250
+            ],
+            "demoted": [
+              0,
+              12,
+              17,
+              22,
+              24,
+              34,
+              52,
+              76,
+              82,
+              103,
+              123,
+              125,
+              131,
+              132,
+              141,
+              143,
+              148,
+              149,
+              151,
+              159,
+              169
+            ],
+            "non_pool_hot": 21
+          },
+          {
+            "swapped": 17,
+            "layer": 39,
+            "promoted": [
+              15,
+              138,
+              224,
+              235,
+              1,
+              72,
+              73,
+              215,
+              45,
+              55,
+              70,
+              114,
+              129,
+              179,
+              246,
+              248,
+              250
+            ],
+            "demoted": [
+              16,
+              30,
+              34,
+              38,
+              42,
+              48,
+              69,
+              77,
+              83,
+              91,
+              98,
+              99,
+              101,
+              105,
+              106,
+              110,
+              116
+            ],
+            "non_pool_hot": 17
+          }
+        ]
+      },
+      "comparison": {
+        "match_ratio": 0.09375,
+        "first_diverge_char": 31,
+        "first_diverge_word": 5
+      }
+    }
+  ]
+}

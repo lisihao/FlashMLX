@@ -1,0 +1,55 @@
+{
+  "timestamp": "20260422_095848",
+  "model": "mlx-community/Qwen3.5-35B-A3B-4bit",
+  "device": "Apple M4 Pro",
+  "total_memory_gb": 48.0,
+  "config": {
+    "batch_size": 4,
+    "context": 16384,
+    "max_gen": 128
+  },
+  "results": {
+    "community": {
+      "phase": "community",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_prompt_tokens": 64863,
+      "total_gen_tokens": 512,
+      "elapsed_s": 120.20516449998831,
+      "pp_throughput": 606.7591018650453,
+      "tg_throughput": 38.48345269185995,
+      "ttft_s": 106.90074495895533,
+      "peak_memory_gb": 28.05306989327073,
+      "model_residency_gb": 18.15970624424517,
+      "quality_pass": 4,
+      "quality_total": 4,
+      "text_previews": [
+        "The exact annual budget for Project Alpha is $12,500.<|im_end|>\n<|endoftext|><|i",
+        "<think>\n<think> The annual budget for Project Alpha is exactly $12,500.<|im_end|",
+        "The annual budget for Project Alpha is exactly **$12,500**.\n\nThis information is",
+        "<think>\n<think> The annual financial allocation for Project Alpha is exactly $12"
+      ]
+    },
+    "flashmlx": {
+      "phase": "flashmlx",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_prompt_tokens": 64863,
+      "total_gen_tokens": 512,
+      "elapsed_s": 119.11936083302135,
+      "pp_throughput": 672.1841437847547,
+      "tg_throughput": 54.75130760396514,
+      "ttft_s": 96.4958792910329,
+      "peak_memory_gb": 14.213597927242517,
+      "model_residency_gb": 14.14752751775086,
+      "quality_pass": 4,
+      "quality_total": 4,
+      "text_previews": [
+        "The exact annual budget for Project Alpha is exactly $12,500.<|im_end|>\n<|endoft",
+        "<think>\n</think> The annual budget for Project Alpha is exactly $12,500.<|im_end",
+        "The annual budget for **Project Alpha** is exactly **12,500**.<|im_end|>\n<|endof",
+        "<think>\n**The annual financial allocation for Project Alpha is exactly $12,500.*"
+      ]
+    }
+  }
+}

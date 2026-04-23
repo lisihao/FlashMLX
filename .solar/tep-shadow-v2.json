@@ -1,0 +1,59 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-18 23:43:54",
+  "results": [
+    {
+      "label": "A_std_6bit",
+      "tg_tps": 68.48577179629746,
+      "p50_ms": 14.610124497266952,
+      "peak_gb": 26.311129903420806,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming "
+    },
+    {
+      "label": "F_6bit_z32",
+      "tg_tps": 73.784392904029,
+      "p50_ms": 13.523187502869405,
+      "peak_gb": 5.208709130063653,
+      "text": "Here's a thinking process that leads to the response:\n\n1.  **Analyze the Request:**\n    The user is asking for an \"Explain\" of a specific phrase: \"mathematical foundations\" (likely a typo for \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathemati",
+      "pool_size": 32,
+      "bits": 6,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "D_4bit_k32",
+      "tg_tps": 75.21388161595898,
+      "p50_ms": 13.430750503175659,
+      "peak_gb": 4.315704697743058,
+      "text": "Here's a thinking conregarding the user's request is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is a is",
+      "pool_size": 32,
+      "bits": 4,
+      "miss_policy": "k1_clamp"
+    },
+    {
+      "label": "E_4bit_z32",
+      "tg_tps": 76.93432941698126,
+      "p50_ms": 13.061333498626482,
+      "peak_gb": 4.315704697743058,
+      "text": "Here's a thinking process that leads to the response:\n\n1.  **Analyze the Request:**\n    The user is asking for an \"Explain\" of a specific phrase: \"mathematical foundations\" (likely a typo or pun intended).\n    The phrase is: \"attention mechanisms in transformers, including scaled dot-product attention and multi-head attention.\"\n    The user wants \"the full mathematical derivation.\"\n\n    This is a ",
+      "pool_size": 32,
+      "bits": 4,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "B_4bit_full",
+      "tg_tps": 73.43412738463896,
+      "p50_ms": 13.56933350325562,
+      "peak_gb": 18.827518513426185,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Key Components:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, dimensions).\n\n2.  **Initial Brai",
+      "bits": 4
+    },
+    {
+      "label": "C_2bit_full",
+      "tg_tps": 77.74193705174967,
+      "p50_ms": 12.80564599801437,
+      "peak_gb": 11.340299190953374,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms:\n\n1.  **Understand the Goal:** The user wants a detailed explanation of the mathematical foundations of attention mechanisms in Transformers. Specifically, they want to know about *Scaled Dot-Product Attention* and *Multi-Head Attention*. Crucially, they asked for the *full mathematical derivation*.\n\n2.  **Identify Key",
+      "bits": 2
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-18 08:46:10",
+  "tokens": 150,
+  "pool_size": 32,
+  "prompt": "Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.",
+  "results": [
+    {
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product",
+      "tokens": 150,
+      "tg_tps": 69.63295846466721,
+      "total_ms": 3849.3011249993287,
+      "peak_gb": 26.311129903420806,
+      "tpot": {
+        "mean_ms": 14.457757136980247,
+        "p50_ms": 14.451541999733308,
+        "p95_ms": 14.653635999820835,
+        "std_ms": 0.11727665325669899
+      },
+      "label": "standard",
+      "miss_policy": "none"
+    },
+    {
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"The mathematical foundations of attention mechanisms in transformers.\"\n    *   **Specific Terms:** \"including scaled dot-product attention and multi-head attention.\"\n    *   **Specific Instruction:** \"Provide the full mathematical derivation.\"\n    *   **Confusing/Erroneous Phrase:** \"in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.\" Wait, looking closer at the prompt: \"Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.\"\n    *   **Wait, there",
+      "tokens": 150,
+      "tg_tps": 7.970114408866993,
+      "total_ms": 19260.899749999226,
+      "peak_gb": 5.023040184751153,
+      "tpot": {
+        "mean_ms": 125.22793807535007,
+        "p50_ms": 119.1411039999366,
+        "p95_ms": 175.9150730008514,
+        "std_ms": 25.377165493020485
+      },
+      "label": "true_load",
+      "miss_policy": "true_load",
+      "pool_size": 32,
+      "mem_after_compact_gb": 4.90137923695147,
+      "miss_count": 34785,
+      "miss_mean_ms": 0.322300935403191,
+      "hit_rate": 1.0,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 0,
+        "ssd": 34785
+      }
+    },
+    {
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"The mathematical foundations of attention mechanisms in transformers.\"\n    *   **Specific Terms:** \"including scaled dot-product attention and multi-head attention.\"\n    *   **Specific Instruction:** \"Provide the full mathematical derivation.\"\n    *   **Confusing/Erroneous Phrase:** \"in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.\" Wait, looking closer at the prompt: \"Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.\"\n    *   **Wait, there",
+      "tokens": 150,
+      "tg_tps": 6.936424858950501,
+      "total_ms": 26812.94700000035,
+      "peak_gb": 5.023039707913995,
+      "tpot": {
+        "mean_ms": 140.7984260821936,
+        "p50_ms": 116.95189550027862,
+        "p95_ms": 319.8092505003842,
+        "std_ms": 80.7634639100604
+      },
+      "label": "cpu_cache",
+      "miss_policy": "cpu_cache",
+      "pool_size": 32,
+      "mem_after_compact_gb": 4.901378760114312,
+      "miss_count": 34785,
+      "miss_mean_ms": 0.42359721690383784,
+      "hit_rate": 1.0,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 34785,
+        "ssd": 0
+      }
+    },
+    {
+      "text": "Here's a thinking process that the user's request is.\n\n1.  **The user's request is**\n    *   \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\" \"Ex\"",
+      "tokens": 150,
+      "tg_tps": 42.583234813182806,
+      "total_ms": 3855.521792000218,
+      "peak_gb": 5.023039707913995,
+      "tpot": {
+        "mean_ms": 23.635163239716398,
+        "p50_ms": 23.59050050017686,
+        "p95_ms": 24.864813000476715,
+        "std_ms": 1.983632735567254
+      },
+      "label": "zero_out",
+      "miss_policy": "zero_out",
+      "pool_size": 32,
+      "mem_after_compact_gb": 4.901378760114312,
+      "miss_count": 0,
+      "miss_mean_ms": 0,
+      "hit_rate": 0.27860099337748345,
+      "miss_sources": {}
+    },
+    {
+      "text": "Here's thinking concerns. The user is a years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years old. The years",
+      "tokens": 150,
+      "tg_tps": 42.17183200730551,
+      "total_ms": 3796.7005830014386,
+      "peak_gb": 5.023039707913995,
+      "tpot": {
+        "mean_ms": 23.83667123288196,
+        "p50_ms": 23.62131250083621,
+        "p95_ms": 25.342207749417867,
+        "std_ms": 2.056546027493202
+      },
+      "label": "k1_clamp",
+      "miss_policy": "k1_clamp",
+      "pool_size": 32,
+      "mem_after_compact_gb": 4.901378760114312,
+      "miss_count": 0,
+      "miss_mean_ms": 0,
+      "hit_rate": 0.28180877483443706,
+      "miss_sources": {}
+    }
+  ]
+}

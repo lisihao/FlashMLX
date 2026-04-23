@@ -1,5 +1,7 @@
 # FlashMLX 性能对比测试结果
 
+> **Warning**: Memory 列数据 (全部 0.5 MB) 来自 MoE 模型的 SSM 层测量，不反映真实 KV 内存。以 ARCHITECTURE.md §13 为准。
+
 **日期**: 2026-03-21
 **模型**: Qwen3.5-35B-A3B (MLX)
 **配置**: Hybrid Cache (128MB budget, 4.0x compression, β-calibrated)

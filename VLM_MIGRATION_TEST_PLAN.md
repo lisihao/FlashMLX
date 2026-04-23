@@ -493,7 +493,7 @@ jobs:
           path: test-results/
 
   integration-tests:
-    runs-on: self-hosted  # M4 Max 64GB
+    runs-on: self-hosted  # M4 Pro 48GB
     timeout-minutes: 30
     needs: unit-tests
 

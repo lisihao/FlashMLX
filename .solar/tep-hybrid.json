@@ -1,0 +1,4337 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-18 17:08:58",
+  "tokens": 150,
+  "prompt": "Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.",
+  "results": [
+    {
+      "label": "standard",
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product",
+      "tokens": 150,
+      "tg_tps": 68.24237941628104,
+      "total_ms": 5165.140541997971,
+      "peak_gb": 26.311129903420806,
+      "tpot": {
+        "mean_ms": 14.751442917831934,
+        "p50_ms": 14.663500001915963,
+        "p95_ms": 15.2201877481275
+      }
+    },
+    {
+      "label": "dr+zero_32",
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Attention mechanisms in transformers\" (including \"scaled dot-product attention, multi-head attention).\n    *   **Task:** \"Ex Explain the mathematical foundations of attention mechanisms in transformers\" (including \"scaled dot-product attention, multi-head attention. Provide the full mathematical derivation.\n    *   **Constraint:** \"Provide the full mathematical derivation.\n    *   **Observ:** The user's request is a bit of \"attention mechanisms in transformers\" (including \"scaled dot-product attention, multi-head attention.\n    *   **Observ:** The user's request is a bit of \"attention mechanisms in",
+      "tokens": 150,
+      "tg_tps": 42.09803411300098,
+      "total_ms": 3824.077874996874,
+      "peak_gb": 5.02401895262301,
+      "pool_size": 32,
+      "warmup_tokens": 20,
+      "miss_policy": "zero_out",
+      "hybrid_threshold": null,
+      "rolling_swap_interval": 0,
+      "mem_after_compact_gb": 4.901852259412408,
+      "recompact_stats": {
+        "total_swapped": 779,
+        "layers": 40,
+        "avg_old_hit_rate": 0.4741071428571428,
+        "avg_new_hit_rate": 0.846577380952381,
+        "elapsed_ms": 256.8102910008747,
+        "layer_stats": [
+          {
+            "swapped": 24,
+            "layer": 0,
+            "old_hit_rate": 0.2261904761904762,
+            "new_hit_rate": 0.5357142857142857,
+            "promoted": [
+              134,
+              14,
+              147,
+              151,
+              158,
+              30,
+              181,
+              56
+            ],
+            "demoted": [
+              129,
+              131,
+              132,
+              12,
+              25,
+              154,
+              157,
+              160
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 1,
+            "old_hit_rate": 0.30952380952380953,
+            "new_hit_rate": 0.6845238095238095,
+            "promoted": [
+              97,
+              133,
+              101,
+              233,
+              234,
+              107,
+              140,
+              124
+            ],
+            "demoted": [
+              192,
+              129,
+              134,
+              6,
+              137,
+              205,
+              142,
+              145
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 2,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              20,
+              150,
+              159,
+              43,
+              178,
+              52,
+              56,
+              60
+            ],
+            "demoted": [
+              1,
+              129,
+              132,
+              18,
+              29,
+              166,
+              40,
+              41
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 3,
+            "old_hit_rate": 0.2976190476190476,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              17,
+              155,
+              30,
+              159,
+              162,
+              166,
+              41,
+              177
+            ],
+            "demoted": [
+              1,
+              130,
+              26,
+              157,
+              163,
+              39,
+              171,
+              44
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 4,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8095238095238095,
+            "promoted": [
+              192,
+              228,
+              165,
+              71,
+              105,
+              235,
+              109,
+              112
+            ],
+            "demoted": [
+              64,
+              217,
+              134,
+              200,
+              104,
+              10,
+              140,
+              205
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 5,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              2,
+              135,
+              136,
+              147,
+              155,
+              165,
+              174,
+              178
+            ],
+            "demoted": [
+              9,
+              15,
+              144,
+              151,
+              25,
+              31,
+              33,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 6,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8928571428571429,
+            "promoted": [
+              14,
+              15,
+              149,
+              26,
+              157,
+              36,
+              43,
+              177
+            ],
+            "demoted": [
+              10,
+              25,
+              167,
+              40,
+              169,
+              171,
+              185,
+              60
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 7,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              131,
+              132,
+              23,
+              26,
+              155,
+              32,
+              161,
+              35
+            ],
+            "demoted": [
+              10,
+              11,
+              30,
+              159,
+              37,
+              165,
+              39,
+              169
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 8,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              4,
+              159,
+              161,
+              164,
+              165,
+              173,
+              47,
+              50
+            ],
+            "demoted": [
+              3,
+              135,
+              139,
+              17,
+              148,
+              174,
+              175,
+              52
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 9,
+            "old_hit_rate": 0.375,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              8,
+              166,
+              170,
+              171,
+              47,
+              54,
+              61,
+              191
+            ],
+            "demoted": [
+              0,
+              132,
+              22,
+              155,
+              44,
+              45,
+              176,
+              180
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 10,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              9,
+              150,
+              156,
+              157,
+              35,
+              165,
+              46,
+              176
+            ],
+            "demoted": [
+              131,
+              14,
+              27,
+              162,
+              34,
+              167,
+              169,
+              175
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 11,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8392857142857143,
+            "promoted": [
+              3,
+              134,
+              9,
+              153,
+              39,
+              47,
+              181,
+              62
+            ],
+            "demoted": [
+              7,
+              13,
+              145,
+              19,
+              147,
+              149,
+              150,
+              37
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 12,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              192,
+              193,
+              194,
+              163,
+              225,
+              99,
+              166,
+              199
+            ],
+            "demoted": [
+              65,
+              34,
+              68,
+              101,
+              229,
+              167,
+              232,
+              91
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 13,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              3,
+              4,
+              164,
+              138,
+              42,
+              44,
+              173,
+              174
+            ],
+            "demoted": [
+              224,
+              161,
+              162,
+              132,
+              70,
+              135,
+              102,
+              231
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 14,
+            "old_hit_rate": 0.6964285714285714,
+            "new_hit_rate": 0.9583333333333334,
+            "promoted": [
+              131,
+              67,
+              166,
+              230,
+              201,
+              138,
+              106,
+              107
+            ],
+            "demoted": [
+              0,
+              225,
+              217,
+              136,
+              200,
+              105,
+              12,
+              143
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 15,
+            "old_hit_rate": 0.5952380952380952,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              162,
+              6,
+              232,
+              12,
+              172,
+              46,
+              206,
+              238
+            ],
+            "demoted": [
+              225,
+              34,
+              227,
+              102,
+              138,
+              42,
+              45,
+              18
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 16,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9345238095238095,
+            "promoted": [
+              0,
+              35,
+              67,
+              134,
+              38,
+              72,
+              170,
+              43
+            ],
+            "demoted": [
+              66,
+              166,
+              9,
+              74,
+              203,
+              107,
+              143,
+              16
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 17,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.8988095238095238,
+            "promoted": [
+              89,
+              5,
+              229,
+              230,
+              104,
+              201,
+              170,
+              236
+            ],
+            "demoted": [
+              121,
+              2,
+              247,
+              74,
+              171,
+              91,
+              106,
+              47
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 18,
+            "old_hit_rate": 0.6547619047619048,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              2,
+              226,
+              69,
+              166,
+              108,
+              141,
+              124,
+              17
+            ],
+            "demoted": [
+              32,
+              121,
+              34,
+              100,
+              38,
+              199,
+              172,
+              176
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 19,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              1,
+              33,
+              225,
+              226,
+              197,
+              137,
+              42,
+              45
+            ],
+            "demoted": [
+              162,
+              194,
+              164,
+              41,
+              44,
+              173,
+              142,
+              238
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 20,
+            "old_hit_rate": 0.4226190476190476,
+            "new_hit_rate": 0.9107142857142857,
+            "promoted": [
+              151,
+              159,
+              160,
+              168,
+              41,
+              171,
+              172,
+              49
+            ],
+            "demoted": [
+              135,
+              11,
+              17,
+              18,
+              148,
+              162,
+              174,
+              176
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 21,
+            "old_hit_rate": 0.5357142857142857,
+            "new_hit_rate": 0.8511904761904762,
+            "promoted": [
+              0,
+              151,
+              161,
+              166,
+              169,
+              188,
+              61,
+              191
+            ],
+            "demoted": [
+              128,
+              136,
+              18,
+              44,
+              180,
+              184,
+              67,
+              72
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 22,
+            "old_hit_rate": 0.39285714285714285,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              133,
+              9,
+              150,
+              25,
+              157,
+              36,
+              174,
+              48
+            ],
+            "demoted": [
+              141,
+              152,
+              175,
+              50,
+              182,
+              192,
+              194,
+              70
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 23,
+            "old_hit_rate": 0.44642857142857145,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              3,
+              141,
+              153,
+              162,
+              47,
+              51,
+              56,
+              191
+            ],
+            "demoted": [
+              132,
+              138,
+              22,
+              152,
+              33,
+              41,
+              180,
+              183
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 24,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              192,
+              163,
+              35,
+              99,
+              167,
+              199,
+              9,
+              201
+            ],
+            "demoted": [
+              165,
+              101,
+              229,
+              232,
+              105,
+              74,
+              139,
+              173
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 25,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8571428571428571,
+            "promoted": [
+              32,
+              194,
+              164,
+              166,
+              138,
+              44,
+              76,
+              174
+            ],
+            "demoted": [
+              162,
+              2,
+              130,
+              227,
+              70,
+              135,
+              167,
+              250
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 26,
+            "old_hit_rate": 0.5773809523809523,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              97,
+              194,
+              131,
+              166,
+              167,
+              39,
+              231,
+              138
+            ],
+            "demoted": [
+              0,
+              160,
+              225,
+              217,
+              37,
+              136,
+              112,
+              81
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 27,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              135,
+              150,
+              25,
+              162,
+              172,
+              177,
+              181,
+              54
+            ],
+            "demoted": [
+              4,
+              147,
+              153,
+              157,
+              45,
+              53,
+              182,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 28,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.875,
+            "promoted": [
+              2,
+              136,
+              14,
+              146,
+              150,
+              35,
+              165,
+              167
+            ],
+            "demoted": [
+              9,
+              18,
+              158,
+              31,
+              166,
+              40,
+              46,
+              58
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 29,
+            "old_hit_rate": 0.48214285714285715,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              5,
+              142,
+              144,
+              20,
+              26,
+              28,
+              158,
+              35
+            ],
+            "demoted": [
+              2,
+              137,
+              145,
+              25,
+              171,
+              46,
+              51,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 30,
+            "old_hit_rate": 0.6130952380952381,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              2,
+              135,
+              141,
+              161,
+              166,
+              170,
+              177,
+              52
+            ],
+            "demoted": [
+              3,
+              24,
+              30,
+              31,
+              32,
+              38,
+              47,
+              176
+            ]
+          },
+          {
+            "swapped": 15,
+            "layer": 31,
+            "old_hit_rate": 0.6428571428571429,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              96,
+              225,
+              226,
+              67,
+              228,
+              166,
+              137,
+              42
+            ],
+            "demoted": [
+              162,
+              195,
+              164,
+              132,
+              99,
+              169,
+              138,
+              170
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 32,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.75,
+            "promoted": [
+              224,
+              162,
+              194,
+              195,
+              197,
+              235,
+              76,
+              237
+            ],
+            "demoted": [
+              35,
+              5,
+              133,
+              71,
+              40,
+              101,
+              106,
+              43
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 33,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.7857142857142857,
+            "promoted": [
+              11,
+              139,
+              12,
+              15,
+              16,
+              27,
+              156,
+              37
+            ],
+            "demoted": [
+              0,
+              144,
+              152,
+              165,
+              167,
+              49,
+              55,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 34,
+            "old_hit_rate": 0.5119047619047619,
+            "new_hit_rate": 0.8035714285714286,
+            "promoted": [
+              130,
+              132,
+              141,
+              16,
+              19,
+              21,
+              33,
+              49
+            ],
+            "demoted": [
+              131,
+              9,
+              137,
+              22,
+              29,
+              32,
+              40,
+              47
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 35,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8630952380952381,
+            "promoted": [
+              3,
+              135,
+              10,
+              14,
+              18,
+              151,
+              160,
+              167
+            ],
+            "demoted": [
+              138,
+              11,
+              16,
+              145,
+              152,
+              28,
+              34,
+              170
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 36,
+            "old_hit_rate": 0.40476190476190477,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              129,
+              147,
+              24,
+              26,
+              158,
+              37,
+              192,
+              198
+            ],
+            "demoted": [
+              141,
+              145,
+              27,
+              28,
+              157,
+              159,
+              161,
+              168
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 37,
+            "old_hit_rate": 0.38095238095238093,
+            "new_hit_rate": 0.7380952380952381,
+            "promoted": [
+              8,
+              14,
+              143,
+              147,
+              21,
+              24,
+              28,
+              32
+            ],
+            "demoted": [
+              7,
+              139,
+              152,
+              165,
+              38,
+              171,
+              56,
+              184
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 38,
+            "old_hit_rate": 0.35714285714285715,
+            "new_hit_rate": 0.7202380952380952,
+            "promoted": [
+              146,
+              149,
+              35,
+              163,
+              43,
+              44,
+              47,
+              176
+            ],
+            "demoted": [
+              0,
+              7,
+              13,
+              143,
+              144,
+              20,
+              168,
+              46
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 39,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.6607142857142857,
+            "promoted": [
+              136,
+              10,
+              138,
+              13,
+              34,
+              173,
+              174,
+              45
+            ],
+            "demoted": [
+              129,
+              9,
+              140,
+              15,
+              146,
+              148,
+              157,
+              159
+            ]
+          }
+        ]
+      },
+      "cv_hit_rate": 0.4214610927152318,
+      "cv_misses": 27955,
+      "cv_total": 48320,
+      "tpot": {
+        "mean_ms": 23.90582134930436,
+        "p50_ms": 23.79839599961997,
+        "p95_ms": 24.359656497836113
+      },
+      "miss_count": 3534,
+      "miss_mean_ms": 0.5890035452744766,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 0,
+        "ssd": 3534
+      }
+    },
+    {
+      "label": "dr+hybrid_32",
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Attention mechanisms in transformers\" (including \"scaled dot-product attention, multi-head attention).\n    *   **Task:** \"Ex Explain the mathematical foundations of attention mechanisms in transformers\" (including \"scaled dot-product attention, multi-head attention. Provide the full mathematical derivation.\n    *   **Constraint:** \"Provide the full mathematical derivation.\"\n    *   **Observ:** The user's prompt seems to be a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit of a bit",
+      "tokens": 150,
+      "tg_tps": 30.83927916482909,
+      "total_ms": 5165.728084000875,
+      "peak_gb": 5.0240184757858515,
+      "pool_size": 32,
+      "warmup_tokens": 20,
+      "miss_policy": "hybrid",
+      "hybrid_threshold": 2,
+      "rolling_swap_interval": 0,
+      "mem_after_compact_gb": 4.90185178257525,
+      "recompact_stats": {
+        "total_swapped": 779,
+        "layers": 40,
+        "avg_old_hit_rate": 0.4741071428571428,
+        "avg_new_hit_rate": 0.846577380952381,
+        "elapsed_ms": 253.76366700220387,
+        "layer_stats": [
+          {
+            "swapped": 24,
+            "layer": 0,
+            "old_hit_rate": 0.2261904761904762,
+            "new_hit_rate": 0.5357142857142857,
+            "promoted": [
+              134,
+              14,
+              147,
+              151,
+              158,
+              30,
+              181,
+              56
+            ],
+            "demoted": [
+              129,
+              131,
+              132,
+              12,
+              25,
+              154,
+              157,
+              160
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 1,
+            "old_hit_rate": 0.30952380952380953,
+            "new_hit_rate": 0.6845238095238095,
+            "promoted": [
+              97,
+              133,
+              101,
+              233,
+              234,
+              107,
+              140,
+              124
+            ],
+            "demoted": [
+              192,
+              129,
+              134,
+              6,
+              137,
+              205,
+              142,
+              145
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 2,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              20,
+              150,
+              159,
+              43,
+              178,
+              52,
+              56,
+              60
+            ],
+            "demoted": [
+              1,
+              129,
+              132,
+              18,
+              29,
+              166,
+              40,
+              41
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 3,
+            "old_hit_rate": 0.2976190476190476,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              17,
+              155,
+              30,
+              159,
+              162,
+              166,
+              41,
+              177
+            ],
+            "demoted": [
+              1,
+              130,
+              26,
+              157,
+              163,
+              39,
+              171,
+              44
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 4,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8095238095238095,
+            "promoted": [
+              192,
+              228,
+              165,
+              71,
+              105,
+              235,
+              109,
+              112
+            ],
+            "demoted": [
+              64,
+              217,
+              134,
+              200,
+              104,
+              10,
+              140,
+              205
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 5,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              2,
+              135,
+              136,
+              147,
+              155,
+              165,
+              174,
+              178
+            ],
+            "demoted": [
+              9,
+              15,
+              144,
+              151,
+              25,
+              31,
+              33,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 6,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8928571428571429,
+            "promoted": [
+              14,
+              15,
+              149,
+              26,
+              157,
+              36,
+              43,
+              177
+            ],
+            "demoted": [
+              10,
+              25,
+              167,
+              40,
+              169,
+              171,
+              185,
+              60
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 7,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              131,
+              132,
+              23,
+              26,
+              155,
+              32,
+              161,
+              35
+            ],
+            "demoted": [
+              10,
+              11,
+              30,
+              159,
+              37,
+              165,
+              39,
+              169
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 8,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              4,
+              159,
+              161,
+              164,
+              165,
+              173,
+              47,
+              50
+            ],
+            "demoted": [
+              3,
+              135,
+              139,
+              17,
+              148,
+              174,
+              175,
+              52
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 9,
+            "old_hit_rate": 0.375,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              8,
+              166,
+              170,
+              171,
+              47,
+              54,
+              61,
+              191
+            ],
+            "demoted": [
+              0,
+              132,
+              22,
+              155,
+              44,
+              45,
+              176,
+              180
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 10,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              9,
+              150,
+              156,
+              157,
+              35,
+              165,
+              46,
+              176
+            ],
+            "demoted": [
+              131,
+              14,
+              27,
+              162,
+              34,
+              167,
+              169,
+              175
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 11,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8392857142857143,
+            "promoted": [
+              3,
+              134,
+              9,
+              153,
+              39,
+              47,
+              181,
+              62
+            ],
+            "demoted": [
+              7,
+              13,
+              145,
+              19,
+              147,
+              149,
+              150,
+              37
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 12,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              192,
+              193,
+              194,
+              163,
+              225,
+              99,
+              166,
+              199
+            ],
+            "demoted": [
+              65,
+              34,
+              68,
+              101,
+              229,
+              167,
+              232,
+              91
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 13,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              3,
+              4,
+              164,
+              138,
+              42,
+              44,
+              173,
+              174
+            ],
+            "demoted": [
+              224,
+              161,
+              162,
+              132,
+              70,
+              135,
+              102,
+              231
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 14,
+            "old_hit_rate": 0.6964285714285714,
+            "new_hit_rate": 0.9583333333333334,
+            "promoted": [
+              131,
+              67,
+              166,
+              230,
+              201,
+              138,
+              106,
+              107
+            ],
+            "demoted": [
+              0,
+              225,
+              217,
+              136,
+              200,
+              105,
+              12,
+              143
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 15,
+            "old_hit_rate": 0.5952380952380952,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              162,
+              6,
+              232,
+              12,
+              172,
+              46,
+              206,
+              238
+            ],
+            "demoted": [
+              225,
+              34,
+              227,
+              102,
+              138,
+              42,
+              45,
+              18
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 16,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9345238095238095,
+            "promoted": [
+              0,
+              35,
+              67,
+              134,
+              38,
+              72,
+              170,
+              43
+            ],
+            "demoted": [
+              66,
+              166,
+              9,
+              74,
+              203,
+              107,
+              143,
+              16
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 17,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.8988095238095238,
+            "promoted": [
+              89,
+              5,
+              229,
+              230,
+              104,
+              201,
+              170,
+              236
+            ],
+            "demoted": [
+              121,
+              2,
+              247,
+              74,
+              171,
+              91,
+              106,
+              47
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 18,
+            "old_hit_rate": 0.6547619047619048,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              2,
+              226,
+              69,
+              166,
+              108,
+              141,
+              124,
+              17
+            ],
+            "demoted": [
+              32,
+              121,
+              34,
+              100,
+              38,
+              199,
+              172,
+              176
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 19,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              1,
+              33,
+              225,
+              226,
+              197,
+              137,
+              42,
+              45
+            ],
+            "demoted": [
+              162,
+              194,
+              164,
+              41,
+              44,
+              173,
+              142,
+              238
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 20,
+            "old_hit_rate": 0.4226190476190476,
+            "new_hit_rate": 0.9107142857142857,
+            "promoted": [
+              151,
+              159,
+              160,
+              168,
+              41,
+              171,
+              172,
+              49
+            ],
+            "demoted": [
+              135,
+              11,
+              17,
+              18,
+              148,
+              162,
+              174,
+              176
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 21,
+            "old_hit_rate": 0.5357142857142857,
+            "new_hit_rate": 0.8511904761904762,
+            "promoted": [
+              0,
+              151,
+              161,
+              166,
+              169,
+              188,
+              61,
+              191
+            ],
+            "demoted": [
+              128,
+              136,
+              18,
+              44,
+              180,
+              184,
+              67,
+              72
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 22,
+            "old_hit_rate": 0.39285714285714285,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              133,
+              9,
+              150,
+              25,
+              157,
+              36,
+              174,
+              48
+            ],
+            "demoted": [
+              141,
+              152,
+              175,
+              50,
+              182,
+              192,
+              194,
+              70
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 23,
+            "old_hit_rate": 0.44642857142857145,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              3,
+              141,
+              153,
+              162,
+              47,
+              51,
+              56,
+              191
+            ],
+            "demoted": [
+              132,
+              138,
+              22,
+              152,
+              33,
+              41,
+              180,
+              183
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 24,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              192,
+              163,
+              35,
+              99,
+              167,
+              199,
+              9,
+              201
+            ],
+            "demoted": [
+              165,
+              101,
+              229,
+              232,
+              105,
+              74,
+              139,
+              173
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 25,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8571428571428571,
+            "promoted": [
+              32,
+              194,
+              164,
+              166,
+              138,
+              44,
+              76,
+              174
+            ],
+            "demoted": [
+              162,
+              2,
+              130,
+              227,
+              70,
+              135,
+              167,
+              250
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 26,
+            "old_hit_rate": 0.5773809523809523,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              97,
+              194,
+              131,
+              166,
+              167,
+              39,
+              231,
+              138
+            ],
+            "demoted": [
+              0,
+              160,
+              225,
+              217,
+              37,
+              136,
+              112,
+              81
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 27,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              135,
+              150,
+              25,
+              162,
+              172,
+              177,
+              181,
+              54
+            ],
+            "demoted": [
+              4,
+              147,
+              153,
+              157,
+              45,
+              53,
+              182,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 28,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.875,
+            "promoted": [
+              2,
+              136,
+              14,
+              146,
+              150,
+              35,
+              165,
+              167
+            ],
+            "demoted": [
+              9,
+              18,
+              158,
+              31,
+              166,
+              40,
+              46,
+              58
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 29,
+            "old_hit_rate": 0.48214285714285715,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              5,
+              142,
+              144,
+              20,
+              26,
+              28,
+              158,
+              35
+            ],
+            "demoted": [
+              2,
+              137,
+              145,
+              25,
+              171,
+              46,
+              51,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 30,
+            "old_hit_rate": 0.6130952380952381,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              2,
+              135,
+              141,
+              161,
+              166,
+              170,
+              177,
+              52
+            ],
+            "demoted": [
+              3,
+              24,
+              30,
+              31,
+              32,
+              38,
+              47,
+              176
+            ]
+          },
+          {
+            "swapped": 15,
+            "layer": 31,
+            "old_hit_rate": 0.6428571428571429,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              96,
+              225,
+              226,
+              67,
+              228,
+              166,
+              137,
+              42
+            ],
+            "demoted": [
+              162,
+              195,
+              164,
+              132,
+              99,
+              169,
+              138,
+              170
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 32,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.75,
+            "promoted": [
+              224,
+              162,
+              194,
+              195,
+              197,
+              235,
+              76,
+              237
+            ],
+            "demoted": [
+              35,
+              5,
+              133,
+              71,
+              40,
+              101,
+              106,
+              43
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 33,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.7857142857142857,
+            "promoted": [
+              11,
+              139,
+              12,
+              15,
+              16,
+              27,
+              156,
+              37
+            ],
+            "demoted": [
+              0,
+              144,
+              152,
+              165,
+              167,
+              49,
+              55,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 34,
+            "old_hit_rate": 0.5119047619047619,
+            "new_hit_rate": 0.8035714285714286,
+            "promoted": [
+              130,
+              132,
+              141,
+              16,
+              19,
+              21,
+              33,
+              49
+            ],
+            "demoted": [
+              131,
+              9,
+              137,
+              22,
+              29,
+              32,
+              40,
+              47
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 35,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8630952380952381,
+            "promoted": [
+              3,
+              135,
+              10,
+              14,
+              18,
+              151,
+              160,
+              167
+            ],
+            "demoted": [
+              138,
+              11,
+              16,
+              145,
+              152,
+              28,
+              34,
+              170
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 36,
+            "old_hit_rate": 0.40476190476190477,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              129,
+              147,
+              24,
+              26,
+              158,
+              37,
+              192,
+              198
+            ],
+            "demoted": [
+              141,
+              145,
+              27,
+              28,
+              157,
+              159,
+              161,
+              168
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 37,
+            "old_hit_rate": 0.38095238095238093,
+            "new_hit_rate": 0.7380952380952381,
+            "promoted": [
+              8,
+              14,
+              143,
+              147,
+              21,
+              24,
+              28,
+              32
+            ],
+            "demoted": [
+              7,
+              139,
+              152,
+              165,
+              38,
+              171,
+              56,
+              184
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 38,
+            "old_hit_rate": 0.35714285714285715,
+            "new_hit_rate": 0.7202380952380952,
+            "promoted": [
+              146,
+              149,
+              35,
+              163,
+              43,
+              44,
+              47,
+              176
+            ],
+            "demoted": [
+              0,
+              7,
+              13,
+              143,
+              144,
+              20,
+              168,
+              46
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 39,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.6607142857142857,
+            "promoted": [
+              136,
+              10,
+              138,
+              13,
+              34,
+              173,
+              174,
+              45
+            ],
+            "demoted": [
+              129,
+              9,
+              140,
+              15,
+              146,
+              148,
+              157,
+              159
+            ]
+          }
+        ]
+      },
+      "cv_hit_rate": 0.40517384105960264,
+      "cv_misses": 28742,
+      "cv_total": 48320,
+      "tpot": {
+        "mean_ms": 32.26959132191714,
+        "p50_ms": 28.816395501053194,
+        "p95_ms": 47.58094824683212
+      },
+      "miss_count": 4932,
+      "miss_mean_ms": 0.5451166157745336,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 0,
+        "ssd": 4932
+      }
+    },
+    {
+      "label": "dr+hyb_32+r10",
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Attention mechanisms in transformers\" (specifically, \"scaled dot-product attention\" and \"multi-head attention\").\n    *   **Goal:** \"Explain the mathematical foundations,\" \"Provide the full mathematical derivation.\"\n    *   **Constraint:** The user asks for a \"full mathematical derivation.\"\n    *   **Potential Issue:** The prompt seems to be asking for a technical explanation of Transformer architecture (Self-Attention), but it uses slightly garphed phrasing (\"scaled dot-product attention\" is usually \"scaled dot-product attention\" or \"scaled dot-product attention mechanism\", \"multi-head attention",
+      "tokens": 150,
+      "tg_tps": 17.37131751410894,
+      "total_ms": 9122.489207999024,
+      "peak_gb": 5.033886706456542,
+      "pool_size": 32,
+      "warmup_tokens": 20,
+      "miss_policy": "hybrid",
+      "hybrid_threshold": 2,
+      "rolling_swap_interval": 10,
+      "mem_after_compact_gb": 4.90185178257525,
+      "recompact_stats": {
+        "total_swapped": 779,
+        "layers": 40,
+        "avg_old_hit_rate": 0.4741071428571428,
+        "avg_new_hit_rate": 0.846577380952381,
+        "elapsed_ms": 255.30491700192215,
+        "layer_stats": [
+          {
+            "swapped": 24,
+            "layer": 0,
+            "old_hit_rate": 0.2261904761904762,
+            "new_hit_rate": 0.5357142857142857,
+            "promoted": [
+              134,
+              14,
+              147,
+              151,
+              158,
+              30,
+              181,
+              56
+            ],
+            "demoted": [
+              129,
+              131,
+              132,
+              12,
+              25,
+              154,
+              157,
+              160
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 1,
+            "old_hit_rate": 0.30952380952380953,
+            "new_hit_rate": 0.6845238095238095,
+            "promoted": [
+              97,
+              133,
+              101,
+              233,
+              234,
+              107,
+              140,
+              124
+            ],
+            "demoted": [
+              192,
+              129,
+              134,
+              6,
+              137,
+              205,
+              142,
+              145
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 2,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              20,
+              150,
+              159,
+              43,
+              178,
+              52,
+              56,
+              60
+            ],
+            "demoted": [
+              1,
+              129,
+              132,
+              18,
+              29,
+              166,
+              40,
+              41
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 3,
+            "old_hit_rate": 0.2976190476190476,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              17,
+              155,
+              30,
+              159,
+              162,
+              166,
+              41,
+              177
+            ],
+            "demoted": [
+              1,
+              130,
+              26,
+              157,
+              163,
+              39,
+              171,
+              44
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 4,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8095238095238095,
+            "promoted": [
+              192,
+              228,
+              165,
+              71,
+              105,
+              235,
+              109,
+              112
+            ],
+            "demoted": [
+              64,
+              217,
+              134,
+              200,
+              104,
+              10,
+              140,
+              205
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 5,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              2,
+              135,
+              136,
+              147,
+              155,
+              165,
+              174,
+              178
+            ],
+            "demoted": [
+              9,
+              15,
+              144,
+              151,
+              25,
+              31,
+              33,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 6,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8928571428571429,
+            "promoted": [
+              14,
+              15,
+              149,
+              26,
+              157,
+              36,
+              43,
+              177
+            ],
+            "demoted": [
+              10,
+              25,
+              167,
+              40,
+              169,
+              171,
+              185,
+              60
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 7,
+            "old_hit_rate": 0.39880952380952384,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              131,
+              132,
+              23,
+              26,
+              155,
+              32,
+              161,
+              35
+            ],
+            "demoted": [
+              10,
+              11,
+              30,
+              159,
+              37,
+              165,
+              39,
+              169
+            ]
+          },
+          {
+            "swapped": 24,
+            "layer": 8,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              4,
+              159,
+              161,
+              164,
+              165,
+              173,
+              47,
+              50
+            ],
+            "demoted": [
+              3,
+              135,
+              139,
+              17,
+              148,
+              174,
+              175,
+              52
+            ]
+          },
+          {
+            "swapped": 23,
+            "layer": 9,
+            "old_hit_rate": 0.375,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              8,
+              166,
+              170,
+              171,
+              47,
+              54,
+              61,
+              191
+            ],
+            "demoted": [
+              0,
+              132,
+              22,
+              155,
+              44,
+              45,
+              176,
+              180
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 10,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              9,
+              150,
+              156,
+              157,
+              35,
+              165,
+              46,
+              176
+            ],
+            "demoted": [
+              131,
+              14,
+              27,
+              162,
+              34,
+              167,
+              169,
+              175
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 11,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8392857142857143,
+            "promoted": [
+              3,
+              134,
+              9,
+              153,
+              39,
+              47,
+              181,
+              62
+            ],
+            "demoted": [
+              7,
+              13,
+              145,
+              19,
+              147,
+              149,
+              150,
+              37
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 12,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 0.9047619047619048,
+            "promoted": [
+              192,
+              193,
+              194,
+              163,
+              225,
+              99,
+              166,
+              199
+            ],
+            "demoted": [
+              65,
+              34,
+              68,
+              101,
+              229,
+              167,
+              232,
+              91
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 13,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9642857142857143,
+            "promoted": [
+              3,
+              4,
+              164,
+              138,
+              42,
+              44,
+              173,
+              174
+            ],
+            "demoted": [
+              224,
+              161,
+              162,
+              132,
+              70,
+              135,
+              102,
+              231
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 14,
+            "old_hit_rate": 0.6964285714285714,
+            "new_hit_rate": 0.9583333333333334,
+            "promoted": [
+              131,
+              67,
+              166,
+              230,
+              201,
+              138,
+              106,
+              107
+            ],
+            "demoted": [
+              0,
+              225,
+              217,
+              136,
+              200,
+              105,
+              12,
+              143
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 15,
+            "old_hit_rate": 0.5952380952380952,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              162,
+              6,
+              232,
+              12,
+              172,
+              46,
+              206,
+              238
+            ],
+            "demoted": [
+              225,
+              34,
+              227,
+              102,
+              138,
+              42,
+              45,
+              18
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 16,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.9345238095238095,
+            "promoted": [
+              0,
+              35,
+              67,
+              134,
+              38,
+              72,
+              170,
+              43
+            ],
+            "demoted": [
+              66,
+              166,
+              9,
+              74,
+              203,
+              107,
+              143,
+              16
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 17,
+            "old_hit_rate": 0.5535714285714286,
+            "new_hit_rate": 0.8988095238095238,
+            "promoted": [
+              89,
+              5,
+              229,
+              230,
+              104,
+              201,
+              170,
+              236
+            ],
+            "demoted": [
+              121,
+              2,
+              247,
+              74,
+              171,
+              91,
+              106,
+              47
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 18,
+            "old_hit_rate": 0.6547619047619048,
+            "new_hit_rate": 0.9226190476190477,
+            "promoted": [
+              2,
+              226,
+              69,
+              166,
+              108,
+              141,
+              124,
+              17
+            ],
+            "demoted": [
+              32,
+              121,
+              34,
+              100,
+              38,
+              199,
+              172,
+              176
+            ]
+          },
+          {
+            "swapped": 17,
+            "layer": 19,
+            "old_hit_rate": 0.5714285714285714,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              1,
+              33,
+              225,
+              226,
+              197,
+              137,
+              42,
+              45
+            ],
+            "demoted": [
+              162,
+              194,
+              164,
+              41,
+              44,
+              173,
+              142,
+              238
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 20,
+            "old_hit_rate": 0.4226190476190476,
+            "new_hit_rate": 0.9107142857142857,
+            "promoted": [
+              151,
+              159,
+              160,
+              168,
+              41,
+              171,
+              172,
+              49
+            ],
+            "demoted": [
+              135,
+              11,
+              17,
+              18,
+              148,
+              162,
+              174,
+              176
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 21,
+            "old_hit_rate": 0.5357142857142857,
+            "new_hit_rate": 0.8511904761904762,
+            "promoted": [
+              0,
+              151,
+              161,
+              166,
+              169,
+              188,
+              61,
+              191
+            ],
+            "demoted": [
+              128,
+              136,
+              18,
+              44,
+              180,
+              184,
+              67,
+              72
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 22,
+            "old_hit_rate": 0.39285714285714285,
+            "new_hit_rate": 0.7916666666666666,
+            "promoted": [
+              133,
+              9,
+              150,
+              25,
+              157,
+              36,
+              174,
+              48
+            ],
+            "demoted": [
+              141,
+              152,
+              175,
+              50,
+              182,
+              192,
+              194,
+              70
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 23,
+            "old_hit_rate": 0.44642857142857145,
+            "new_hit_rate": 0.7976190476190477,
+            "promoted": [
+              3,
+              141,
+              153,
+              162,
+              47,
+              51,
+              56,
+              191
+            ],
+            "demoted": [
+              132,
+              138,
+              22,
+              152,
+              33,
+              41,
+              180,
+              183
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 24,
+            "old_hit_rate": 0.49404761904761907,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              192,
+              163,
+              35,
+              99,
+              167,
+              199,
+              9,
+              201
+            ],
+            "demoted": [
+              165,
+              101,
+              229,
+              232,
+              105,
+              74,
+              139,
+              173
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 25,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8571428571428571,
+            "promoted": [
+              32,
+              194,
+              164,
+              166,
+              138,
+              44,
+              76,
+              174
+            ],
+            "demoted": [
+              162,
+              2,
+              130,
+              227,
+              70,
+              135,
+              167,
+              250
+            ]
+          },
+          {
+            "swapped": 18,
+            "layer": 26,
+            "old_hit_rate": 0.5773809523809523,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              97,
+              194,
+              131,
+              166,
+              167,
+              39,
+              231,
+              138
+            ],
+            "demoted": [
+              0,
+              160,
+              225,
+              217,
+              37,
+              136,
+              112,
+              81
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 27,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              135,
+              150,
+              25,
+              162,
+              172,
+              177,
+              181,
+              54
+            ],
+            "demoted": [
+              4,
+              147,
+              153,
+              157,
+              45,
+              53,
+              182,
+              56
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 28,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.875,
+            "promoted": [
+              2,
+              136,
+              14,
+              146,
+              150,
+              35,
+              165,
+              167
+            ],
+            "demoted": [
+              9,
+              18,
+              158,
+              31,
+              166,
+              40,
+              46,
+              58
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 29,
+            "old_hit_rate": 0.48214285714285715,
+            "new_hit_rate": 0.8690476190476191,
+            "promoted": [
+              5,
+              142,
+              144,
+              20,
+              26,
+              28,
+              158,
+              35
+            ],
+            "demoted": [
+              2,
+              137,
+              145,
+              25,
+              171,
+              46,
+              51,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 30,
+            "old_hit_rate": 0.6130952380952381,
+            "new_hit_rate": 0.9285714285714286,
+            "promoted": [
+              2,
+              135,
+              141,
+              161,
+              166,
+              170,
+              177,
+              52
+            ],
+            "demoted": [
+              3,
+              24,
+              30,
+              31,
+              32,
+              38,
+              47,
+              176
+            ]
+          },
+          {
+            "swapped": 15,
+            "layer": 31,
+            "old_hit_rate": 0.6428571428571429,
+            "new_hit_rate": 0.8869047619047619,
+            "promoted": [
+              96,
+              225,
+              226,
+              67,
+              228,
+              166,
+              137,
+              42
+            ],
+            "demoted": [
+              162,
+              195,
+              164,
+              132,
+              99,
+              169,
+              138,
+              170
+            ]
+          },
+          {
+            "swapped": 16,
+            "layer": 32,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.75,
+            "promoted": [
+              224,
+              162,
+              194,
+              195,
+              197,
+              235,
+              76,
+              237
+            ],
+            "demoted": [
+              35,
+              5,
+              133,
+              71,
+              40,
+              101,
+              106,
+              43
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 33,
+            "old_hit_rate": 0.43452380952380953,
+            "new_hit_rate": 0.7857142857142857,
+            "promoted": [
+              11,
+              139,
+              12,
+              15,
+              16,
+              27,
+              156,
+              37
+            ],
+            "demoted": [
+              0,
+              144,
+              152,
+              165,
+              167,
+              49,
+              55,
+              183
+            ]
+          },
+          {
+            "swapped": 19,
+            "layer": 34,
+            "old_hit_rate": 0.5119047619047619,
+            "new_hit_rate": 0.8035714285714286,
+            "promoted": [
+              130,
+              132,
+              141,
+              16,
+              19,
+              21,
+              33,
+              49
+            ],
+            "demoted": [
+              131,
+              9,
+              137,
+              22,
+              29,
+              32,
+              40,
+              47
+            ]
+          },
+          {
+            "swapped": 21,
+            "layer": 35,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.8630952380952381,
+            "promoted": [
+              3,
+              135,
+              10,
+              14,
+              18,
+              151,
+              160,
+              167
+            ],
+            "demoted": [
+              138,
+              11,
+              16,
+              145,
+              152,
+              28,
+              34,
+              170
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 36,
+            "old_hit_rate": 0.40476190476190477,
+            "new_hit_rate": 0.8214285714285714,
+            "promoted": [
+              129,
+              147,
+              24,
+              26,
+              158,
+              37,
+              192,
+              198
+            ],
+            "demoted": [
+              141,
+              145,
+              27,
+              28,
+              157,
+              159,
+              161,
+              168
+            ]
+          },
+          {
+            "swapped": 20,
+            "layer": 37,
+            "old_hit_rate": 0.38095238095238093,
+            "new_hit_rate": 0.7380952380952381,
+            "promoted": [
+              8,
+              14,
+              143,
+              147,
+              21,
+              24,
+              28,
+              32
+            ],
+            "demoted": [
+              7,
+              139,
+              152,
+              165,
+              38,
+              171,
+              56,
+              184
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 38,
+            "old_hit_rate": 0.35714285714285715,
+            "new_hit_rate": 0.7202380952380952,
+            "promoted": [
+              146,
+              149,
+              35,
+              163,
+              43,
+              44,
+              47,
+              176
+            ],
+            "demoted": [
+              0,
+              7,
+              13,
+              143,
+              144,
+              20,
+              168,
+              46
+            ]
+          },
+          {
+            "swapped": 22,
+            "layer": 39,
+            "old_hit_rate": 0.31547619047619047,
+            "new_hit_rate": 0.6607142857142857,
+            "promoted": [
+              136,
+              10,
+              138,
+              13,
+              34,
+              173,
+              174,
+              45
+            ],
+            "demoted": [
+              129,
+              9,
+              140,
+              15,
+              146,
+              148,
+              157,
+              159
+            ]
+          }
+        ]
+      },
+      "cv_hit_rate": null,
+      "cv_misses": 0,
+      "cv_total": 0,
+      "tpot": {
+        "mean_ms": 58.109643267091265,
+        "p50_ms": 36.13845850122743,
+        "p95_ms": 248.97552149923285
+      },
+      "rolling_swap_calls": 15,
+      "rolling_total_swaps": 4714,
+      "miss_count": 5906,
+      "miss_mean_ms": 0.5414761471385032,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 0,
+        "ssd": 5906
+      }
+    },
+    {
+      "label": "dr+hyb_64+r10",
+      "text": "Here's a thinking process that leads to the explanation of the mathematical foundations of attention mechanisms in Transformers:\n\n1.  **Declarify the Request:**\n    *   **Topic:** Mathematical foundations of Attention Mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation.\n    *   **Goal:** Provide a rigorous, clear, and comprehensive explanation suitable for someone looking for the underlying math (likely a student, researcher, or engineer wanting to understand the \"why\" and \"how\").\n\n2.  **Initial Knowledge Retrieval & Structuring:**\n    *   *Source:* The seminal paper \"Attention Is All You",
+      "tokens": 150,
+      "tg_tps": 15.064004443708601,
+      "total_ms": 10466.673916002037,
+      "peak_gb": 8.15700558386743,
+      "pool_size": 64,
+      "warmup_tokens": 20,
+      "miss_policy": "hybrid",
+      "hybrid_threshold": 2,
+      "rolling_swap_interval": 10,
+      "mem_after_compact_gb": 7.94872678257525,
+      "recompact_stats": {
+        "total_swapped": 1440,
+        "layers": 40,
+        "avg_old_hit_rate": 0.6108630952380951,
+        "avg_new_hit_rate": 0.9839285714285714,
+        "elapsed_ms": 659.963375001098,
+        "layer_stats": [
+          {
+            "swapped": 42,
+            "layer": 0,
+            "old_hit_rate": 0.34523809523809523,
+            "new_hit_rate": 0.75,
+            "promoted": [
+              128,
+              4,
+              134,
+              136,
+              140,
+              141,
+              14,
+              144
+            ],
+            "demoted": [
+              129,
+              130,
+              131,
+              133,
+              135,
+              137,
+              138,
+              12
+            ]
+          },
+          {
+            "swapped": 42,
+            "layer": 1,
+            "old_hit_rate": 0.40476190476190477,
+            "new_hit_rate": 0.9166666666666666,
+            "promoted": [
+              3,
+              9,
+              10,
+              140,
+              146,
+              21,
+              22,
+              24
+            ],
+            "demoted": [
+              129,
+              130,
+              134,
+              6,
+              135,
+              137,
+              138,
+              139
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 2,
+            "old_hit_rate": 0.5357142857142857,
+            "new_hit_rate": 0.9940476190476191,
+            "promoted": [
+              128,
+              3,
+              136,
+              139,
+              13,
+              20,
+              149,
+              150
+            ],
+            "demoted": [
+              132,
+              135,
+              10,
+              138,
+              144,
+              18,
+              27,
+              34
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 3,
+            "old_hit_rate": 0.4880952380952381,
+            "new_hit_rate": 0.9880952380952381,
+            "promoted": [
+              4,
+              5,
+              15,
+              17,
+              19,
+              148,
+              150,
+              155
+            ],
+            "demoted": [
+              1,
+              133,
+              137,
+              142,
+              145,
+              157,
+              163,
+              164
+            ]
+          },
+          {
+            "swapped": 36,
+            "layer": 4,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              5,
+              8,
+              144,
+              146,
+              149,
+              24,
+              159,
+              160
+            ],
+            "demoted": [
+              134,
+              10,
+              13,
+              17,
+              150,
+              151,
+              153,
+              157
+            ]
+          },
+          {
+            "swapped": 37,
+            "layer": 5,
+            "old_hit_rate": 0.625,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              2,
+              3,
+              136,
+              11,
+              143,
+              147,
+              153,
+              27
+            ],
+            "demoted": [
+              128,
+              131,
+              9,
+              137,
+              13,
+              15,
+              144,
+              149
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 6,
+            "old_hit_rate": 0.625,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              7,
+              14,
+              15,
+              144,
+              145,
+              146,
+              148,
+              149
+            ],
+            "demoted": [
+              136,
+              10,
+              139,
+              24,
+              160,
+              161,
+              162,
+              163
+            ]
+          },
+          {
+            "swapped": 30,
+            "layer": 7,
+            "old_hit_rate": 0.6845238095238095,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              131,
+              132,
+              141,
+              149,
+              150,
+              23,
+              24,
+              155
+            ],
+            "demoted": [
+              136,
+              10,
+              11,
+              30,
+              159,
+              37,
+              165,
+              39
+            ]
+          },
+          {
+            "swapped": 43,
+            "layer": 8,
+            "old_hit_rate": 0.4523809523809524,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              132,
+              4,
+              140,
+              142,
+              143,
+              144,
+              145,
+              146
+            ],
+            "demoted": [
+              3,
+              135,
+              8,
+              11,
+              139,
+              17,
+              18,
+              29
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 9,
+            "old_hit_rate": 0.6011904761904762,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              131,
+              5,
+              8,
+              140,
+              141,
+              142,
+              143,
+              144
+            ],
+            "demoted": [
+              0,
+              128,
+              132,
+              135,
+              12,
+              15,
+              16,
+              17
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 10,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              133,
+              7,
+              9,
+              12,
+              21,
+              150,
+              156,
+              159
+            ],
+            "demoted": [
+              129,
+              131,
+              14,
+              143,
+              145,
+              146,
+              24,
+              27
+            ]
+          },
+          {
+            "swapped": 35,
+            "layer": 11,
+            "old_hit_rate": 0.6607142857142857,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              130,
+              3,
+              134,
+              9,
+              141,
+              142,
+              14,
+              20
+            ],
+            "demoted": [
+              132,
+              138,
+              11,
+              13,
+              147,
+              149,
+              24,
+              152
+            ]
+          },
+          {
+            "swapped": 31,
+            "layer": 12,
+            "old_hit_rate": 0.7202380952380952,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              2,
+              132,
+              6,
+              9,
+              143,
+              147,
+              148,
+              149
+            ],
+            "demoted": [
+              0,
+              4,
+              137,
+              22,
+              24,
+              155,
+              165,
+              167
+            ]
+          },
+          {
+            "swapped": 36,
+            "layer": 13,
+            "old_hit_rate": 0.6488095238095238,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              0,
+              6,
+              7,
+              138,
+              18,
+              28,
+              164,
+              39
+            ],
+            "demoted": [
+              129,
+              130,
+              131,
+              132,
+              135,
+              139,
+              13,
+              141
+            ]
+          },
+          {
+            "swapped": 38,
+            "layer": 14,
+            "old_hit_rate": 0.75,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              138,
+              142,
+              146,
+              147,
+              149,
+              150,
+              151,
+              152
+            ],
+            "demoted": [
+              0,
+              136,
+              140,
+              12,
+              143,
+              21,
+              30,
+              161
+            ]
+          },
+          {
+            "swapped": 37,
+            "layer": 15,
+            "old_hit_rate": 0.7738095238095238,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              134,
+              135,
+              9,
+              139,
+              12,
+              140,
+              141,
+              143
+            ],
+            "demoted": [
+              131,
+              132,
+              137,
+              138,
+              18,
+              147,
+              21,
+              153
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 16,
+            "old_hit_rate": 0.6904761904761905,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              0,
+              8,
+              14,
+              150,
+              36,
+              165,
+              38,
+              164
+            ],
+            "demoted": [
+              10,
+              143,
+              16,
+              144,
+              18,
+              145,
+              146,
+              148
+            ]
+          },
+          {
+            "swapped": 29,
+            "layer": 17,
+            "old_hit_rate": 0.6547619047619048,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              4,
+              8,
+              142,
+              15,
+              16,
+              28,
+              158,
+              37
+            ],
+            "demoted": [
+              2,
+              3,
+              137,
+              139,
+              145,
+              22,
+              150,
+              25
+            ]
+          },
+          {
+            "swapped": 34,
+            "layer": 18,
+            "old_hit_rate": 0.7321428571428571,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              139,
+              140,
+              142,
+              143,
+              144,
+              145,
+              146,
+              147
+            ],
+            "demoted": [
+              3,
+              20,
+              24,
+              29,
+              31,
+              32,
+              34,
+              164
+            ]
+          },
+          {
+            "swapped": 32,
+            "layer": 19,
+            "old_hit_rate": 0.6904761904761905,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              1,
+              4,
+              19,
+              157,
+              39,
+              42,
+              45,
+              175
+            ],
+            "demoted": [
+              132,
+              133,
+              10,
+              139,
+              142,
+              148,
+              21,
+              23
+            ]
+          },
+          {
+            "swapped": 31,
+            "layer": 20,
+            "old_hit_rate": 0.5476190476190477,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              130,
+              4,
+              10,
+              140,
+              151,
+              157,
+              159,
+              160
+            ],
+            "demoted": [
+              135,
+              8,
+              11,
+              139,
+              141,
+              144,
+              17,
+              18
+            ]
+          },
+          {
+            "swapped": 34,
+            "layer": 21,
+            "old_hit_rate": 0.6666666666666666,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              131,
+              12,
+              151,
+              26,
+              33,
+              166,
+              38,
+              169
+            ],
+            "demoted": [
+              128,
+              132,
+              134,
+              136,
+              14,
+              18,
+              20,
+              32
+            ]
+          },
+          {
+            "swapped": 33,
+            "layer": 22,
+            "old_hit_rate": 0.6369047619047619,
+            "new_hit_rate": 0.9880952380952381,
+            "promoted": [
+              129,
+              133,
+              6,
+              9,
+              12,
+              143,
+              21,
+              150
+            ],
+            "demoted": [
+              137,
+              11,
+              141,
+              152,
+              167,
+              175,
+              50,
+              56
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 23,
+            "old_hit_rate": 0.6071428571428571,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              129,
+              3,
+              131,
+              4,
+              134,
+              141,
+              142,
+              143
+            ],
+            "demoted": [
+              135,
+              138,
+              19,
+              147,
+              22,
+              152,
+              26,
+              31
+            ]
+          },
+          {
+            "swapped": 36,
+            "layer": 24,
+            "old_hit_rate": 0.5416666666666666,
+            "new_hit_rate": 0.9940476190476191,
+            "promoted": [
+              2,
+              134,
+              7,
+              9,
+              13,
+              14,
+              15,
+              18
+            ],
+            "demoted": [
+              4,
+              139,
+              142,
+              144,
+              146,
+              24,
+              155,
+              165
+            ]
+          },
+          {
+            "swapped": 33,
+            "layer": 25,
+            "old_hit_rate": 0.6071428571428571,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              5,
+              138,
+              13,
+              154,
+              156,
+              157,
+              30,
+              159
+            ],
+            "demoted": [
+              2,
+              132,
+              135,
+              141,
+              26,
+              160,
+              161,
+              162
+            ]
+          },
+          {
+            "swapped": 31,
+            "layer": 26,
+            "old_hit_rate": 0.6190476190476191,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              138,
+              10,
+              140,
+              146,
+              147,
+              148,
+              155,
+              159
+            ],
+            "demoted": [
+              136,
+              143,
+              21,
+              150,
+              160,
+              37,
+              169,
+              171
+            ]
+          },
+          {
+            "swapped": 35,
+            "layer": 27,
+            "old_hit_rate": 0.6190476190476191,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              129,
+              131,
+              135,
+              9,
+              143,
+              144,
+              145,
+              146
+            ],
+            "demoted": [
+              132,
+              134,
+              141,
+              142,
+              147,
+              23,
+              151,
+              154
+            ]
+          },
+          {
+            "swapped": 32,
+            "layer": 28,
+            "old_hit_rate": 0.6071428571428571,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              0,
+              2,
+              134,
+              138,
+              14,
+              35,
+              165,
+              167
+            ],
+            "demoted": [
+              9,
+              10,
+              143,
+              18,
+              148,
+              158,
+              37,
+              175
+            ]
+          },
+          {
+            "swapped": 34,
+            "layer": 29,
+            "old_hit_rate": 0.6964285714285714,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              8,
+              139,
+              142,
+              143,
+              144,
+              17,
+              146,
+              147
+            ],
+            "demoted": [
+              2,
+              131,
+              137,
+              14,
+              18,
+              25,
+              37,
+              42
+            ]
+          },
+          {
+            "swapped": 36,
+            "layer": 30,
+            "old_hit_rate": 0.7202380952380952,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              2,
+              135,
+              137,
+              140,
+              142,
+              143,
+              145,
+              146
+            ],
+            "demoted": [
+              3,
+              17,
+              151,
+              24,
+              153,
+              154,
+              29,
+              30
+            ]
+          },
+          {
+            "swapped": 27,
+            "layer": 31,
+            "old_hit_rate": 0.7261904761904762,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              137,
+              24,
+              26,
+              161,
+              163,
+              42,
+              171,
+              48
+            ],
+            "demoted": [
+              0,
+              132,
+              4,
+              135,
+              138,
+              142,
+              143,
+              19
+            ]
+          },
+          {
+            "swapped": 36,
+            "layer": 32,
+            "old_hit_rate": 0.6071428571428571,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              11,
+              12,
+              13,
+              17,
+              146,
+              18,
+              20,
+              151
+            ],
+            "demoted": [
+              129,
+              3,
+              5,
+              133,
+              149,
+              25,
+              27,
+              35
+            ]
+          },
+          {
+            "swapped": 39,
+            "layer": 33,
+            "old_hit_rate": 0.5833333333333334,
+            "new_hit_rate": 0.9702380952380952,
+            "promoted": [
+              129,
+              1,
+              6,
+              139,
+              13,
+              143,
+              16,
+              15
+            ],
+            "demoted": [
+              5,
+              137,
+              142,
+              144,
+              18,
+              152,
+              161,
+              165
+            ]
+          },
+          {
+            "swapped": 37,
+            "layer": 34,
+            "old_hit_rate": 0.6488095238095238,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              11,
+              141,
+              15,
+              19,
+              21,
+              149,
+              33,
+              168
+            ],
+            "demoted": [
+              129,
+              131,
+              4,
+              137,
+              12,
+              22,
+              151,
+              29
+            ]
+          },
+          {
+            "swapped": 40,
+            "layer": 35,
+            "old_hit_rate": 0.6607142857142857,
+            "new_hit_rate": 1.0,
+            "promoted": [
+              2,
+              3,
+              132,
+              5,
+              136,
+              10,
+              14,
+              146
+            ],
+            "demoted": [
+              129,
+              7,
+              138,
+              11,
+              16,
+              145,
+              152,
+              28
+            ]
+          },
+          {
+            "swapped": 41,
+            "layer": 36,
+            "old_hit_rate": 0.6071428571428571,
+            "new_hit_rate": 0.9940476190476191,
+            "promoted": [
+              0,
+              129,
+              134,
+              8,
+              138,
+              17,
+              147,
+              148
+            ],
+            "demoted": [
+              2,
+              4,
+              136,
+              10,
+              141,
+              145,
+              155,
+              156
+            ]
+          },
+          {
+            "swapped": 41,
+            "layer": 37,
+            "old_hit_rate": 0.47023809523809523,
+            "new_hit_rate": 0.9345238095238095,
+            "promoted": [
+              4,
+              8,
+              11,
+              14,
+              143,
+              147,
+              21,
+              28
+            ],
+            "demoted": [
+              129,
+              130,
+              7,
+              139,
+              13,
+              152,
+              25,
+              31
+            ]
+          },
+          {
+            "swapped": 32,
+            "layer": 38,
+            "old_hit_rate": 0.5773809523809523,
+            "new_hit_rate": 0.9523809523809523,
+            "promoted": [
+              132,
+              136,
+              137,
+              9,
+              11,
+              149,
+              23,
+              156
+            ],
+            "demoted": [
+              2,
+              6,
+              7,
+              8,
+              13,
+              143,
+              145,
+              20
+            ]
+          },
+          {
+            "swapped": 37,
+            "layer": 39,
+            "old_hit_rate": 0.5059523809523809,
+            "new_hit_rate": 0.875,
+            "promoted": [
+              134,
+              136,
+              13,
+              16,
+              23,
+              161,
+              34,
+              165
+            ],
+            "demoted": [
+              129,
+              137,
+              9,
+              140,
+              141,
+              146,
+              148,
+              149
+            ]
+          }
+        ]
+      },
+      "cv_hit_rate": null,
+      "cv_misses": 0,
+      "cv_total": 0,
+      "tpot": {
+        "mean_ms": 67.22277597260498,
+        "p50_ms": 44.8214165007812,
+        "p95_ms": 272.7239167470543
+      },
+      "rolling_swap_calls": 15,
+      "rolling_total_swaps": 4553,
+      "miss_count": 6596,
+      "miss_mean_ms": 0.5465630915706489,
+      "miss_sources": {
+        "pool": 0,
+        "cpu_cache": 0,
+        "ssd": 6596
+      }
+    }
+  ]
+}

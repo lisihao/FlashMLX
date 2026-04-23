@@ -1,6 +1,6 @@
 # Expert Offloading: Desktop & Mobile Experimental Results
 
-> FlashMLX v2.0 | 2026-04-21 | M4 Max 64GB
+> FlashMLX v2.0 | 2026-04-21 | M4 Pro 48GB
 > Model: Qwen3.5-35B-A3B-6bit (20.8B params, 40 layers, 256 experts/layer, top-8 routing)
 
 ---
@@ -13,7 +13,7 @@ and fast decode fallback. The Mobile track eliminates the shadow entirely, strea
 experts from NVMe on-demand during prefill and using frequency-aware cache eviction
 during decode.
 
-**Key results (all measured on M4 Max 64GB):**
+**Key results (all measured on M4 Pro 48GB):**
 
 | Config | Description | Memory | TG tok/s | PP tok/s | Quality |
 |--------|------------|--------|----------|----------|---------|

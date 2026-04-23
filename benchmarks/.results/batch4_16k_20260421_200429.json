@@ -1,0 +1,32 @@
+{
+  "timestamp": "20260421_200429",
+  "model": "mlx-community/Qwen3.5-35B-A3B-6bit",
+  "device": "Apple M4 Pro",
+  "total_memory_gb": 48.0,
+  "config": {
+    "batch_size": 4,
+    "context": 16384,
+    "max_gen": 128
+  },
+  "results": {
+    "flashmlx": {
+      "phase": "flashmlx",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_gen_tokens": 0,
+      "elapsed_s": 0.009553250041790307,
+      "tg_throughput": 0.0,
+      "ttft_s": 0.009553250041790307,
+      "peak_memory_gb": 0.0,
+      "model_residency_gb": 35.60403103381395,
+      "quality_pass": 0,
+      "quality_total": 4,
+      "text_previews": [
+        "",
+        "",
+        "",
+        ""
+      ]
+    }
+  }
+}

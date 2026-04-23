@@ -1,0 +1,32 @@
+{
+  "timestamp": "20260421_213020",
+  "model": "mlx-community/Qwen3.5-35B-A3B-4bit",
+  "device": "Apple M4 Pro",
+  "total_memory_gb": 48.0,
+  "config": {
+    "batch_size": 4,
+    "context": 16384,
+    "max_gen": 512
+  },
+  "results": {
+    "flashmlx": {
+      "phase": "flashmlx",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_gen_tokens": 2048,
+      "elapsed_s": 99.30120312498184,
+      "tg_throughput": 20.62412071102864,
+      "ttft_s": 20.31309287500335,
+      "peak_memory_gb": 14.033307529985905,
+      "model_residency_gb": 11.369720796123147,
+      "quality_pass": 4,
+      "quality_total": 4,
+      "text_previews": [
+        "The exact annual budget for Project Alpha is $12,500.<|im_end|>\n<|endoftext|><|i",
+        "The precise dollar amount allocated to Project Alpha annually is $12,500.<|im_en",
+        "Based on the document provided, the annual budget for Project Alpha is exactly *",
+        "The annual financial allocation for Project Alpha is exactly **$12,500**.\n\nThis "
+      ]
+    }
+  }
+}

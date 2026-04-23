@@ -490,6 +490,7 @@ class FlashMLXConfig(BaseModel):
                 model_path=model_path,
                 pool_size=self.offload.pool_size,
                 max_workers=self.offload.max_workers,
+                cpu_cache_gb=self.offload.cpu_cache_gb,
             )
 
         return cache_list, offload_ctx

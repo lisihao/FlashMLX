@@ -10,7 +10,7 @@ MAC-Attention (Match-Amend-Complete) 是一种通过复用相似 query 的 atten
 
 ## 实验结果
 
-### 性能数据（Qwen3-8B, M4 Max 64GB）
+### 性能数据（Qwen3-8B, M4 Pro 48GB）
 
 | Context | Standard | MAC | 加速比 | Hit Rate | Skip Ratio |
 |---------|----------|-----|--------|----------|------------|

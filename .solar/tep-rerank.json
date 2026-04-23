@@ -1,0 +1,80 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-19 00:01:13",
+  "results": [
+    {
+      "label": "A_standard",
+      "tg_tps": 67.17721225560994,
+      "p50_ms": 14.883187497616746,
+      "peak_gb": 26.311129903420806,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming ",
+      "hit_rate": 1.0
+    },
+    {
+      "label": "B_no_rr",
+      "tg_tps": 72.85237570978258,
+      "p50_ms": 13.691437998204492,
+      "peak_gb": 5.208709130063653,
+      "text": "Here's a thinking process that leads to the response:\n\n1.  **Analyze the Request:**\n    The user is asking for an \"Explain\" of a specific phrase: \"mathematical foundations\" (likely a typo for \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathematical\" -> \"mathemati",
+      "hit_rate": 0.3308774834437086,
+      "rerank_bonus": 0,
+      "pool_size": 32,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "C_rr001",
+      "tg_tps": 71.6325878608222,
+      "p50_ms": 13.93141649896279,
+      "peak_gb": 5.205588573589921,
+      "text": "Here's a thinking process that leads to the output:\n\n1.  **Analyze the Request:**\n    *   The user is asking for an \"Explain\" of a specific phrase: \"mathematical foundations\" (likely a typo or pun intended).\n    *   The user is asking for \"attention mechanisms\" in \"transformers\" (likely a pun intended).\n    *   The user is asking for \"scales\" (likely a pun intended).\n    *   The user is asking for",
+      "hit_rate": 0.4181498344370861,
+      "rerank_bonus": 0.001,
+      "pool_size": 32,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "D_rr005",
+      "tg_tps": 69.41449739138343,
+      "p50_ms": 14.393020996067207,
+      "peak_gb": 5.205588573589921,
+      "text": "Here's a thinking process that leads to the response:\n\n1.  **Analyze the Request:**\n    The user is asking for an \"Explain\" of a specific phrase: \"Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention.\"\n    Then, they ask for the \"full mathematical derivation.\"\n\n    *   **Wait, this looks like a nonsense.**\n   ",
+      "hit_rate": 0.631953642384106,
+      "rerank_bonus": 0.005,
+      "pool_size": 32,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "E_rr01",
+      "tg_tps": 70.49737661657069,
+      "p50_ms": 14.24560400118935,
+      "peak_gb": 5.205588573589921,
+      "text": "Here's a thinking process that leads to the explanation of the user's request:\n\n1.  **Analyze the Request:**\n*   The user is asking for an \"Explain\" of \"mathematical\" (mathematical) foundations of \"attention\" (attention) mechanisms in \"transformers\" (transformers).\n*   They specifically mention \"scaled\" (scaled) dot-product \"attention\" (attention) and \"multi-head\" (multi-head) \"attention\" (attenti",
+      "hit_rate": 0.7872930463576159,
+      "rerank_bonus": 0.01,
+      "pool_size": 32,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "F_rr05",
+      "tg_tps": 69.9472048103762,
+      "p50_ms": 14.343041999381967,
+      "peak_gb": 5.205588573589921,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   The user is asking for an \"mathematical foundations\" of \"attention mechanisms\" in \"transformers\" (likely a typo for \"transformers\" -> \"transformers\" or \"transformers\" -> \"transformers\" -> \"transformers\" -> \"transformers\" -> \"transformers\" -> \"transformers\" -> \"transformers\" -> \"transformers\" -> \"t",
+      "hit_rate": 0.9820985099337748,
+      "rerank_bonus": 0.05,
+      "pool_size": 32,
+      "miss_policy": "zero_out"
+    },
+    {
+      "label": "G_k1_rr01",
+      "tg_tps": 71.32765977276054,
+      "p50_ms": 14.071874997171108,
+      "peak_gb": 5.205588573589921,
+      "text": "Here's a thinking that's about \"The Mathematical Foundations of Attention Mechanisms in Transformers - including Scaled Dot-Product Attention and Multi-Head Attention. Provide the Full Mathematical Derivation.\"\n\nFirst, I need to parse the user's request as a \"mathematic (mathematical\" (mathematical\" (mathematical\" (mathematical\" (mathematical\" (mathematical\" (mathematical\" (mathematical\" (mathemat",
+      "hit_rate": 0.8332367549668874,
+      "rerank_bonus": 0.01,
+      "pool_size": 32,
+      "miss_policy": "k1_clamp"
+    }
+  ]
+}

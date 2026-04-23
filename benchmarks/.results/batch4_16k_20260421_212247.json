@@ -1,0 +1,32 @@
+{
+  "timestamp": "20260421_212247",
+  "model": "mlx-community/Qwen3.5-35B-A3B-4bit",
+  "device": "Apple M4 Pro",
+  "total_memory_gb": 48.0,
+  "config": {
+    "batch_size": 4,
+    "context": 16384,
+    "max_gen": 512
+  },
+  "results": {
+    "flashmlx": {
+      "phase": "flashmlx",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_gen_tokens": 2048,
+      "elapsed_s": 101.07068341696868,
+      "tg_throughput": 20.263046916888293,
+      "ttft_s": 20.311597666994203,
+      "peak_memory_gb": 14.033305622637272,
+      "model_residency_gb": 11.369720796123147,
+      "quality_pass": 2,
+      "quality_total": 4,
+      "text_previews": [
+        "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A long document c",
+        "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A long document c",
+        "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A long document c",
+        "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A long document c"
+      ]
+    }
+  }
+}

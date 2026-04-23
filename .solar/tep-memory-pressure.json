@@ -1,0 +1,205 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-17 19:57:24",
+  "tokens": 100,
+  "results": [
+    {
+      "label": "standard",
+      "pp_tps": 37.25486251852195,
+      "tg_tps": 68.33929174398345,
+      "ttof_ms": 2021.0664580226876,
+      "total_ms": 3493.2587500079535,
+      "peak_gb": 26.35398423206061,
+      "active_gb": 26.229427466169,
+      "tokens": 100,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Deconstruct the Request:**\n\n    *   **Topic:** Ma",
+      "tpot": {
+        "mean_ms": 14.785609936262382,
+        "p50_ms": 14.698312501423061,
+        "p95_ms": 15.38255167833995,
+        "p99_ms": 15.51405293692369,
+        "max_ms": 15.51641698461026,
+        "std_ms": 0.3222281816206638,
+        "count": 94
+      },
+      "pool_size": "N/A (standard)",
+      "mem_before_gb": 26.228954441845417,
+      "regime": "standard"
+    },
+    {
+      "label": "comfort",
+      "pp_tps": 27.956570757675106,
+      "tg_tps": 69.1562453966014,
+      "ttof_ms": 2664.378958987072,
+      "total_ms": 4119.072499976028,
+      "peak_gb": 26.356692674569786,
+      "active_gb": 26.23351730592549,
+      "tokens": 100,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Deconstruct the Request:**\n\n    *   **Topic:** Ma",
+      "tpot": {
+        "mean_ms": 14.607874117420115,
+        "p50_ms": 14.599770976928994,
+        "p95_ms": 14.862339809769765,
+        "p99_ms": 14.913767669349909,
+        "max_ms": 14.91620799060911,
+        "std_ms": 0.10138150228836236,
+        "count": 94
+      },
+      "pool_size": 0,
+      "cpu_cache_gb": 4.0,
+      "mem_before_gb": 26.228954443708062,
+      "mem_after_gb": 26.22899259068072,
+      "param_saved_mb": -0.0390625,
+      "regime": "C_full_gpu",
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 0
+        }
+      },
+      "cpu_cache": {
+        "capacity_gb": 4.0,
+        "used_gb": 0.0,
+        "utilization": 0.0,
+        "entries": 0,
+        "hit_rate": 0,
+        "hits": 0,
+        "misses": 0
+      }
+    },
+    {
+      "label": "mild",
+      "pp_tps": 40.0550506606694,
+      "tg_tps": 69.17733107170761,
+      "ttof_ms": 1915.2276249951683,
+      "total_ms": 3368.890374957118,
+      "peak_gb": 26.356692674569786,
+      "active_gb": 26.23351730592549,
+      "tokens": 100,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Deconstruct the Request:**\n\n    *   **Topic:** Ma",
+      "tpot": {
+        "mean_ms": 14.59407137256076,
+        "p50_ms": 14.550520485499874,
+        "p95_ms": 14.886543771717697,
+        "p99_ms": 15.301665578153914,
+        "max_ms": 15.468834026250988,
+        "std_ms": 0.17948440768000157,
+        "count": 94
+      },
+      "pool_size": 48,
+      "cpu_cache_gb": 1.0,
+      "mem_before_gb": 26.228954443708062,
+      "mem_after_gb": 26.22899259068072,
+      "param_saved_mb": -0.0390625,
+      "regime": "C_full_gpu",
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 0
+        }
+      },
+      "cpu_cache": {
+        "capacity_gb": 1.0,
+        "used_gb": 0.0,
+        "utilization": 0.0,
+        "entries": 0,
+        "hit_rate": 0,
+        "hits": 0,
+        "misses": 0
+      }
+    },
+    {
+      "label": "severe",
+      "pp_tps": 37.77737760109915,
+      "tg_tps": 69.31299643870098,
+      "ttof_ms": 1997.491291956976,
+      "total_ms": 3447.9594999575056,
+      "peak_gb": 26.356692674569786,
+      "active_gb": 26.23351730592549,
+      "tokens": 100,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Deconstruct the Request:**\n\n    *   **Topic:** Ma",
+      "tpot": {
+        "mean_ms": 14.57420965976161,
+        "p50_ms": 14.563833479769528,
+        "p95_ms": 14.85487675818149,
+        "p99_ms": 14.904250370454973,
+        "max_ms": 15.080291021149606,
+        "std_ms": 0.13730189304655416,
+        "count": 94
+      },
+      "pool_size": 16,
+      "cpu_cache_gb": 0.5,
+      "mem_before_gb": 26.228954443708062,
+      "mem_after_gb": 26.22899259068072,
+      "param_saved_mb": -0.0390625,
+      "regime": "C_full_gpu",
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 0
+        }
+      },
+      "cpu_cache": {
+        "capacity_gb": 0.5,
+        "used_gb": 0.0,
+        "utilization": 0.0,
+        "entries": 0,
+        "hit_rate": 0,
+        "hits": 0,
+        "misses": 0
+      }
+    },
+    {
+      "label": "extreme",
+      "pp_tps": 41.909265848564814,
+      "tg_tps": 69.28998950361958,
+      "ttof_ms": 1830.3932499838993,
+      "total_ms": 3281.940917018801,
+      "peak_gb": 26.356692674569786,
+      "active_gb": 26.23351730592549,
+      "tokens": 100,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Deconstruct the Request:**\n\n    *   **Topic:** Ma",
+      "tpot": {
+        "mean_ms": 14.578233606756685,
+        "p50_ms": 14.570874976925552,
+        "p95_ms": 14.707414226722904,
+        "p99_ms": 14.924738305271603,
+        "max_ms": 15.029208036139607,
+        "std_ms": 0.09563042887422843,
+        "count": 94
+      },
+      "pool_size": 8,
+      "cpu_cache_gb": 0.0,
+      "mem_before_gb": 26.228954443708062,
+      "mem_after_gb": 26.22899259068072,
+      "param_saved_mb": -0.0390625,
+      "regime": "C_full_gpu",
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 0
+        }
+      }
+    }
+  ]
+}

@@ -70,7 +70,7 @@
     "perplexity_degradation": 0.0,
     "note": "scored_pq + Q8 @ 32K maintains quality (verified via PPL). Multi-task eval pending for long-context recall testing."
   },
-  "platform": "M4 Max 64GB",
+  "platform": "M4 Pro 48GB",
   "not_recommended": [
     "kv_direct",
     "scored_pq_q4"

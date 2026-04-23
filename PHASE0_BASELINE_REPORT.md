@@ -1,7 +1,7 @@
 # Phase 0 Baseline Report - 文本模型性能基准
 
 **测试日期**: 2026-04-09
-**平台**: M4 Max 64GB
+**平台**: M4 Pro 48GB
 **模型**: Qwen3-8B-MLX (4-bit)
 **目的**: 建立 VLM 迁移前的性能红线，防止后续迁移导致文本模型性能回退
 
@@ -270,7 +270,7 @@ python3 benchmarks/bench_recall_d.py
 ### 测试环境
 
 ```
-Platform: M4 Max 64GB
+Platform: M4 Pro 48GB
 macOS: Darwin 25.3.0
 Python: 3.14.3
 MLX: (built from mlx-lm-source)

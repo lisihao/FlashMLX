@@ -1,7 +1,7 @@
 # Gemma 4 + FlashMLX 集成测试报告
 
 **日期**: 2026-04-10
-**测试环境**: M4 Max 64GB
+**测试环境**: M4 Pro 48GB
 **FlashMLX 版本**: v2.0 + VLM Deep Integration
 
 ## 执行摘要
@@ -53,7 +53,7 @@
 
 ## 性能基准测试
 
-### 生成速度（M4 Max 64GB）
+### 生成速度（M4 Pro 48GB）
 
 > **⚠️ 2026-04-10 修正**: 初版报告中 31B 的 `6.5 tok/s` 是错误数据,根源是早期
 > 测试走了 legacy monkey-patch 路径或 system mlx-vlm 0.4.0 fallback（fallback
@@ -164,7 +164,7 @@ gemma-4-31B (60 layers):
 
 ## 长 Context 实测 (2026-04-10, hybrid 修复后)
 
-**环境**: gemma-4-31B, M4 Max 64GB, single-process, 固定 prompt 重复填充到目标长度
+**环境**: gemma-4-31B, M4 Pro 48GB, single-process, 固定 prompt 重复填充到目标长度
 **脚本**: `examples/bench_gemma4_long_context.py` (设置 `GEMMA4_MODEL_PATH` 环境变量后运行)
 
 ### 结果矩阵

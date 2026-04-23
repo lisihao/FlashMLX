@@ -1,0 +1,155 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-18 07:14:59",
+  "tokens": 150,
+  "results": [
+    {
+      "label": "standard",
+      "pp_tps": 20.00443926621095,
+      "tg_tps": 67.74884149480295,
+      "ttof_ms": 1953.1002499998067,
+      "total_ms": 4175.85762500039,
+      "peak_gb": 26.311129903420806,
+      "tokens": 150,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product",
+      "text_preview": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the ",
+      "tpot": {
+        "mean_ms": 14.857027965755238,
+        "p50_ms": 14.776082999560458,
+        "p95_ms": 15.375166500007253,
+        "p99_ms": 15.601787350169616,
+        "max_ms": 15.668750000259024,
+        "std_ms": 0.32926376581156547
+      }
+    },
+    {
+      "label": "pool64_miss_load",
+      "pp_tps": 121.66198478440681,
+      "tg_tps": 8.707560730887423,
+      "ttof_ms": 398.22041600018565,
+      "total_ms": 17632.98974999998,
+      "peak_gb": 8.069026289507747,
+      "tokens": 150,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specific Terms:** \"Scaled dot-product attention\" and \"multi-head attention\".\n    *   **Requirement:** \"Provide the full mathematical derivation.\"\n    *   **Constraint:** The prompt asks for \"attention mechanisms in transformers\" but uses the phrase \"mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention.\" It also mentions \"including scaled dot-product attention and multi-head attention\" but the phrasing \"including scaled dot-product attention and multi-head attention\" is slightly redundant if",
+      "text_preview": "Here's a thinking process that leads to the explanation of attention mechanisms in transformers:\n\n1.  **Deconstruct the ",
+      "tpot": {
+        "mean_ms": 114.8863978287658,
+        "p50_ms": 108.14420899941979,
+        "p95_ms": 159.17134350024753,
+        "p99_ms": 205.77966875034696,
+        "max_ms": 236.84700000012526,
+        "std_ms": 25.99567382342598
+      },
+      "pool_size": 64,
+      "force_ssd": true,
+      "mem_after_compact_gb": 7.94825423695147,
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 28304,
+          "mean_ms": 0.3484624516322781,
+          "p50_ms": 0.223792,
+          "p95_ms": 1.142208,
+          "p99_ms": 1.2420780200000003,
+          "max_ms": 25.586459,
+          "source_counts": {
+            "pool": 0,
+            "cpu_cache": 0,
+            "ssd": 28304
+          }
+        }
+      }
+    },
+    {
+      "label": "pool32_miss_load",
+      "pp_tps": 110.46584230901101,
+      "tg_tps": 7.951566970384512,
+      "ttof_ms": 423.8633340000888,
+      "total_ms": 19296.16541699943,
+      "peak_gb": 5.02304064668715,
+      "tokens": 150,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Mathematical foundations of attention mechanisms in transformers.\"\n    *   **Specific Constraint:** \"including scaled dot-product attention and multi-head attention.\"\n    *   **Specific Constraint:** \"Provide the full mathematical derivation.\"\n    *   **Problematic Phrase:** \"in transformers, including scaled dot-product attention and multi-head attention. Provide the full mathematical derivation.\"\n    *   **Critical Observation:** The prompt asks for \"mathematical foundations of attention mechanisms in *transformers*... including... *multi-head attention*.\" However, there is a specific, unusual phrase embedded in the prompt",
+      "text_preview": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Mathem",
+      "tpot": {
+        "mean_ms": 125.82609903424719,
+        "p50_ms": 119.39275049962816,
+        "p95_ms": 173.72707299955437,
+        "p99_ms": 192.22223980000322,
+        "max_ms": 202.78945799964276,
+        "std_ms": 23.207292166408738
+      },
+      "pool_size": 32,
+      "force_ssd": true,
+      "mem_after_compact_gb": 4.901378760114312,
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 34783,
+          "mean_ms": 0.32104600804990946,
+          "p50_ms": 0.21875,
+          "p95_ms": 1.1008289,
+          "p99_ms": 1.20873806,
+          "max_ms": 6.979417,
+          "source_counts": {
+            "pool": 0,
+            "cpu_cache": 0,
+            "ssd": 34783
+          }
+        }
+      }
+    },
+    {
+      "label": "pool16_miss_load",
+      "pp_tps": 89.67408008909591,
+      "tg_tps": 7.338333949714663,
+      "ttof_ms": 499.5988330001637,
+      "total_ms": 20948.12716600063,
+      "peak_gb": 3.49960314668715,
+      "tokens": 150,
+      "text": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention.\"\n    *   **Specific Instruction:** \"Provide the full mathematical derivation.\"\n    *   **Constraint/Warning:** The prompt contains a specific phrase: \"including scaled dot-product attention and multi-head attention.\" However, looking closely at the first sentence: \"Explain the mathematical foundations of attention mechanisms in transformers, including scaled dot-product attention and multi-head attention.\"\n    *   **Critical Observation:** The prompt asks for an explanation and derivation. However, there is a hidden instruction in the system",
+      "text_preview": "Here's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:**\n    *   **Topic:** \"Mathem",
+      "tpot": {
+        "mean_ms": 135.82361586986113,
+        "p50_ms": 133.07864599983077,
+        "p95_ms": 181.42827049996413,
+        "p99_ms": 202.5652309502222,
+        "max_ms": 230.93995799990807,
+        "std_ms": 24.244830290466158
+      },
+      "pool_size": 16,
+      "force_ssd": true,
+      "mem_after_compact_gb": 3.377941260114312,
+      "telemetry": {
+        "total_tokens": 0,
+        "total_activations": 0,
+        "avg_unique_per_layer": 0.0,
+        "max_unique_per_layer": 0,
+        "overall_pool_hit_rate": 1.0,
+        "per_layer_hit_rate": {},
+        "miss_latency": {
+          "count": 38888,
+          "mean_ms": 0.31876145685044227,
+          "p50_ms": 0.218166,
+          "p95_ms": 1.1050273000000002,
+          "p99_ms": 1.2182251199999998,
+          "max_ms": 17.378708,
+          "source_counts": {
+            "pool": 0,
+            "cpu_cache": 0,
+            "ssd": 38888
+          }
+        }
+      }
+    }
+  ]
+}

@@ -10,7 +10,7 @@
 
 - **Model**: Qwen3-8B (36 layers)
 - **Test**: WikiText-2 sample (~1717 tokens)
-- **Hardware**: M4 Max 64GB
+- **Hardware**: M4 Pro 48GB
 - **Date**: 2026-04-05
 
 ## Results Table

@@ -21,7 +21,7 @@
     "enabled": false
   },
   "benchmarks": {},
-  "platform": "M4 Max 64GB",
+  "platform": "M4 Pro 48GB",
   "not_recommended": [],
   "notes": "Small model, no AM calibration file. Mainly used for rapid development and testing."
 }

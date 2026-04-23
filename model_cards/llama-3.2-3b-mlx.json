@@ -47,7 +47,7 @@
     "relative_to_standard": 0.0,
     "note": "Multi-task eval @ 4K context. All configs (standard, triple_pq polarquant, triple_pq turboangle) achieve same quality scores. No degradation detected."
   },
-  "platform": "M4 Max 64GB",
+  "platform": "M4 Pro 48GB",
   "not_recommended": [],
   "modes": {
     "balanced": {

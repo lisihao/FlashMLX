@@ -39,7 +39,7 @@
 
 ### 1.3 评估平台
 
-- **硬件**: Apple M4 Max 64GB
+- **硬件**: Apple M4 Pro 48GB
 - **软件**: MLX + mlx-lm (submodule with triple_pq fix)
 - **日期**: 2026-04-07
 

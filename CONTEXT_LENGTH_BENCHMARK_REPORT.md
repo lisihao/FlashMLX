@@ -1,5 +1,7 @@
 # FlashMLX 上下文长度性能测试报告
 
+> **Warning**: Memory 列数据 (全部 0.5 MB) 为测量 Bug，不反映真实 KV 内存。以 ARCHITECTURE.md §13 为准。
+
 **测试日期**: 2026-03-21
 **硬件**: Apple M4 Pro
 **模型**: Qwen3.5-35B-A3B (MLX format, ~19GB)

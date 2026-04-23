@@ -10,7 +10,7 @@
 
 本报告系统呈现 FlashMLX 在 Apple Silicon 上实现 **MoE 模型无损专家卸载** 的完整技术路径。我们为两类截然不同的硬件约束设计了统一框架下的双轨方案：
 
-**Desktop 轨 (M4 Max 64GB)**：Shadow-first Architecture — 全量 shadow 保证 PP 正确性，pool 加速 TG。已验证 MATH-500 与标准推理逐题一致。
+**Desktop 轨 (M4 Pro 48GB)**：Shadow-first Architecture — 全量 shadow 保证 PP 正确性，pool 加速 TG。已验证 MATH-500 与标准推理逐题一致。
 
 **Mobile 轨 (iPhone/iPad 8-16GB)**：Streaming Pipeline Architecture — 逐层按需加载 expert，I/O-compute 流水线隐藏 NVMe 延迟。PP 峰值内存 < 500 MB expert 开销。
 
@@ -38,7 +38,7 @@ Mixture-of-Experts (MoE) 通过稀疏激活实现参数效率：Qwen3.5-35B-A3B 
 
 | 设备 | 可用内存 | NVMe 带宽 | GPU 算力 | Expert 能装多少 |
 |------|---------|-----------|---------|---------------|
-| M4 Max 64GB | ~45 GB | 7.4 GB/s | 56 TFLOPS | 全部 (24.4 GB) |
+| M4 Pro 48GB | ~36 GB | 7.4 GB/s | 38 TFLOPS | 全部 (24.4 GB) |
 | M4 Pro 24GB | ~16 GB | 3.5 GB/s | 28 TFLOPS | 65% (怕 KV) |
 | iPad M4 16GB | ~10 GB | 3.0 GB/s | 11 TFLOPS | 41% (紧张) |
 | iPhone 16 Pro 8GB | ~5 GB | 2.0 GB/s | 4 TFLOPS | **20% (不够)** |
@@ -279,7 +279,7 @@ if (self._miss_policy in ("shadow", "ftec")
     return y.squeeze(-2)
 ```
 
-**为什么 Desktop 可以承受**：M4 Max 64GB 能装下 shadow (24.4 GB) + 非 expert 参数 (~3 GB) + KV cache。PP 是一次性成本，PP 后释放 shadow，稳态只剩 pool 4.9 GB。
+**为什么 Desktop 可以承受**：M4 Pro 48GB 能装下 shadow (24.4 GB) + 非 expert 参数 (~3 GB) + KV cache。PP 是一次性成本，PP 后释放 shadow，稳态只剩 pool 4.9 GB。
 
 ### 3.5 TG 阶段：Pool 加速 + Shadow 兜底
 

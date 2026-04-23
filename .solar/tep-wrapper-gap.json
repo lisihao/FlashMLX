@@ -1,0 +1,48 @@
+{
+  "model": "/Users/lisihao/models/Qwen3.5-35B-A3B-6bit",
+  "timestamp": "2026-04-18 18:13:35",
+  "results": [
+    {
+      "label": "A_standard",
+      "tg_tps": 61.34989504124552,
+      "p50_ms": 15.15987500170013,
+      "peak_gb": 26.311129903420806,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    },
+    {
+      "label": "B_id+tel",
+      "tg_tps": 63.37165287206098,
+      "p50_ms": 15.22827099688584,
+      "peak_gb": 26.312631471082568,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    },
+    {
+      "label": "C_id-tel",
+      "tg_tps": 63.942379097533724,
+      "p50_ms": 15.38885400077561,
+      "peak_gb": 26.31263099424541,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    },
+    {
+      "label": "D_remap+tel",
+      "tg_tps": 39.60925208752007,
+      "p50_ms": 23.130625500925817,
+      "peak_gb": 26.307278895750642,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    },
+    {
+      "label": "E_remap-tel",
+      "tg_tps": 64.26229413128911,
+      "p50_ms": 14.817749997746432,
+      "peak_gb": 26.307278895750642,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    },
+    {
+      "label": "F_remap-all",
+      "tg_tps": 66.79243804480184,
+      "p50_ms": 14.794291997532127,
+      "peak_gb": 26.307278895750642,
+      "text": "Here's a thinking process that leads to the explanation of attention mechanisms in Transformers:\n\n1.  **Deconstruct the Request:**\n    *   **Topic:** Mathematical foundations of attention mechanisms in Transformers.\n    *   **Specifics:** Scaled Dot-Product Attention, Multi-Head Attention.\n    *   **Requirement:** Full mathematical derivation (formulas, logic, steps).\n\n2.  **Initial Brainstorming & Structure:**\n    *   *Introduction:* Briefly define what attention is (mapping queries to values) and why it's important (context, long-range dependencies).\n    *   *Core Concept:* The Query-Key-Value (QKV) paradigm.\n    *   *Scaled Dot-Product"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "timestamp": "20260421_195919",
+  "model": "mlx-community/Qwen3.5-35B-A3B-6bit",
+  "device": "Apple M4 Pro",
+  "total_memory_gb": 48.0,
+  "config": {
+    "batch_size": 4,
+    "context": 16384,
+    "max_gen": 128
+  },
+  "results": {
+    "community": {
+      "phase": "community",
+      "batch_size": 4,
+      "context_tokens": 16384,
+      "total_gen_tokens": 512,
+      "elapsed_s": 97.64476454199757,
+      "tg_throughput": 5.243496693361228,
+      "ttft_s": 91.6803503750125,
+      "peak_memory_gb": 36.1009099278599,
+      "model_residency_gb": 26.228954441845417,
+      "quality_pass": 3,
+      "quality_total": 4,
+      "text_previews": [
+        "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A long document c",
+        "<think>\n<think><|im_end|>\n\n</think>\n\nThe annual budget for Project Alpha is exac",
+        "Thinking Process:\n\n1.  **Analyze the Request:** The user is asking a specific qu",
+        "<think><|im_end|>\n</think>\n<|im_start|><think><|im_end|>\n<|im_start|>assistant<t"
+      ]
+    },
+    "flashmlx": null
+  }
+}

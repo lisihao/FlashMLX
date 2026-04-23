@@ -801,7 +801,7 @@ def _handle_quality_issue(self, cache_list, model):
 
 ## 13. Performance Baselines
 
-### 13.1 Qwen3-8B (M4 Max 64GB) — 32K Context
+### 13.1 Qwen3-8B (M4 Pro 48GB) — 32K Context
 
 | Metric | Standard | scored_pq + Q8 | Change |
 |--------|:---:|:---:|:---:|
@@ -812,7 +812,7 @@ def _handle_quality_issue(self, cache_list, model):
 | TG Memory | 4,647 MB | **529 MB** | **-89%** |
 | Quality | PASS | **PASS** | Lossless |
 
-### 13.2 Route 0 Mode Comparison (8K Context, M4 Max 64GB)
+### 13.2 Route 0 Mode Comparison (8K Context, M4 Pro 48GB)
 
 | Mode | PP tok/s | TG tok/s | TTFT | TG Mem | Recall (6 needles) |
 |------|:---:|:---:|:---:|:---:|:---:|
@@ -826,15 +826,28 @@ def _handle_quality_issue(self, cache_list, model):
 
 Key insight: `recall_first+RECON/TARGETED` restores recall to 6/6 while `ultra_long` alone drops to 4/6. This validates the "aggressive compress + backend rescue" thesis.
 
-### 13.3 Qwen3.5-35B (M4 Pro 48GB) — 16K Batch=4
+### 13.3 Qwen3.5-35B-A3B-4bit (M4 Pro 48GB) — 16K Batch=4
+
+**Non-interleaved** (fair TG measurement):
 
 | Metric | Community mlx-lm | FlashMLX v2.0 | Change |
 |--------|:---:|:---:|:---:|
-| TG tok/s | 115.8 | **196.9** | **+70%** |
-| TTFT | 82.0s | **21.1s** | **-74%** |
-| GPU Peak | 28.01 GB | **13.78 GB** | **-51%** |
-| Model Memory | 18.21 GB | **11.42 GB** | **-37%** |
+| TG tok/s | ~120 | **~120** | **≈0% (maintained)** |
+| GPU Peak | 28.05 GB | **21.10 GB** | **-25%** |
+| Model Memory | 18.16 GB | **11.37 GB** | **-37%** |
 | Quality | 4/4 PASS | **4/4 PASS** | Lossless |
+
+**Interleaved** (production mode):
+
+| Metric | Community mlx-lm | FlashMLX v2.0 | Change |
+|--------|:---:|:---:|:---:|
+| TTFT | 82.0s | **21.1s** | **-74%** |
+| GPU Peak | 28.05 GB | **13.78 GB** | **-51%** |
+| Model Memory | 18.16 GB | **11.42 GB** | **-37%** |
+| Quality | 4/4 PASS | **4/4 PASS** | Lossless |
+
+> Note: TG throughput varies with thermal state on M4 Pro Mac Mini (~120 tok/s cold, ~45 tok/s sustained).
+> Expert offloading maintains TG parity with community mlx-lm while reducing model memory by 37%.
 
 ---
 

@@ -64,7 +64,7 @@
     "perplexity_degradation": 0.0,
     "note": "TurboAngle K256V128 @ 4K maintains PPL=1.0078 (same as standard). Hybrid architecture (10/40 attention layers) shows minimal quality impact from KV compression."
   },
-  "platform": "M5 Max 128GB",
+  "platform": "M4 Pro 48GB",
   "not_recommended": [
     "scored_pq",
     "scored_kv_direct"

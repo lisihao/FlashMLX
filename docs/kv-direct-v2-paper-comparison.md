@@ -140,7 +140,7 @@ TG 每步计算量:                     TG 每步计算量:
 | SmolLM2 | 1.7B | 2048 | 24 | 18.0x | 2.5x |
 | Phi-3.5-mini | 3.8B | 3072 | 32 | 21.3x | 3.8x |
 
-### 我们的数据 (M4 Max 64GB, MLX, bfloat16)
+### 我们的数据 (M4 Pro 48GB, MLX, bfloat16)
 
 | Model | Params | Budget | Compression | TG Slowdown |
 |-------|--------|--------|-------------|-------------|

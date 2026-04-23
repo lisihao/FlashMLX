@@ -55,9 +55,28 @@ the same physical memory.
 
 ---
 
+## Measurement methodology
+
+All numbers are measured on **Apple M4 Pro 48GB Mac Mini** using MLX.
+
+| Metric | Definition | How measured |
+|--------|-----------|-------------|
+| **PP tok/s** | Prefill throughput | `prompt_tokens / prefill_time` — wall-clock from first `generate_step()` call to first token emitted |
+| **TG tok/s** | Token generation throughput | `generated_tokens / (total_time - TTFT)` — pure decode, excludes prefill. For batch: non-interleaved mode to avoid prefill interference |
+| **TTFT** | Time to first token | Wall-clock from `generate_step()` to first token. For batch: time until first prompt's first token |
+| **GPU Peak** | Peak GPU memory | `mx.metal.get_peak_memory()` after `mx.metal.reset_peak_memory()` before inference |
+| **Model Residency** | Active GPU memory after model load | `mx.get_active_memory()` after `mx.eval(model.parameters()); gc.collect()` |
+| **KV Memory** | KV cache size at decode time | `mx.get_active_memory()` delta or `cache.nbytes` sum |
+
+**Caveats:**
+- M4 Pro Mac Mini thermally throttles under sustained load (~120 tok/s cold → ~45 tok/s after 30+ minutes for 35B MoE batch=4). All 35B batch numbers reflect cold-start peak.
+- Single-request numbers (Qwen3-8B 32K) are stable and not affected by thermal throttling.
+
+---
+
 ## Performance snapshot
 
-### Qwen3-8B-MLX-4bit / 32K context / M4 Max 64GB
+### Qwen3-8B-MLX-4bit / 32K context / M4 Pro 48GB
 | Metric | Standard | FlashMLX (`scored_pq` + Q8) | Change |
 |---|---:|---:|---:|
 | PP throughput | 269.5 tok/s | **409.5 tok/s** | **+51.9%** |
@@ -67,14 +86,29 @@ the same physical memory.
 | TG KV memory | 4,647 MB | **529 MB** | **-88.6%** |
 | Quality | pass | **pass** | no degradation |
 
-### Qwen3.5-35B-A3B / 16K / batch=4 / M4 Pro 48GB
+### Qwen3.5-35B-A3B-4bit / 16K / batch=4 / M4 Pro 48GB
+
+**Non-interleaved mode** (fair TG comparison):
+
 | Metric | Community `mlx-lm` | FlashMLX v2.0 | Change |
 |---|---:|---:|---:|
-| TG throughput | 115.8 tok/s | **196.9 tok/s** | **+70.0%** |
-| TTFT | 82.0 s | **21.1 s** | **-74.3%** |
-| GPU peak memory | 28.01 GB | **13.78 GB** | **-50.8%** |
-| Model residency | 18.21 GB | **11.42 GB** | **-37.3%** |
+| TG throughput | ~120 tok/s | **~120 tok/s** | ≈0% (maintained) |
+| TTFT | 82 s | 82 s | — |
+| GPU peak memory | 28.05 GB | **21.10 GB** | **-24.8%** |
+| Model residency | 18.16 GB | **11.37 GB** | **-37.4%** |
 | Quality | 4/4 pass | **4/4 pass** | no degradation |
+
+**Interleaved mode** (production — first-prompt advantage):
+
+| Metric | Community `mlx-lm` | FlashMLX v2.0 | Change |
+|---|---:|---:|---:|
+| TTFT (first prompt) | 82 s | **21.1 s** | **-74.3%** |
+| GPU peak memory | 28.05 GB | **13.78 GB** | **-50.8%** |
+| Model residency | 18.16 GB | **11.42 GB** | **-37.3%** |
+| Quality | 4/4 pass | **4/4 pass** | no degradation |
+
+> Expert offloading saves 37% model memory while maintaining decode throughput.
+> Interleaved scheduling cuts first-token latency by 74% with 51% less peak memory.
 
 ### Expert Affinity Scheduling (Route 1 extension)
 
